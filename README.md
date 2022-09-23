@@ -8,15 +8,14 @@ This is an initial draft of the next generation user interface application for A
 This is not part of the Apache Tika project.
 
 # Initial Design Thoughts
-This breaks substantially from Tika's current user interface and some of the initial
-of Apache Tika.
+This breaks substantially from Tika's current user interface.
 
 This will make use of the tika-pipes modules to enable fetching files from 
 local file shares, S3 and other resources and then emitting the parsed output
-to local file shares, S3, OpenSearch, Apache Solr, etc.
+to local file shares, S3, OpenSearch, Apache Solr, jdbc, etc.
 
-This requires Java 17 and will not run Tika "in process", but rather rely
-on forking it.
+This requires Java 17 and will not run Tika "in process", but rather 
+it will rely on forking Tika.
 
 Ideally, there will be some user interface to visualize information from
-a run of Tika.
+a run of Tika via tika-eval.
