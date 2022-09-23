@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<VBox spacing="20.0" prefHeight="400" prefWidth="800"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.tallison.tika.app.fx.TikaController">
+  <MenuBar fx:id="menuBar" onKeyPressed="#handleKeyInput">
+    <menus>
+      <Menu text="File">
+        <items>
+          <MenuItem text="Process Files" onAction="#runTika"/>
+          <MenuItem text="Save" onAction="#saveState"/>
+          <MenuItem text="Reset" onAction="#resetState"/>
+          <SeparatorMenuItem  />
+          <MenuItem text="Exit" onAction="#exitApp"/>
+        </items>
+      </Menu>
+      <Menu text="Configure">
+        <items>
+          <Menu text="Tika">
+            <items>
+              <MenuItem text="Tika App" onAction="#configureTikaApp"/>
+              <MenuItem text="Tika Server" disable="true"/>
+            </items>
+          </Menu>
+          <Menu text="Source">
+          <items>
+            <MenuItem text="File System" onAction="#configureFileSystemFetcher"/>
+            <MenuItem text="S3" disable="true"/>
+          </items>
+        </Menu>
+          <Menu text="Target">
+            <items>
+              <MenuItem text="File System" onAction="#configureFileSystemEmitter"/>
+              <MenuItem text="S3" disable="true"/>
+            </items>
+          </Menu>
+        </items>
+      </Menu>
+      <Menu text="Help">
+        <items>
+          <MenuItem text="Search" disable="true"/>
+          <MenuItem text="Online Manual" visible="false"/>
+          <SeparatorMenuItem />
+          <MenuItem text="About" onAction="#handleAboutAction"/>
+        </items>
+      </Menu>
+    </menus>
+  </MenuBar>
+<!--  <padding>
+    <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+  </padding> -->
+  <Label fx:id="welcomeText"/>
+  <Button text="Hello!" onAction="#onHelloButtonClick"/>
+</VBox>
