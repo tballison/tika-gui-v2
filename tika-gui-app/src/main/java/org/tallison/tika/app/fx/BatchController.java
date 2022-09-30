@@ -28,9 +28,11 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
+import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.pipes.fetcher.fs.FileSystemFetcher;
 import org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator;
+import org.apache.tika.utils.StringUtils;
 
 public class BatchController {
 
@@ -46,9 +48,18 @@ public class BatchController {
         final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Open Resource File");
-        File directory = directoryChooser.showDialog(parent);
         BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig();
-        batchProcessConfig.setFetcher(FileSystemFetcher.class.getName(), "basePath",
+        if (batchProcessConfig.getFetcher() != null &&
+                batchProcessConfig.getFetcher().getClazz() != null &&
+                batchProcessConfig.getFetcher().equals(Constants.FS_FETCHER_CLASS)) {
+            String path = batchProcessConfig.getFetcher().getAttributes().get("basePath");
+            if (!StringUtils.isBlank(path)) {
+                directoryChooser.setInitialDirectory(new File(path));
+            }
+        }
+
+        File directory = directoryChooser.showDialog(parent);
+        batchProcessConfig.setFetcher(Constants.FS_FETCHER_CLASS, "basePath",
                 directory.toPath().toAbsolutePath().toString());
         batchProcessConfig.setPipesIterator(
                 FileSystemPipesIterator.class.getName(),
@@ -62,12 +73,21 @@ public class BatchController {
     public void outputDirectorySelect(ActionEvent actionEvent) throws IOException {
         final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("Open Target Diretory");
+        directoryChooser.setTitle("Open Target Directory");
+        BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig();
+
+        if (batchProcessConfig.getEmitter() != null &&
+            batchProcessConfig.getEmitter().getClazz() != null &&
+            batchProcessConfig.getEmitter().equals(Constants.FS_EMITTER_CLASS)) {
+            String path = batchProcessConfig.getEmitter().getAttributes().get("basePath");
+            if (!StringUtils.isBlank(path)) {
+                directoryChooser.setInitialDirectory(new File(path));
+            }
+        }
         File directory = directoryChooser.showDialog(parent);
-        APP_CONTEXT.getBatchProcessConfig().setEmitter("org.apache.tika.pipes.emitter.fs" +
-                        ".FileSystemEmitter", "basePath",
+        batchProcessConfig.setEmitter(Constants.FS_EMITTER_CLASS, "basePath",
                 directory.toPath().toAbsolutePath().toString());
-        APP_CONTEXT.getBatchProcessConfig().setEmitterLabel("FileSystem: " + directory.getName());
+        batchProcessConfig.setEmitterLabel("FileSystem: " + directory.getName());
 
         ((Stage)outputButton.getScene().getWindow()).close();
     }
