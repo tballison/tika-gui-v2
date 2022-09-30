@@ -1,0 +1,8 @@
+<emitters>
+  <emitter class="org.apache.tika.pipes.emitter.fs.FileSystemEmitter">
+  <params>
+    <name>emitter</name>
+    <basePath>{BASE_PATH}</basePath>
+  </params>
+</emitter>
+</emitters>

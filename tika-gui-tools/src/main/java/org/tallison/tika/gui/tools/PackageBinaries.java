@@ -1,0 +1,114 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.tallison.tika.gui.tools;
+
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * this should have been a batch script.
+ *
+ * At some point, I'll figure out how to assemble this with a
+ * maven plugin.  Today is not the day for that.
+ */
+public class PackageBinaries {
+
+    //this is not robust and should check both the dlcdn
+    //and the apache repo for tika artifacts
+
+    //Further, we should parameterize all dependencies.
+    //Further, we need to add tika-emitter-jdbc after 2.5.0 is released
+    // as well as the elastic and solr emitters...at some point
+    private static final String TIKA_VERSION = "2.4.1";
+    private static final Map<String, String> URLS_TO_PATH = new HashMap<>();
+
+    static {
+        URLS_TO_PATH.put(
+                "https://dlcdn.apache.org/tika/"+TIKA_VERSION+
+                        "/tika-app-"+TIKA_VERSION+".jar", "bin");
+        URLS_TO_PATH.put(
+                "https://dlcdn.apache.org/tika/"+TIKA_VERSION+
+                        "/tika-parser-sqlite3-package-"+TIKA_VERSION+".jar", "bin");
+        URLS_TO_PATH.put(
+                "https://repo1.maven.org/maven2/org/apache/tika/tika-eval-core/" +
+                        TIKA_VERSION + "/tika-eval-core-" + TIKA_VERSION + ".jar", "bin");
+        URLS_TO_PATH.put(
+                "https://repo1.maven.org/maven2/org/apache/tika/tika-emitter-fs/" +
+                        TIKA_VERSION + "/tika-emitter-fs-" + TIKA_VERSION + ".jar",
+                "lib/tika-emitter-fs");
+        URLS_TO_PATH.put(
+                "https://repo1.maven.org/maven2/com/h2database/h2/2.1.214/h2-2.1.214.jar",
+                "lib/db/h2");
+        URLS_TO_PATH.put(
+                "https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.39.3.0/sqlite-jdbc-3.39" +
+                        ".3.0.jar",
+                "lib/db/sqlite");
+        URLS_TO_PATH.put(
+                "https://repo1.maven.org/maven2/org/apache/tika/tika-pipes-iterator-s3/" +
+                        TIKA_VERSION + "/tika-pipes-iterator-s3-" + TIKA_VERSION + ".jar",
+                "lib/tika-pipes-iterator-s3");
+        URLS_TO_PATH.put(
+                "https://repo1.maven.org/maven2/org/apache/tika/tika-emitter-s3/" +
+                        TIKA_VERSION + "/tika-emitter-s3-" + TIKA_VERSION + ".jar",
+                "lib/tika-emitter-s3");
+        URLS_TO_PATH.put(
+                "https://repo1.maven.org/maven2/org/apache/tika/tika-fetcher-s3/"+
+                        TIKA_VERSION + "/tika-fetcher-s3-" + TIKA_VERSION + ".jar",
+                "lib/tika-fetcher-s3");
+        URLS_TO_PATH.put(
+                "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.5.0/" +
+                        "postgresql-42.5.0.jar",
+                "lib/db/postrgresql");
+    }
+
+    public static void main(String[] args) throws Exception {
+        Path target = Paths.get(args[0]);
+        for (Map.Entry<String, String> e : URLS_TO_PATH.entrySet()) {
+            fetch(e.getKey(), target, e.getValue());
+        }
+
+        Path configDir = target.resolve("config");
+        if (! Files.isDirectory(configDir)) {
+            Files.createDirectories(configDir);
+        }
+        Path log4jasync = configDir.resolve("config-templates/log4j2-async.xml");
+        Files.copy(PackageBinaries.class.getResourceAsStream("config-templates/log4j2-async.xml"),
+                log4jasync);
+    }
+
+    private static void fetch(String url, Path target, String subpath) throws Exception {
+        int i = url.lastIndexOf("/");
+        String fName = url.substring(i);
+        Path jarTarget = target.resolve(subpath+"/"+fName);
+        System.out.println("about to fetch " + url + " to " + jarTarget.toAbsolutePath());
+        if (!Files.isDirectory(jarTarget.getParent())) {
+            Files.createDirectories(jarTarget.getParent());
+        }
+
+        try (InputStream is = new URL(url).openStream()) {
+            Files.copy(is, jarTarget, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+}

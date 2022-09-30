@@ -1,0 +1,22 @@
+<async>
+  <params>
+    <maxForEmitBatchBytes>100000</maxForEmitBatchBytes>
+    <emitMaxEstimatedBytes>1000000</emitMaxEstimatedBytes>
+    <emitWithinMillis>60000</emitWithinMillis>
+    <numEmitters>1</numEmitters>
+    <numClients>{NUM_CLIENTS}</numClients>
+    <forkedJvmArgs>
+      <arg>{XMX}</arg>
+      <arg>-Dlog4j.configurationFile={ASYNC_LOG}</arg>
+    </forkedJvmArgs>
+    <timeoutMillis>{TIMEOUT_MS}</timeoutMillis>
+  </params>
+  <pipesReporter class="org.apache.tika.pipes.reporters.fs.FileSystemStatusReporter">
+    <!-- TODO make this a composite reporter and add emitter specific reporters
+    -->
+    <params>
+      <statusFile>{STATUS_FILE}</statusFile>
+      <reportUpdateMillis>1000</reportUpdateMillis>
+    </params>
+  </pipesReporter>
+</async>

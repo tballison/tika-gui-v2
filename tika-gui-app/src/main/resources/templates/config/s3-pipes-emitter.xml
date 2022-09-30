@@ -1,0 +1,12 @@
+<emitters>
+  <emitter class="org.apache.tika.pipes.emitter.s3.S3Emitter">
+    <params>
+      <name>emitter</name>
+      <prefix>{PREFIX}</prefix>
+      <bucket>{BUCKET}</bucket>
+      <region>{REGION}</region>
+      <!-- need to add profile option and ... -->
+      <credentialsProvider>{CREDENTIAL_PROVIDER}</credentialsProvider>
+    </params>
+  </emitter>
+</emitters>

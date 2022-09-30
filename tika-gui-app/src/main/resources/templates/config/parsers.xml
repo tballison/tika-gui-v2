@@ -1,0 +1,25 @@
+<parsers>
+  <parser class="org.apache.tika.parser.DefaultParser">
+    <parser-exclude class="org.apache.tika.parser.ocr.TesseractOCRParser"/>
+    <parser-exclude class="org.apache.tika.parser.pdf.PDFParser"/>
+    <parser-exclude class="org.apache.tika.parser.microsoft.ooxml.OOXMLParser"/>
+    <parser-exclude class="org.apache.tika.parser.microsoft.OfficeParser"/>
+  </parser>
+  <parser class="org.apache.tika.parser.pdf.PDFParser">
+    <params>
+      <param name="extractActions" type="bool">true</param>
+    </params>
+  </parser>
+  <parser class="org.apache.tika.parser.microsoft.ooxml.OOXMLParser">
+    <params>
+      <param name="includeDeletedContent" type="bool">true</param>
+      <param name="includeMoveFromContent" type="bool">true</param>
+      <param name="extractMacros" type="bool">true</param>
+    </params>
+  </parser>
+  <parser class="org.apache.tika.parser.microsoft.OfficeParser">
+    <params>
+      <param name="extractMacros" type="bool">true</param>
+    </params>
+  </parser>
+</parsers>

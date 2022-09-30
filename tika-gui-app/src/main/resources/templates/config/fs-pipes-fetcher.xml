@@ -1,0 +1,8 @@
+<fetchers>
+  <fetcher class="org.apache.tika.pipes.fetcher.fs.FileSystemFetcher">
+    <params>
+      <name>fetcher</name>
+      <basePath>{BASE_PATH}</basePath>
+    </params>
+  </fetcher>
+</fetchers>

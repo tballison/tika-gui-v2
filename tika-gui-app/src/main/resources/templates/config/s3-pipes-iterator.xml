@@ -1,0 +1,12 @@
+<pipesIterator class="org.apache.tika.pipes.pipesiterator.s3.S3PipesIterator">
+  <params>
+    <fetcherName>fetcher</fetcherName>
+    <emitterName>emitter</emitterName>
+    <queueSize>10000</queueSize>
+    <prefix>{PREFIX}</prefix>
+    <bucket>{BUCKET}</bucket>
+    <region>{REGION}</region>
+    <!-- need to add profile option and ... -->
+    <credentialsProvider>{CREDENTIAL_PROVIDER}</credentialsProvider>
+  </params>
+</pipesIterator>

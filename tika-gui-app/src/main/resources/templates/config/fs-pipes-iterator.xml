@@ -1,0 +1,7 @@
+<pipesIterator class="org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator">
+  <params>
+    <fetcherName>fetcher</fetcherName>
+    <emitterName>emitter</emitterName>
+    <basePath>{BASE_PATH}</basePath>
+  </params>
+</pipesIterator>
