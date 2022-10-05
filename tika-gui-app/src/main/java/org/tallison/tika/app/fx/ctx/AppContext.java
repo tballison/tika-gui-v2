@@ -30,7 +30,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.tools.BatchProcess;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
-import org.tallison.tika.app.fx.tools.ConfigItem;
 
 
 public class AppContext {
@@ -41,15 +40,18 @@ public class AppContext {
     public static Path TIKA_APP_HOME = Paths.get(System.getProperty("user.home"))
             .resolve(".tika-app-v2");
 
-    private static Path DEFAULT_TIKA_APP_BIN_PATH = TIKA_APP_HOME.resolve("bin");
-    private static Path DEFAULT_STATE_PATH = TIKA_APP_HOME.resolve("tika-app-v2-config.json");
+    public static Path TIKA_LIB_PATH = TIKA_APP_HOME.resolve("lib");
+    public static Path TIKA_CORE_BIN_PATH = TIKA_LIB_PATH.resolve("tika-core");
+
+    public static Path TIKA_APP_BIN_PATH = TIKA_LIB_PATH.resolve("tika-app");
+    public static Path APP_STATE_PATH = TIKA_APP_HOME.resolve("tika-app-v2-config.json");
 
     public static Path CONFIG_PATH = TIKA_APP_HOME.resolve("config");
 
     public static Path ASYNC_LOG4J2_PATH = CONFIG_PATH.resolve("log4j2-async.xml");
     public static Path LOGS_PATH = TIKA_APP_HOME.resolve("logs");
     public static Path BATCH_STATUS_PATH = LOGS_PATH.resolve("batch_status.json");
-    private Path tikaAppBinPath = DEFAULT_TIKA_APP_BIN_PATH;
+
 
     private static AppContext APP_CONTEXT = new AppContext();
     private String tikaVersion = "2.4.1";
@@ -60,19 +62,13 @@ public class AppContext {
     public static AppContext getInstance() {
         return APP_CONTEXT;
     }
-    public void setTikaAppBin(Path tikaAppBin) {
-        this.tikaAppBinPath = tikaAppBin;
-    }
 
-    public Path getTikaAppBinPath() {
-        return tikaAppBinPath;
-    }
     public static AppContext load() {
-        if (Files.isRegularFile(DEFAULT_STATE_PATH)) {
+        if (Files.isRegularFile(APP_STATE_PATH)) {
             try {
-                return AppContext.load(DEFAULT_STATE_PATH);
+                return AppContext.load(APP_STATE_PATH);
             } catch (IOException e) {
-                LOGGER.warn("failed to load " + DEFAULT_STATE_PATH, e);
+                LOGGER.warn("failed to load " + APP_STATE_PATH, e);
                 return new AppContext();
             }
         }
@@ -89,23 +85,23 @@ public class AppContext {
         try {
             saveState();
         } catch (IOException e) {
-            LOGGER.warn("Failed to save state file " +
-                    DEFAULT_STATE_PATH, e);
+            LOGGER.warn("Failed to save state file " + APP_STATE_PATH, e);
         }
     }
 
     public void saveState() throws IOException {
-        if (! Files.isDirectory(DEFAULT_STATE_PATH.getParent())) {
-            Files.createDirectories(DEFAULT_STATE_PATH.getParent());
+        if (! Files.isDirectory(APP_STATE_PATH.getParent())) {
+            Files.createDirectories(APP_STATE_PATH.getParent());
         }
-        LOGGER.info("writing state to " + DEFAULT_STATE_PATH);
-        OBJECT_MAPPER.writeValue(DEFAULT_STATE_PATH.toFile(), this);
+        LOGGER.info("writing state to " + APP_STATE_PATH);
+        OBJECT_MAPPER.writeValue(APP_STATE_PATH.toFile(), this);
     }
 
     public void reset() {
-        tikaAppBinPath = DEFAULT_TIKA_APP_BIN_PATH;
         try {
-            FileUtils.deleteDirectory(TIKA_APP_HOME.toFile());
+            Files.delete(TIKA_APP_HOME.resolve("tika-app-v2-config.json"));
+            FileUtils.deleteDirectory(TIKA_APP_HOME.resolve("config").toFile());
+            FileUtils.deleteDirectory(TIKA_APP_HOME.resolve("logs").toFile());
         } catch (IOException e) {
             LOGGER.warn("couldn't delete " + TIKA_APP_HOME, e);
         }

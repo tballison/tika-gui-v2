@@ -1,5 +1,6 @@
 package org.tallison.tika.app.fx.tools;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -9,7 +10,11 @@ import java.nio.file.StandardOpenOption;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.tallison.tika.app.fx.Constants;
+import org.tallison.tika.app.fx.TikaApplication;
 import org.tallison.tika.app.fx.ctx.AppContext;
+
+import org.apache.tika.utils.ProcessUtils;
 
 /**
  * This is an embarrassment of hardcoding.  Need to figure out better
@@ -59,7 +64,19 @@ public class TikaConfigWriter {
         async = async.replace("{TIMEOUT_MS}", "60000");
         async = async.replace("{STATUS_FILE}",
                 AppContext.BATCH_STATUS_PATH.toAbsolutePath().toString());
+        async = async.replace("{CLASS_PATH}", buildClassPath(batchProcessConfig));
         sb.append(async).append("\n");
+    }
+
+    private String buildClassPath(BatchProcessConfig batchProcessConfig) {
+        StringBuilder sb = new StringBuilder();
+        //load these mappings from a properties file or something
+        sb.append(ProcessUtils.escapeCommandLine(
+                AppContext.TIKA_APP_BIN_PATH.toAbsolutePath() + "/*"));
+        sb.append(File.pathSeparator);
+        batchProcessConfig.appendPipesClasspath(sb);
+        //TODO add s3 and jdbc
+        return sb.toString();
     }
 
     private void appendEmitter(BatchProcessConfig batchProcessConfig, StringBuilder sb) throws IOException {
