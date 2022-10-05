@@ -33,6 +33,7 @@ import org.w3c.dom.Node;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.pipes.FetchEmitTuple;
 import org.apache.tika.pipes.pipesiterator.PipesIterator;
+import org.apache.tika.utils.ProcessUtils;
 
 public class BatchProcess {
 
@@ -73,7 +74,7 @@ public class BatchProcess {
         }
 
         fileCounter = new FileCounter(tmp);
-        batchRunner = new BatchRunner(tmp);
+        batchRunner = new BatchRunner(tmp, batchProcessConfig);
         executorCompletionService.submit(fileCounter);
         executorCompletionService.submit(batchRunner);
     }
@@ -104,9 +105,11 @@ public class BatchProcess {
 
     private static class BatchRunner implements Callable<Integer> {
         private final Path tikaConfig;
+        private final BatchProcessConfig batchProcessConfig;
         private Process process;
-        private BatchRunner(Path tikaConfig) {
+        public BatchRunner(Path tikaConfig, BatchProcessConfig batchProcessConfig) {
             this.tikaConfig = tikaConfig;
+            this.batchProcessConfig = batchProcessConfig;
         }
 
         @Override
@@ -131,19 +134,19 @@ public class BatchProcess {
             LOGGER.info("class path: {}", cp);
 
             commandLine.add(cp);
-            commandLine.add("org.apache.tika.cli.TikaCLI");
-            commandLine.add("--config=" + tikaConfig.toAbsolutePath());
-            commandLine.add("-a");
+            commandLine.add("org.apache.tika.pipes.async.AsyncProcessor");
+            commandLine.add(ProcessUtils.escapeCommandLine(tikaConfig.toAbsolutePath().toString()));
             LOGGER.info(commandLine);
             return commandLine;
         }
 
         private String buildClassPath() {
-
             StringBuilder sb = new StringBuilder();
-            sb.append(AppContext.TIKA_APP_HOME + "/bin/*");
+            sb.append(AppContext.TIKA_CORE_BIN_PATH + "/*");
+            //TODO refactor batch process config to generate class path
+            //for fetchers/emitters
             sb.append(File.pathSeparator);
-            sb.append(AppContext.TIKA_APP_HOME + "/lib/tika-emitter-fs/*.jar");
+            batchProcessConfig.appendPipesClasspath(sb);
             return sb.toString();
         }
 

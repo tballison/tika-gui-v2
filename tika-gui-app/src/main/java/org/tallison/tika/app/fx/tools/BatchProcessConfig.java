@@ -3,6 +3,10 @@ package org.tallison.tika.app.fx.tools;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import org.tallison.tika.app.fx.Constants;
+import org.tallison.tika.app.fx.ctx.AppContext;
+
+import org.apache.tika.utils.ProcessUtils;
 
 public class BatchProcessConfig {
 
@@ -75,5 +79,14 @@ public class BatchProcessConfig {
     @JsonSetter
     public void setMetadataMapper(ConfigItem metadataMapper) {
         this.metadataMapper = metadataMapper;
+    }
+
+    public void appendPipesClasspath(StringBuilder sb) {
+        //TODO -- build this out
+        if (getEmitter().getClazz().equals(Constants.FS_EMITTER_CLASS)) {
+            sb.append(
+                    ProcessUtils.escapeCommandLine(
+                            AppContext.TIKA_LIB_PATH.resolve("tika-emitter-fs").toAbsolutePath() + "/*"));
+        }
     }
 }

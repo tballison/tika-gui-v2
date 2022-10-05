@@ -8,6 +8,8 @@
     <forkedJvmArgs>
       <arg>{XMX}</arg>
       <arg>-Dlog4j.configurationFile={ASYNC_LOG}</arg>
+      <arg>-cp</arg>
+      <arg>{CLASS_PATH}</arg>
     </forkedJvmArgs>
     <timeoutMillis>{TIMEOUT_MS}</timeoutMillis>
   </params>

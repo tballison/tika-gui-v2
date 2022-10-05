@@ -17,6 +17,7 @@
 
 package org.tallison.tika.gui.tools;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
@@ -40,61 +41,126 @@ public class PackageBinaries {
     //Further, we should parameterize all dependencies.
     //Further, we need to add tika-emitter-jdbc after 2.5.0 is released
     // as well as the elastic and solr emitters...at some point
-    private static final String TIKA_VERSION = "2.4.1";
-    private static final Map<String, String> URLS_TO_PATH = new HashMap<>();
+    private static final String TIKA_VERSION = "2.5.1-SNAPSHOT";
+    private static final Map<String, String> JARS_TO_PATH = new HashMap<>();
+
+    private static final Path LOCAL_M2 = Paths.get(System.getProperty("user.home")).resolve(".m2" +
+            "/repository");
+
+    private static final String M2_URL_BASE = "https://repo1.maven.org/maven2/";
 
     static {
-        URLS_TO_PATH.put(
-                "https://dlcdn.apache.org/tika/"+TIKA_VERSION+
-                        "/tika-app-"+TIKA_VERSION+".jar", "bin");
-        URLS_TO_PATH.put(
-                "https://dlcdn.apache.org/tika/"+TIKA_VERSION+
-                        "/tika-parser-sqlite3-package-"+TIKA_VERSION+".jar", "bin");
-        URLS_TO_PATH.put(
-                "https://repo1.maven.org/maven2/org/apache/tika/tika-eval-core/" +
-                        TIKA_VERSION + "/tika-eval-core-" + TIKA_VERSION + ".jar", "bin");
-        URLS_TO_PATH.put(
-                "https://repo1.maven.org/maven2/org/apache/tika/tika-emitter-fs/" +
+
+        JARS_TO_PATH.put(
+                "org/apache/tika/tika-core/"+
+                TIKA_VERSION + "/tika-core-" + TIKA_VERSION + ".jar",
+                "lib/tika-core"
+        );
+
+        JARS_TO_PATH.put(
+                "org/apache/tika/tika-pipes-reporter-fs-status/" + TIKA_VERSION +
+                        "/tika-pipes-reporter-fs-status-" + TIKA_VERSION + ".jar",
+                "lib/tika-core"
+        );
+
+        JARS_TO_PATH.put(
+                "org/apache/tika/tika-serialization/" + TIKA_VERSION +
+                        "/tika-serialization-" + TIKA_VERSION + ".jar",
+                "lib/tika-core"
+        );
+        JARS_TO_PATH.put(
+                "org/apache/tika/tika-app/"+TIKA_VERSION+
+                        "/tika-app-"+TIKA_VERSION+".jar", "lib/tika-app");
+        JARS_TO_PATH.put(
+                "org/apache/tika/tika-parser-sqlite3-package/"+TIKA_VERSION+
+                        "/tika-parser-sqlite3-package-"+TIKA_VERSION+".jar", "lib/tika-app");
+        JARS_TO_PATH.put(
+                "org/apache/tika/tika-eval-core/" +
+                        TIKA_VERSION + "/tika-eval-core-" + TIKA_VERSION + ".jar", "lib/tika-app");
+        JARS_TO_PATH.put(
+                "org/apache/tika/tika-emitter-fs/" +
                         TIKA_VERSION + "/tika-emitter-fs-" + TIKA_VERSION + ".jar",
                 "lib/tika-emitter-fs");
-        URLS_TO_PATH.put(
-                "https://repo1.maven.org/maven2/com/h2database/h2/2.1.214/h2-2.1.214.jar",
+        JARS_TO_PATH.put(
+                "com/h2database/h2/2.1.214/h2-2.1.214.jar",
                 "lib/db/h2");
-        URLS_TO_PATH.put(
-                "https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.39.3.0/sqlite-jdbc-3.39" +
-                        ".3.0.jar",
-                "lib/db/sqlite");
-        URLS_TO_PATH.put(
-                "https://repo1.maven.org/maven2/org/apache/tika/tika-pipes-iterator-s3/" +
+        JARS_TO_PATH.put(
+                "org/xerial/sqlite-jdbc/3.39.3.0/sqlite-jdbc-3.39.3.0.jar", "lib/db/sqlite");
+        JARS_TO_PATH.put(
+                "org/apache/tika/tika-pipes-iterator-s3/" +
                         TIKA_VERSION + "/tika-pipes-iterator-s3-" + TIKA_VERSION + ".jar",
                 "lib/tika-pipes-iterator-s3");
-        URLS_TO_PATH.put(
-                "https://repo1.maven.org/maven2/org/apache/tika/tika-emitter-s3/" +
+        JARS_TO_PATH.put(
+                "org/apache/tika/tika-emitter-jdbc/" +
+                        TIKA_VERSION + "/tika-emitter-jdbc-" + TIKA_VERSION + ".jar",
+                "lib/tika-emitter-jdbc");
+        JARS_TO_PATH.put(
+                "org/apache/tika/tika-emitter-s3/" +
                         TIKA_VERSION + "/tika-emitter-s3-" + TIKA_VERSION + ".jar",
                 "lib/tika-emitter-s3");
-        URLS_TO_PATH.put(
-                "https://repo1.maven.org/maven2/org/apache/tika/tika-fetcher-s3/"+
+        JARS_TO_PATH.put(
+                "org/apache/tika/tika-fetcher-s3/"+
                         TIKA_VERSION + "/tika-fetcher-s3-" + TIKA_VERSION + ".jar",
                 "lib/tika-fetcher-s3");
-        URLS_TO_PATH.put(
-                "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.5.0/" +
+        JARS_TO_PATH.put(
+                "org/postgresql/postgresql/42.5.0/" +
                         "postgresql-42.5.0.jar",
                 "lib/db/postrgresql");
+
+        //now add logging to tika-core
+        JARS_TO_PATH.put("org/apache/logging/log4j/log4j-core/2.19.0/log4j-core-2.19.0.jar",
+                "lib/tika-core");
+        JARS_TO_PATH.put("org/apache/logging/log4j/log4j-api/2.19.0/log4j-api-2.19.0.jar",
+                "lib/tika-core");
+        JARS_TO_PATH.put("org/apache/logging/log4j/log4j-slf4j2-impl/2.19.0/log4j-slf4j2-impl-2.19.0.jar",
+                "lib/tika-core");
+        JARS_TO_PATH.put("org/slf4j/slf4j-api/2.0.1/slf4j-api-2.0.1.jar",
+                "lib/tika-core");
+        JARS_TO_PATH.put("commons-io/commons-io/2.8.0/commons-io-2.8.0.jar",
+                "lib/tika-core");
+
+
+
     }
 
     public static void main(String[] args) throws Exception {
         Path target = Paths.get(args[0]);
-        for (Map.Entry<String, String> e : URLS_TO_PATH.entrySet()) {
-            fetch(e.getKey(), target, e.getValue());
+
+        for (Map.Entry<String, String> e : JARS_TO_PATH.entrySet()) {
+            try {
+                fetchLocalM2(e.getKey(), target, e.getValue());
+            } catch (Exception ex) {
+                try {
+                    fetch(e.getKey(), target, e.getValue());
+                } catch (Exception ex2) {
+                    System.err.println("was not able to fetch " + e.getKey());
+                }
+            }
         }
 
         Path configDir = target.resolve("config");
         if (! Files.isDirectory(configDir)) {
             Files.createDirectories(configDir);
         }
-        Path log4jasync = configDir.resolve("config-templates/log4j2-async.xml");
-        Files.copy(PackageBinaries.class.getResourceAsStream("config-templates/log4j2-async.xml"),
-                log4jasync);
+    }
+
+    private static void fetchLocalM2(String path, Path target, String subpath) throws IOException {
+        int i = path.lastIndexOf("/");
+        String fName = path.substring(i);
+        Path jarTarget = target.resolve(subpath+"/"+fName);
+
+        if (!Files.isDirectory(jarTarget.getParent())) {
+            Files.createDirectories(jarTarget.getParent());
+        }
+
+        Path jarSource = LOCAL_M2.resolve(path);
+        System.out.println("about to fetch from local m2: " + path + " to " + jarTarget.toAbsolutePath());
+        if (! Files.isRegularFile(jarSource)) {
+            System.out.println("couldn't find in local m2: " + jarSource);
+            return;
+        }
+        Files.copy(jarSource, jarTarget, StandardCopyOption.REPLACE_EXISTING);
+
     }
 
     private static void fetch(String url, Path target, String subpath) throws Exception {
