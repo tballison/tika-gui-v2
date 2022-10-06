@@ -18,9 +18,6 @@ package org.tallison.tika.app.fx;
 
 import java.io.IOException;
 
-import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -50,7 +47,7 @@ public class TikaController {
     private Label outputLabel;
 
     @FXML
-    public void initialize(){
+    public void initialize() {
         inputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().getFetcherLabel());
         outputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().getEmitterLabel());
     }
@@ -129,6 +126,4 @@ public class TikaController {
         batchProcess.start(APP_CONTEXT.getBatchProcessConfig());
 
     }
-
-
 }

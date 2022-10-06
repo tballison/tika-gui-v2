@@ -28,9 +28,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
-import org.tallison.tika.app.fx.tools.ConfigItem;
 
-import org.apache.tika.pipes.fetcher.fs.FileSystemFetcher;
 import org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator;
 import org.apache.tika.utils.StringUtils;
 
@@ -77,8 +75,8 @@ public class BatchController {
         BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig();
 
         if (batchProcessConfig.getEmitter() != null &&
-            batchProcessConfig.getEmitter().getClazz() != null &&
-            batchProcessConfig.getEmitter().equals(Constants.FS_EMITTER_CLASS)) {
+                batchProcessConfig.getEmitter().getClazz() != null &&
+                batchProcessConfig.getEmitter().equals(Constants.FS_EMITTER_CLASS)) {
             String path = batchProcessConfig.getEmitter().getAttributes().get("basePath");
             if (!StringUtils.isBlank(path)) {
                 directoryChooser.setInitialDirectory(new File(path));

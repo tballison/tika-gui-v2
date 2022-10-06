@@ -1,34 +1,36 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.tallison.tika.app.fx.tools;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.pipes.FetchEmitTuple;
@@ -44,7 +46,10 @@ public class BatchProcess {
     // turned back on, it could either read the status of a finished run
     // or it could pick up the handle of the running process via
     // something like ProcessHandle.of(1000).get().info().
+
+
     public enum STATUS {
+        //  this didn't work?!
         READY,
         RUNNING,
         COMPLETE
@@ -54,7 +59,11 @@ public class BatchProcess {
         FILE_COUNTER,
         BATCH_PROCESS
     }
+
     private STATUS status = STATUS.READY;
+
+    @JsonRawValue
+    private long runningProcessId = -1;
     private FileCounter fileCounter = null;
 
     private BatchRunner batchRunner = null;
@@ -85,6 +94,14 @@ public class BatchProcess {
         }
     }
 
+    public long getRunningProcessId() {
+        return runningProcessId;
+    }
+
+    public STATUS getStatus() {
+        return status;
+    }
+
     private static class FileCounter implements Callable<Integer> {
 
         private final PipesIterator pipesIterator;
@@ -103,7 +120,7 @@ public class BatchProcess {
     }
 
 
-    private static class BatchRunner implements Callable<Integer> {
+    private class BatchRunner implements Callable<Integer> {
         private final Path tikaConfig;
         private final BatchProcessConfig batchProcessConfig;
         private Process process;
@@ -118,6 +135,7 @@ public class BatchProcess {
             try {
 
                 process = new ProcessBuilder(commandLine).inheritIO().start();
+                runningProcessId = process.pid();
                 //TODO -- something better than this.
                 process.waitFor();
             } finally {

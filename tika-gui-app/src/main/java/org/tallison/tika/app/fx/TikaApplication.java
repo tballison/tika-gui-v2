@@ -16,6 +16,8 @@
  */
 package org.tallison.tika.app.fx;
 
+import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -24,14 +26,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.tallison.tika.app.fx.ctx.AppContext;
 
-import java.io.IOException;
-
 public class TikaApplication extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader =
-                new FXMLLoader(TikaApplication.class.getResource("tika-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(TikaApplication.class.getResource("tika-view.fxml"));
         VBox dragTarget = new VBox();
         StackPane root = new StackPane();
         root.getChildren().add(dragTarget);

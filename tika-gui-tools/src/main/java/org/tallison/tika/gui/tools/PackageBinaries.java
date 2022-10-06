@@ -52,7 +52,7 @@ public class PackageBinaries {
     static {
 
         JARS_TO_PATH.put(
-                "org/apache/tika/tika-core/"+
+                "org/apache/tika/tika-core/" +
                 TIKA_VERSION + "/tika-core-" + TIKA_VERSION + ".jar",
                 "lib/tika-core"
         );
@@ -69,11 +69,11 @@ public class PackageBinaries {
                 "lib/tika-core"
         );
         JARS_TO_PATH.put(
-                "org/apache/tika/tika-app/"+TIKA_VERSION+
-                        "/tika-app-"+TIKA_VERSION+".jar", "lib/tika-app");
+                "org/apache/tika/tika-app/" + TIKA_VERSION +
+                        "/tika-app-" + TIKA_VERSION + ".jar", "lib/tika-app");
         JARS_TO_PATH.put(
-                "org/apache/tika/tika-parser-sqlite3-package/"+TIKA_VERSION+
-                        "/tika-parser-sqlite3-package-"+TIKA_VERSION+".jar", "lib/tika-app");
+                "org/apache/tika/tika-parser-sqlite3-package/" + TIKA_VERSION +
+                        "/tika-parser-sqlite3-package-" + TIKA_VERSION + ".jar", "lib/tika-app");
         JARS_TO_PATH.put(
                 "org/apache/tika/tika-eval-core/" +
                         TIKA_VERSION + "/tika-eval-core-" + TIKA_VERSION + ".jar", "lib/tika-app");
@@ -99,12 +99,11 @@ public class PackageBinaries {
                         TIKA_VERSION + "/tika-emitter-s3-" + TIKA_VERSION + ".jar",
                 "lib/tika-emitter-s3");
         JARS_TO_PATH.put(
-                "org/apache/tika/tika-fetcher-s3/"+
+                "org/apache/tika/tika-fetcher-s3/" +
                         TIKA_VERSION + "/tika-fetcher-s3-" + TIKA_VERSION + ".jar",
                 "lib/tika-fetcher-s3");
         JARS_TO_PATH.put(
-                "org/postgresql/postgresql/42.5.0/" +
-                        "postgresql-42.5.0.jar",
+                "org/postgresql/postgresql/42.5.0/postgresql-42.5.0.jar",
                 "lib/db/postrgresql");
 
         //now add logging to tika-core
@@ -147,7 +146,7 @@ public class PackageBinaries {
     private static void fetchLocalM2(String path, Path target, String subpath) throws IOException {
         int i = path.lastIndexOf("/");
         String fName = path.substring(i);
-        Path jarTarget = target.resolve(subpath+"/"+fName);
+        Path jarTarget = target.resolve(subpath + "/" + fName);
 
         if (!Files.isDirectory(jarTarget.getParent())) {
             Files.createDirectories(jarTarget.getParent());
@@ -166,7 +165,7 @@ public class PackageBinaries {
     private static void fetch(String url, Path target, String subpath) throws Exception {
         int i = url.lastIndexOf("/");
         String fName = url.substring(i);
-        Path jarTarget = target.resolve(subpath+"/"+fName);
+        Path jarTarget = target.resolve(subpath + "/" + fName);
         System.out.println("about to fetch " + url + " to " + jarTarget.toAbsolutePath());
         if (!Files.isDirectory(jarTarget.getParent())) {
             Files.createDirectories(jarTarget.getParent());

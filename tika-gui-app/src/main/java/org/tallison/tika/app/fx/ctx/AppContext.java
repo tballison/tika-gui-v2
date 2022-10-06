@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
@@ -36,6 +37,10 @@ public class AppContext {
 
     private static Logger LOGGER = LogManager.getLogger(AppContext.class);
     private static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    static {
+        OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
 
     public static Path TIKA_APP_HOME = Paths.get(System.getProperty("user.home"))
             .resolve(".tika-app-v2");
