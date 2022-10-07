@@ -33,4 +33,6 @@ module org.tallison.tika.app.fx {
     opens org.tallison.tika.app.fx.ctx to com.fasterxml.jackson.databind, javafx.fxml;
     exports org.tallison.tika.app.fx.tools;
     opens org.tallison.tika.app.fx.tools to com.fasterxml.jackson.databind, javafx.fxml;
+    exports org.tallison.tika.app.fx.metadata;
+    opens org.tallison.tika.app.fx.metadata to javafx.fxml;
 }

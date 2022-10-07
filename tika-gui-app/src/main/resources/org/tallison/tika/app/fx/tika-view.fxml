@@ -25,22 +25,30 @@
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="465.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.TikaController">
    <children>
-      <TabPane layoutX="-3.0" layoutY="30.0" prefHeight="440.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE">
+      <TabPane layoutX="-3.0" layoutY="-1.0" prefHeight="471.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE">
         <tabs>
           <Tab text="Batch">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <Button layoutX="400.0" layoutY="70.0" mnemonicParsing="false" onAction="#configureInput" text="Configure" />
-                        <Button layoutX="400.0" layoutY="114.0" mnemonicParsing="false" onAction="#configureOutput" text="Configure" />
-                        <Button fx:id="runButton" disable="true" layoutX="249.0" layoutY="191.0" mnemonicParsing="false" onAction="#runTika" text="Run" />
+                        <Button layoutX="400.0" layoutY="71.0" mnemonicParsing="false" onAction="#configureInput" text="Configure" />
+                        <Button layoutX="400.0" layoutY="161.0" mnemonicParsing="false" onAction="#configureOutput" text="Configure" />
+                        <Button fx:id="runButton" disable="true" layoutX="264.0" layoutY="270.0" mnemonicParsing="false" onAction="#runTika" text="Run">
+                           <font>
+                              <Font size="24.0" />
+                           </font></Button>
                         <Label layoutX="79.0" layoutY="75.0" text="Input" />
-                        <Label layoutX="74.0" layoutY="119.0" text="Output" />
-                        <Label fx:id="inputLabel" layoutX="204.0" layoutY="75.0" text="Label" onMouseClicked="#showFetcher"/>
-                        <Label fx:id="outputLabel" layoutX="204.0" layoutY="119.0" text="Label" onMouseClicked="#showEmitter" />
+                        <Label layoutX="74.0" layoutY="165.0" text="Output" />
+                        <Label fx:id="inputLabel" layoutX="204.0" layoutY="75.0" onMouseClicked="#showFetcher" text="Label" />
+                        <Label fx:id="outputLabel" layoutX="204.0" layoutY="165.0" onMouseClicked="#showEmitter" text="Label" />
+                        <Label layoutX="74.0" layoutY="122.0" text="Metadata" />
+                        <Label fx:id="metadataLabel" layoutX="204.0" layoutY="122.0" text="Label" />
+                        <Button fx:id="configureMetadata" layoutX="400.0" layoutY="118.0" mnemonicParsing="false" onAction="#configureMetadata" text="Configure" />
+                        <Button fx:id="advanced" layoutX="399.0" layoutY="220.0" mnemonicParsing="false" onAction="#configureAdvanced" text="Advanced" />
                      </children>
                   </AnchorPane>
             </content>

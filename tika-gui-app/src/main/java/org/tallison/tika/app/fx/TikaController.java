@@ -109,6 +109,36 @@ public class TikaController {
     }
 
     @FXML
+    public void configureMetadata(ActionEvent actionEvent) throws IOException {
+        FXMLLoader fxmlLoader =
+                new FXMLLoader(TikaApplication.class.getResource("metadata-view.fxml"));
+        VBox dragTarget = new VBox();
+        StackPane root = new StackPane();
+        root.getChildren().add(dragTarget);
+        Scene scene = new Scene(fxmlLoader.load());
+
+        final Stage stage = new Stage();
+        stage.setTitle("Select Metadata");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    @FXML
+    public void configureAdvanced(ActionEvent actionEvent) throws IOException {
+        FXMLLoader fxmlLoader =
+                new FXMLLoader(TikaApplication.class.getResource("input-view.fxml"));
+        VBox dragTarget = new VBox();
+        StackPane root = new StackPane();
+        root.getChildren().add(dragTarget);
+        Scene scene = new Scene(fxmlLoader.load());
+
+        final Stage stage = new Stage();
+        stage.setTitle("Select Input");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    @FXML
     public void configureOutput(ActionEvent actionEvent) throws IOException {
         FXMLLoader fxmlLoader =
                 new FXMLLoader(TikaApplication.class.getResource("output-view.fxml"));

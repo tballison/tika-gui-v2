@@ -16,6 +16,9 @@
  */
 package org.tallison.tika.app.fx.tools;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import javafx.beans.property.SimpleStringProperty;
@@ -31,6 +34,9 @@ public class BatchProcessConfig {
     private ConfigItem fetcher;
     private ConfigItem emitter;
     private ConfigItem metadataMapper;
+
+    private List<String> tikaMetadata = new ArrayList<>();
+    private List<String> outputMetadata = new ArrayList<>();
 
     @JsonIgnore
     private StringProperty fetcherLabel = new SimpleStringProperty("Unselected");
@@ -106,6 +112,25 @@ public class BatchProcessConfig {
         this.metadataMapper = metadataMapper;
     }
 
+    public void addTikaMetadata(int row, String data) {
+        if (tikaMetadata.size() <= row) {
+            for (int i = tikaMetadata.size(); i <= row; i++) {
+                tikaMetadata.add("");
+            }
+        }
+        System.out.println("adding to tika " + row + " : " + data);
+        tikaMetadata.set(row, data);
+    }
+
+    public void addOutputMetadata(int row, String data) {
+        if (outputMetadata.size() <= row) {
+            for (int i = outputMetadata.size(); i <= row; i++) {
+                outputMetadata.add("");
+            }
+        }
+        System.out.println("adding to output " + row + " : " + data);
+        outputMetadata.set(row, data);
+    }
     public void appendPipesClasspath(StringBuilder sb) {
         //TODO -- build this out
         if (getEmitter().getClazz().equals(Constants.FS_EMITTER_CLASS)) {
