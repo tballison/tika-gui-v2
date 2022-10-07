@@ -1,0 +1,2 @@
+
+dialog w stacktrace: https://code.makery.ch/blog/javafx-dialogs-official/

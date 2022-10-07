@@ -31,7 +31,7 @@
       <content>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                <children>
-                  <Label layoutX="76.0" layoutY="70.0" text="Input Directory" />
+                  <Label layoutX="76.0" layoutY="70.0" text="Input Directory"/>
                   <Button fx:id="inputButton" layoutX="338.0" layoutY="66.0" mnemonicParsing="false" onAction="#inputDirectorySelect" text="Select" />
                </children>
         </AnchorPane>

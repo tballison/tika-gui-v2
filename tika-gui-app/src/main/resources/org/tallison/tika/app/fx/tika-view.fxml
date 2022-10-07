@@ -39,9 +39,8 @@
                         <Button fx:id="runButton" disable="true" layoutX="249.0" layoutY="191.0" mnemonicParsing="false" onAction="#runTika" text="Run" />
                         <Label layoutX="79.0" layoutY="75.0" text="Input" />
                         <Label layoutX="74.0" layoutY="119.0" text="Output" />
-                        <Label fx:id="inputLabel" layoutX="204.0" layoutY="75.0" text="Label" />
-                        <Label fx:id="outputLabel" layoutX="204.0" layoutY="119.0" text="Label" />
-
+                        <Label fx:id="inputLabel" layoutX="204.0" layoutY="75.0" text="Label" onMouseClicked="#showFetcher"/>
+                        <Label fx:id="outputLabel" layoutX="204.0" layoutY="119.0" text="Label" onMouseClicked="#showEmitter" />
                      </children>
                   </AnchorPane>
             </content>

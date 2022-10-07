@@ -20,20 +20,30 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.tools.BatchProcess;
+import org.tallison.tika.app.fx.tools.ConfigItem;
+
+import org.apache.tika.utils.StringUtils;
 
 public class TikaController {
 
@@ -126,4 +136,41 @@ public class TikaController {
         batchProcess.start(APP_CONTEXT.getBatchProcessConfig());
         APP_CONTEXT.saveState();
     }
+
+    public void showFetcher(MouseEvent mouseEvent) {
+        ConfigItem configItem = APP_CONTEXT.getBatchProcessConfig().getFetcher();
+        if (configItem != null) {
+            String path = configItem.getAttributes().get("basePath");
+            if (!StringUtils.isBlank(path)) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Fetcher");
+                alert.setHeaderText(configItem.getLabel());
+                alert.setResizable(true);
+                alert.setContentText("Path: " + path);
+                alert.getDialogPane().setMinWidth(500);
+                alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+                alert.showAndWait();
+            }
+        }
+        mouseEvent.consume();
+    }
+
+    public void showEmitter(MouseEvent mouseEvent) {
+        ConfigItem configItem = APP_CONTEXT.getBatchProcessConfig().getEmitter();
+        if (configItem != null) {
+            String path = configItem.getAttributes().get("basePath");
+            if (!StringUtils.isBlank(path)) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Fetcher");
+                alert.setHeaderText(configItem.getLabel());
+                alert.setResizable(true);
+                alert.setContentText("Path: " + path);
+                alert.getDialogPane().setMinWidth(500);
+                alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+                alert.showAndWait();
+            }
+        }
+        mouseEvent.consume();
+    }
+
 }

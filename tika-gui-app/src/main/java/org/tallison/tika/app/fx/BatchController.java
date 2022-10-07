@@ -20,10 +20,19 @@ import java.io.File;
 import java.io.IOException;
 
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Modality;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.tallison.tika.app.fx.ctx.AppContext;
@@ -97,4 +106,5 @@ public class BatchController {
         APP_CONTEXT.saveState();
         ((Stage)outputButton.getScene().getWindow()).close();
     }
+
 }

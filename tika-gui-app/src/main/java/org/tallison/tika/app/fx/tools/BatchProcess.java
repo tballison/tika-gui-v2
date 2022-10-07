@@ -45,12 +45,6 @@ public class BatchProcess {
 
     private static Logger LOGGER = LogManager.getLogger(BatchProcess.class);
 
-    // TODO: it would be great if the app could be closed
-    // and let the forked process keep running.  Then, when the app is
-    // turned back on, it could either read the status of a finished run
-    // or it could pick up the handle of the running process via
-    // something like ProcessHandle.of(1000).get().info().
-
 
     public enum STATUS {
         //  this didn't work?!
@@ -66,7 +60,6 @@ public class BatchProcess {
 
     private STATUS status = STATUS.READY;
 
-    @JsonRawValue
     private long runningProcessId = -1;
 
     private Path configFile;
@@ -81,8 +74,16 @@ public class BatchProcess {
     private ExecutorCompletionService<Integer> executorCompletionService =
             new ExecutorCompletionService<>(daemonExecutorService);
 
+    public BatchProcess() {}
+
+    public BatchProcess(STATUS status, long runningProcessId) {
+
+
+    }
+
     public synchronized void start(BatchProcessConfig batchProcessConfig) throws TikaException, IOException {
         status = STATUS.RUNNING;
+
         TikaConfigWriter tikaConfigWriter = new TikaConfigWriter();
         try {
             configFile = tikaConfigWriter.writeConfig(batchProcessConfig);
