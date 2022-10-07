@@ -49,7 +49,7 @@ public class BatchController {
         BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig();
         if (batchProcessConfig.getFetcher() != null &&
                 batchProcessConfig.getFetcher().getClazz() != null &&
-                batchProcessConfig.getFetcher().equals(Constants.FS_FETCHER_CLASS)) {
+                batchProcessConfig.getFetcher().getClazz().equals(Constants.FS_FETCHER_CLASS)) {
             String path = batchProcessConfig.getFetcher().getAttributes().get("basePath");
             if (!StringUtils.isBlank(path)) {
                 directoryChooser.setInitialDirectory(new File(path));
@@ -57,14 +57,18 @@ public class BatchController {
         }
 
         File directory = directoryChooser.showDialog(parent);
-        batchProcessConfig.setFetcher(Constants.FS_FETCHER_CLASS, "basePath",
+        if (directory == null) {
+            return;
+        }
+        String label = "FileSystem: " + directory.getName();
+        batchProcessConfig.setFetcher(label, Constants.FS_FETCHER_CLASS, "basePath",
                 directory.toPath().toAbsolutePath().toString());
-        batchProcessConfig.setPipesIterator(
+        batchProcessConfig.setPipesIterator(label,
                 FileSystemPipesIterator.class.getName(),
                 "basePath",
                 directory.toPath().toAbsolutePath().toString());
-        batchProcessConfig.setFetcherLabel("FileSystem: " + directory.getName());
 
+        APP_CONTEXT.saveState();
         ((Stage)inputButton.getScene().getWindow()).close();
     }
 
@@ -76,17 +80,21 @@ public class BatchController {
 
         if (batchProcessConfig.getEmitter() != null &&
                 batchProcessConfig.getEmitter().getClazz() != null &&
-                batchProcessConfig.getEmitter().equals(Constants.FS_EMITTER_CLASS)) {
+                batchProcessConfig.getEmitter().getClazz().equals(Constants.FS_EMITTER_CLASS)) {
             String path = batchProcessConfig.getEmitter().getAttributes().get("basePath");
             if (!StringUtils.isBlank(path)) {
                 directoryChooser.setInitialDirectory(new File(path));
             }
         }
         File directory = directoryChooser.showDialog(parent);
-        batchProcessConfig.setEmitter(Constants.FS_EMITTER_CLASS, "basePath",
+        if (directory == null) {
+            return;
+        }
+        String label = "FileSystem: " + directory.getName();
+        batchProcessConfig.setEmitter(label, Constants.FS_EMITTER_CLASS, "basePath",
                 directory.toPath().toAbsolutePath().toString());
-        batchProcessConfig.setEmitterLabel("FileSystem: " + directory.getName());
 
+        APP_CONTEXT.saveState();
         ((Stage)outputButton.getScene().getWindow()).close();
     }
 }

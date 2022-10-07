@@ -59,26 +59,28 @@ public class BatchProcessConfig {
         return fetcherLabel;
     }
 
-    public void setFetcherLabel(String label) {
+    public StringProperty getEmitterLabel() {
+        return emitterLabel;
+    }
+    private void setFetcherLabel(String label) {
         fetcherLabel.setValue(label);
     }
+
     @JsonSetter
     public void setFetcher(ConfigItem fetcher) {
         this.fetcher = fetcher;
         if (fetcher != null) {
-            this.fetcherLabel.setValue(fetcher.getClazz());
+            this.fetcherLabel.setValue(fetcher.getLabel());
         }
     }
 
-    public void setEmitterLabel(String label) {
+    private void setEmitterLabel(String label) {
         emitterLabel.setValue(label);
     }
 
-    public StringProperty getEmitterLabel() {
-        return emitterLabel;
-    }
     public void setFetcher(String ... args) {
         setFetcher(ConfigItem.build(args));
+        setFetcherLabel(fetcher.getLabel());
     }
 
     public ConfigItem getEmitter() {
@@ -88,6 +90,7 @@ public class BatchProcessConfig {
     @JsonSetter
     public void setEmitter(ConfigItem emitter) {
         this.emitter = emitter;
+        setEmitterLabel(emitter.getLabel());
     }
 
     public void setEmitter(String ... args) {

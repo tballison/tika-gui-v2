@@ -23,12 +23,13 @@ public class ConfigItem {
 
     public static ConfigItem build(String... args) {
         Map<String, String> params = new HashMap<>();
-        for (int i = 1; i < args.length; i++) {
+        for (int i = 2; i < args.length; i++) {
             params.put(args[i], args[++i]);
         }
-        return new ConfigItem(args[0], params);
+        return new ConfigItem(args[0], args[1], params);
     }
 
+    private String label;
     private String clazz;
     private Map<String, String> attributes;
 
@@ -36,7 +37,8 @@ public class ConfigItem {
         //needed for serialization for now...should figure out cleaner solution
 
     }
-    public ConfigItem(String clazz, Map<String, String> attributes) {
+    public ConfigItem(String label, String clazz, Map<String, String> attributes) {
+        this.label = label;
         this.clazz = clazz;
         this.attributes = attributes;
     }
@@ -57,9 +59,17 @@ public class ConfigItem {
         return attributes;
     }
 
-    @Override
-    public String toString() {
-        return "ConfigItem{" + "clazz='" + clazz + '\'' + ", attributes=" + attributes + '}';
+    public String getLabel() {
+        return label;
     }
 
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    @Override
+    public String toString() {
+        return "ConfigItem{" + "label='" + label + '\'' + ", clazz='" + clazz + '\'' +
+                ", attributes=" + attributes + '}';
+    }
 }

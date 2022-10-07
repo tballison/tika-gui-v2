@@ -30,16 +30,17 @@ public class TestAppContextSerialization {
 
     @Test
     public void testBasic() throws Exception {
-        AppContext appContext = AppContext.getInstance();
+        AppContext appContext = new AppContext();
         appContext.getBatchProcessConfig().setEmitter(
+                "emitter label",
                 Constants.FS_EMITTER_CLASS,
                 "basePath", "something");
         BatchProcess batchProcess = new BatchProcess();
         appContext.setBatchProcess(batchProcess);
         ObjectMapper objectMapper = new ObjectMapper();
         StringWriter writer = new StringWriter();
-        objectMapper.writeValue(writer, AppContext.getInstance());
-
+        objectMapper.writeValue(writer, appContext);
+        System.out.println(writer.toString());
         //this is important
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         AppContext deserialized = objectMapper.readValue(writer.toString(), AppContext.class);

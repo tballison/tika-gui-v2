@@ -57,17 +57,6 @@ public class AppContext {
     public static Path LOGS_PATH = TIKA_APP_HOME.resolve("logs");
     public static Path BATCH_STATUS_PATH = LOGS_PATH.resolve("batch_status.json");
 
-
-    private static AppContext APP_CONTEXT = new AppContext();
-    private String tikaVersion = "2.4.1";
-
-    private BatchProcessConfig batchProcessConfig = new BatchProcessConfig();
-    private BatchProcess batchProcess;
-
-    public static AppContext getInstance() {
-        return APP_CONTEXT;
-    }
-
     public static AppContext load() {
         if (Files.isRegularFile(APP_STATE_PATH)) {
             try {
@@ -79,6 +68,18 @@ public class AppContext {
         }
         return new AppContext();
     }
+    private static AppContext APP_CONTEXT = load();
+    private String tikaVersion = "2.4.1";
+
+    private BatchProcessConfig batchProcessConfig = new BatchProcessConfig();
+    private BatchProcess batchProcess;
+
+    private volatile boolean closed = false;
+
+    public static AppContext getInstance() {
+        return APP_CONTEXT;
+    }
+
 
     private static AppContext load(Path configPath) throws IOException {
         try (Reader reader = Files.newBufferedReader(configPath, StandardCharsets.UTF_8)) {
@@ -86,11 +87,23 @@ public class AppContext {
         }
     }
 
+    private volatile boolean allowBatchToRunOnExit = false;
+
+    public void setAllowBatchToRunOnExit(boolean allowBatchToRunOnExit) {
+        this.allowBatchToRunOnExit = allowBatchToRunOnExit;
+    }
     public void close() {
-        try {
-            saveState();
-        } catch (IOException e) {
-            LOGGER.warn("Failed to save state file " + APP_STATE_PATH, e);
+        if (! closed) {
+            if (! AppContext.getInstance().allowBatchToRunOnExit) {
+                AppContext.getInstance().getBatchProcess().cancel();
+            }
+            AppContext.getInstance().getBatchProcess().close();
+            try {
+                saveState();
+            } catch (IOException e) {
+                LOGGER.warn("Failed to save state file " + APP_STATE_PATH, e);
+            }
+            closed = true;
         }
     }
 
