@@ -33,7 +33,8 @@ public class BatchProcessConfig {
     private ConfigItem pipesIterator;
     private ConfigItem fetcher;
     private ConfigItem emitter;
-    private ConfigItem metadataMapper;
+    private ConfigItem metadataMapper = ConfigItem.build("Metadata mapper",
+            "org.apache.tika.metadata" + ".filter.FieldNameMappingFilter");
 
     private List<String> tikaMetadata = new ArrayList<>();
     private List<String> outputMetadata = new ArrayList<>();
@@ -53,23 +54,12 @@ public class BatchProcessConfig {
         this.pipesIterator = pipesIterator;
     }
 
-    public void setPipesIterator(String ... args) {
+    public void setPipesIterator(String... args) {
         setPipesIterator(ConfigItem.build(args));
     }
 
     public ConfigItem getFetcher() {
         return fetcher;
-    }
-
-    public StringProperty getFetcherLabel() {
-        return fetcherLabel;
-    }
-
-    public StringProperty getEmitterLabel() {
-        return emitterLabel;
-    }
-    private void setFetcherLabel(String label) {
-        fetcherLabel.setValue(label);
     }
 
     @JsonSetter
@@ -80,13 +70,25 @@ public class BatchProcessConfig {
         }
     }
 
-    private void setEmitterLabel(String label) {
-        emitterLabel.setValue(label);
-    }
-
-    public void setFetcher(String ... args) {
+    public void setFetcher(String... args) {
         setFetcher(ConfigItem.build(args));
         setFetcherLabel(fetcher.getLabel());
+    }
+
+    public StringProperty getFetcherLabel() {
+        return fetcherLabel;
+    }
+
+    private void setFetcherLabel(String label) {
+        fetcherLabel.setValue(label);
+    }
+
+    public StringProperty getEmitterLabel() {
+        return emitterLabel;
+    }
+
+    private void setEmitterLabel(String label) {
+        emitterLabel.setValue(label);
     }
 
     public ConfigItem getEmitter() {
@@ -99,7 +101,7 @@ public class BatchProcessConfig {
         setEmitterLabel(emitter.getLabel());
     }
 
-    public void setEmitter(String ... args) {
+    public void setEmitter(String... args) {
         setEmitter(ConfigItem.build(args));
     }
 
@@ -131,12 +133,12 @@ public class BatchProcessConfig {
         System.out.println("adding to output " + row + " : " + data);
         outputMetadata.set(row, data);
     }
+
     public void appendPipesClasspath(StringBuilder sb) {
         //TODO -- build this out
         if (getEmitter().getClazz().equals(Constants.FS_EMITTER_CLASS)) {
-            sb.append(
-                    ProcessUtils.escapeCommandLine(
-                            AppContext.TIKA_LIB_PATH.resolve("tika-emitter-fs").toAbsolutePath() + "/*"));
+            sb.append(ProcessUtils.escapeCommandLine(
+                    AppContext.TIKA_LIB_PATH.resolve("tika-emitter-fs").toAbsolutePath() + "/*"));
         }
     }
 }

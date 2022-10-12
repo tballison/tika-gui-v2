@@ -31,9 +31,12 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.tallison.tika.app.fx.ctx.AppContext;
-import org.tallison.tika.app.fx.tools.BatchProcess;
 
 public class TikaApplication extends Application {
+
+    public static void main(String[] args) {
+        launch();
+    }
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -55,28 +58,28 @@ public class TikaApplication extends Application {
     }
 
     private void onClose(WindowEvent windowEvent) {
-       // if(AppContext.getInstance().getBatchProcess().getStatus() == BatchProcess.STATUS
+        // if(AppContext.getInstance().getBatchProcess().getStatus() == BatchProcess.STATUS
         // .RUNNING) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("A batch process is still running");
-            alert.setContentText("Cancel?");
-            ButtonType okButton = new ButtonType("Yes, cancel the process",
-                    ButtonBar.ButtonData.YES);
-            ButtonType noButton = new ButtonType("No, keep running when closed", ButtonBar.ButtonData.NO);
-            ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-            alert.getButtonTypes().setAll(okButton, noButton, cancelButton);
-            AtomicBoolean close = new AtomicBoolean(false);
-            alert.showAndWait().ifPresent(type -> {
-                if (type.getText().startsWith("Yes")) {
-                    AppContext.getInstance().setAllowBatchToRunOnExit(false);
-                    close.set(true);
-                } else if (type.getText().startsWith("No")) {
-                    AppContext.getInstance().setAllowBatchToRunOnExit(true);
-                    close.set(true);
-                } else {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("A batch process is still running");
+        alert.setContentText("Cancel?");
+        ButtonType okButton = new ButtonType("Yes, cancel the process", ButtonBar.ButtonData.YES);
+        ButtonType noButton =
+                new ButtonType("No, keep running when closed", ButtonBar.ButtonData.NO);
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        alert.getButtonTypes().setAll(okButton, noButton, cancelButton);
+        AtomicBoolean close = new AtomicBoolean(false);
+        alert.showAndWait().ifPresent(type -> {
+            if (type.getText().startsWith("Yes")) {
+                AppContext.getInstance().setAllowBatchToRunOnExit(false);
+                close.set(true);
+            } else if (type.getText().startsWith("No")) {
+                AppContext.getInstance().setAllowBatchToRunOnExit(true);
+                close.set(true);
+            } else {
 
-                }
-            });
+            }
+        });
         //}
         if (close.get()) {
             AppContext.getInstance().close();
@@ -91,9 +94,5 @@ public class TikaApplication extends Application {
     @Override
     public void stop() {
         AppContext.getInstance().close();
-    }
-
-    public static void main(String[] args) {
-        launch();
     }
 }

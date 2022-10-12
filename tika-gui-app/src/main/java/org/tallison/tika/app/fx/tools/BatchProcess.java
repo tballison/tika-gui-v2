@@ -27,10 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.annotation.JsonRawValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
@@ -44,27 +41,10 @@ import org.apache.tika.utils.StreamGobbler;
 public class BatchProcess {
 
     private static Logger LOGGER = LogManager.getLogger(BatchProcess.class);
-
-
-    public enum STATUS {
-        //  this didn't work?!
-        READY,
-        RUNNING,
-        COMPLETE
-    }
-
-    private enum PROCESS_ID {
-        FILE_COUNTER,
-        BATCH_PROCESS
-    }
-
     private STATUS status = STATUS.READY;
-
     private long runningProcessId = -1;
-
     private Path configFile;
     private FileCounter fileCounter = null;
-
     private BatchRunner batchRunner = null;
     private ExecutorService daemonExecutorService = Executors.newFixedThreadPool(3, r -> {
         Thread t = Executors.defaultThreadFactory().newThread(r);
@@ -73,15 +53,15 @@ public class BatchProcess {
     });
     private ExecutorCompletionService<Integer> executorCompletionService =
             new ExecutorCompletionService<>(daemonExecutorService);
-
-    public BatchProcess() {}
-
+    public BatchProcess() {
+    }
     public BatchProcess(STATUS status, long runningProcessId) {
 
 
     }
 
-    public synchronized void start(BatchProcessConfig batchProcessConfig) throws TikaException, IOException {
+    public synchronized void start(BatchProcessConfig batchProcessConfig)
+            throws TikaException, IOException {
         status = STATUS.RUNNING;
 
         TikaConfigWriter tikaConfigWriter = new TikaConfigWriter();
@@ -157,14 +137,24 @@ public class BatchProcess {
         return status;
     }
 
+    public enum STATUS {
+        //  this didn't work?!
+        READY, RUNNING, COMPLETE
+    }
+
+    private enum PROCESS_ID {
+        FILE_COUNTER, BATCH_PROCESS
+    }
+
     private static class FileCounter implements Callable<Integer> {
 
         private final PipesIterator pipesIterator;
+        long counter = 0;
 
         FileCounter(Path tikaConfig) throws IOException, TikaException {
             pipesIterator = PipesIterator.build(tikaConfig);
         }
-        long counter = 0;
+
         @Override
         public Integer call() throws Exception {
             for (FetchEmitTuple t : pipesIterator) {
@@ -179,6 +169,7 @@ public class BatchProcess {
         private final Path tikaConfig;
         private final BatchProcessConfig batchProcessConfig;
         private Process process;
+
         public BatchRunner(Path tikaConfig, BatchProcessConfig batchProcessConfig) {
             this.tikaConfig = tikaConfig;
             this.batchProcessConfig = batchProcessConfig;
@@ -190,8 +181,7 @@ public class BatchProcess {
             //try {
 
             process = new ProcessBuilder(commandLine).start();
-            StreamGobbler inputStreamGobbler =
-                    new StreamGobbler(process.getInputStream(), 100000);
+            StreamGobbler inputStreamGobbler = new StreamGobbler(process.getInputStream(), 100000);
             StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), 100000);
             new Thread(inputStreamGobbler).start();
             new Thread(errorGobbler).start();
@@ -227,7 +217,7 @@ public class BatchProcess {
             return sb.toString();
         }
 
-        void cancel()  {
+        void cancel() {
             process.destroyForcibly();
         }
     }

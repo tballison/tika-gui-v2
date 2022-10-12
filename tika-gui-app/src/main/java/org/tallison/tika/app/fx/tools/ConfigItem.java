@@ -21,6 +21,20 @@ import java.util.Map;
 
 public class ConfigItem {
 
+    private String label;
+    private String clazz;
+    private Map<String, String> attributes;
+    public ConfigItem() {
+        //needed for serialization for now...should figure out cleaner solution
+
+    }
+
+    public ConfigItem(String label, String clazz, Map<String, String> attributes) {
+        this.label = label;
+        this.clazz = clazz;
+        this.attributes = attributes;
+    }
+
     public static ConfigItem build(String... args) {
         Map<String, String> params = new HashMap<>();
         for (int i = 2; i < args.length; i++) {
@@ -29,34 +43,20 @@ public class ConfigItem {
         return new ConfigItem(args[0], args[1], params);
     }
 
-    private String label;
-    private String clazz;
-    private Map<String, String> attributes;
-
-    public ConfigItem() {
-        //needed for serialization for now...should figure out cleaner solution
-
-    }
-    public ConfigItem(String label, String clazz, Map<String, String> attributes) {
-        this.label = label;
-        this.clazz = clazz;
-        this.attributes = attributes;
+    public String getClazz() {
+        return clazz;
     }
 
     public void setClazz(String clazz) {
         this.clazz = clazz;
     }
 
-    public void setAttributes(Map<String, String> attrs) {
-        this.attributes = attrs;
-    }
-
-    public String getClazz() {
-        return clazz;
-    }
-
     public Map<String, String> getAttributes() {
         return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attrs) {
+        this.attributes = attrs;
     }
 
     public String getLabel() {

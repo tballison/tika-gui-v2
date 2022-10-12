@@ -17,6 +17,7 @@
 package org.tallison.tika.app.fx.metadata;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 public class MetadataRow {
 
@@ -46,5 +47,18 @@ public class MetadataRow {
 
     public void setOutput(String output) {
         this.output.set(output);
+    }
+
+    public StringProperty outputProperty() {
+        return output;
+    }
+
+    public StringProperty tikaProperty() {
+        return tika;
+    }
+
+    @Override
+    public String toString() {
+        return "MetadataRow{" + "tika=" + tika + ", output=" + output + '}';
     }
 }

@@ -35,27 +35,31 @@ import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 
 public class AppContext {
 
-    private static Logger LOGGER = LogManager.getLogger(AppContext.class);
     private static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
-    public static Path TIKA_APP_HOME = Paths.get(System.getProperty("user.home"))
-            .resolve(".tika-app-v2");
-
+    public static Path TIKA_APP_HOME =
+            Paths.get(System.getProperty("user.home")).resolve(".tika-app-v2");
     public static Path TIKA_LIB_PATH = TIKA_APP_HOME.resolve("lib");
     public static Path TIKA_CORE_BIN_PATH = TIKA_LIB_PATH.resolve("tika-core");
-
     public static Path TIKA_APP_BIN_PATH = TIKA_LIB_PATH.resolve("tika-app");
     public static Path APP_STATE_PATH = TIKA_APP_HOME.resolve("tika-app-v2-config.json");
-
+    private static AppContext APP_CONTEXT = load();
     public static Path CONFIG_PATH = TIKA_APP_HOME.resolve("config");
-
     public static Path ASYNC_LOG4J2_PATH = CONFIG_PATH.resolve("log4j2-async.xml");
     public static Path LOGS_PATH = TIKA_APP_HOME.resolve("logs");
     public static Path BATCH_STATUS_PATH = LOGS_PATH.resolve("batch_status.json");
+    private static Logger LOGGER = LogManager.getLogger(AppContext.class);
+
+
+    private String tikaVersion = "2.4.1";
+    private BatchProcessConfig batchProcessConfig = new BatchProcessConfig();
+    private BatchProcess batchProcess;
+    private volatile boolean closed = false;
+    private volatile boolean allowBatchToRunOnExit = false;
 
     public static AppContext load() {
         if (Files.isRegularFile(APP_STATE_PATH)) {
@@ -68,18 +72,10 @@ public class AppContext {
         }
         return new AppContext();
     }
-    private static AppContext APP_CONTEXT = load();
-    private String tikaVersion = "2.4.1";
-
-    private BatchProcessConfig batchProcessConfig = new BatchProcessConfig();
-    private BatchProcess batchProcess;
-
-    private volatile boolean closed = false;
 
     public static AppContext getInstance() {
         return APP_CONTEXT;
     }
-
 
     private static AppContext load(Path configPath) throws IOException {
         try (Reader reader = Files.newBufferedReader(configPath, StandardCharsets.UTF_8)) {
@@ -87,14 +83,13 @@ public class AppContext {
         }
     }
 
-    private volatile boolean allowBatchToRunOnExit = false;
-
     public void setAllowBatchToRunOnExit(boolean allowBatchToRunOnExit) {
         this.allowBatchToRunOnExit = allowBatchToRunOnExit;
     }
+
     public void close() {
-        if (! closed) {
-            if (! AppContext.getInstance().allowBatchToRunOnExit) {
+        if (!closed) {
+            if (!AppContext.getInstance().allowBatchToRunOnExit) {
                 AppContext.getInstance().getBatchProcess().cancel();
             }
             AppContext.getInstance().getBatchProcess().close();
@@ -108,7 +103,7 @@ public class AppContext {
     }
 
     public void saveState() throws IOException {
-        if (! Files.isDirectory(APP_STATE_PATH.getParent())) {
+        if (!Files.isDirectory(APP_STATE_PATH.getParent())) {
             Files.createDirectories(APP_STATE_PATH.getParent());
         }
         LOGGER.info("writing state to " + APP_STATE_PATH);

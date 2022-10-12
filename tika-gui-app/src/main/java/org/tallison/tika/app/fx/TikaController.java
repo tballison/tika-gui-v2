@@ -17,28 +17,24 @@
 package org.tallison.tika.app.fx;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Popup;
 import javafx.stage.Stage;
-import javafx.stage.Window;
+import javafx.stage.WindowEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.tools.BatchProcess;
 import org.tallison.tika.app.fx.tools.ConfigItem;
@@ -48,6 +44,7 @@ import org.apache.tika.utils.StringUtils;
 public class TikaController {
 
     static AppContext APP_CONTEXT = AppContext.getInstance();
+    private static Logger LOGGER = LogManager.getLogger(TikaController.class);
     @FXML
     private Label welcomeText;
 
@@ -65,7 +62,6 @@ public class TikaController {
         inputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().getFetcherLabel());
         outputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().getEmitterLabel());
     }
-
 
 
     @FXML
@@ -120,6 +116,12 @@ public class TikaController {
         final Stage stage = new Stage();
         stage.setTitle("Select Metadata");
         stage.setScene(scene);
+        final MetadataController metadataController = fxmlLoader.getController();
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+                metadataController.saveMetadataToContext();
+            }
+        });
         stage.show();
     }
 

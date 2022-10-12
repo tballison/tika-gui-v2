@@ -38,22 +38,21 @@ public class TikaConfigWriter {
 
     public void writeLog4j2() throws IOException {
         String template = getTemplateLog4j2("log4j2-async.xml");
-        template = template.replace("{LOGS_PATH}",
-                AppContext.LOGS_PATH.toAbsolutePath().toString());
+        template =
+                template.replace("{LOGS_PATH}", AppContext.LOGS_PATH.toAbsolutePath().toString());
 
-        if (! Files.isDirectory(AppContext.ASYNC_LOG4J2_PATH.getParent())) {
+        if (!Files.isDirectory(AppContext.ASYNC_LOG4J2_PATH.getParent())) {
             Files.createDirectories(AppContext.ASYNC_LOG4J2_PATH.getParent());
         }
-        Files.write(AppContext.ASYNC_LOG4J2_PATH,
-                template.getBytes(StandardCharsets.UTF_8),
+        Files.write(AppContext.ASYNC_LOG4J2_PATH, template.getBytes(StandardCharsets.UTF_8),
                 StandardOpenOption.CREATE);
     }
 
     public Path writeConfig(BatchProcessConfig batchProcessConfig) throws IOException {
-        if (! Files.isDirectory(AppContext.CONFIG_PATH)) {
+        if (!Files.isDirectory(AppContext.CONFIG_PATH)) {
             Files.createDirectories(AppContext.CONFIG_PATH);
         }
-        Path tmp = Files.createTempFile(AppContext.CONFIG_PATH, "tika-config-",".xml");
+        Path tmp = Files.createTempFile(AppContext.CONFIG_PATH, "tika-config-", ".xml");
         StringBuilder sb = new StringBuilder();
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n");
         sb.append("<properties>\n");
@@ -68,7 +67,8 @@ public class TikaConfigWriter {
         return tmp;
     }
 
-    private void appendAsync(BatchProcessConfig batchProcessConfig, StringBuilder sb) throws IOException {
+    private void appendAsync(BatchProcessConfig batchProcessConfig, StringBuilder sb)
+            throws IOException {
         String async = getTemplate("async.xml");
         //TODO: fix this
         async = async.replace("{NUM_CLIENTS}", "2");
@@ -93,13 +93,15 @@ public class TikaConfigWriter {
         return sb.toString();
     }
 
-    private void appendEmitter(BatchProcessConfig batchProcessConfig, StringBuilder sb) throws IOException {
+    private void appendEmitter(BatchProcessConfig batchProcessConfig, StringBuilder sb)
+            throws IOException {
         switch (batchProcessConfig.getEmitter().getClazz()) {
-            case "org.apache.tika.pipes.emitter.fs.FileSystemEmitter" :
+            case "org.apache.tika.pipes.emitter.fs.FileSystemEmitter":
                 appendFSEmitter(batchProcessConfig.getEmitter(), sb);
                 break;
-            default : throw new RuntimeException("I regret I don't yet support " +
-                    batchProcessConfig.getEmitter().getClazz());
+            default:
+                throw new RuntimeException("I regret I don't yet support " +
+                        batchProcessConfig.getEmitter().getClazz());
         }
     }
 
@@ -110,13 +112,15 @@ public class TikaConfigWriter {
     }
 
 
-    private void appendFetcher(BatchProcessConfig batchProcessConfig, StringBuilder sb) throws IOException {
+    private void appendFetcher(BatchProcessConfig batchProcessConfig, StringBuilder sb)
+            throws IOException {
         switch (batchProcessConfig.getFetcher().getClazz()) {
-            case "org.apache.tika.pipes.fetcher.fs.FileSystemFetcher" :
+            case "org.apache.tika.pipes.fetcher.fs.FileSystemFetcher":
                 appendFSFetcher(batchProcessConfig.getFetcher(), sb);
                 break;
-            default : throw new RuntimeException("I regret I don't yet support " +
-                    batchProcessConfig.getFetcher().getClazz());
+            default:
+                throw new RuntimeException("I regret I don't yet support " +
+                        batchProcessConfig.getFetcher().getClazz());
         }
     }
 
@@ -129,59 +133,58 @@ public class TikaConfigWriter {
     private void appendPipesIterator(BatchProcessConfig batchProcessConfig, StringBuilder sb)
             throws IOException {
         switch (batchProcessConfig.getPipesIterator().getClazz()) {
-            case "org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator" :
+            case "org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator":
                 appendFSPipesIterator(batchProcessConfig.getPipesIterator(), sb);
                 break;
-            default : throw new RuntimeException("I regret I don't yet support " +
-                    batchProcessConfig.getPipesIterator().getClazz());
+            default:
+                throw new RuntimeException("I regret I don't yet support " +
+                        batchProcessConfig.getPipesIterator().getClazz());
         }
     }
 
-    private void appendFSPipesIterator(ConfigItem pipesIterator, StringBuilder sb) throws IOException {
+    private void appendFSPipesIterator(ConfigItem pipesIterator, StringBuilder sb)
+            throws IOException {
         String template = getTemplate("fs-pipes-iterator.xml");
         template = template.replace("{BASE_PATH}", pipesIterator.getAttributes().get("basePath"));
         sb.append(template).append("\n");
     }
 
     private void appendMetadataFilter(BatchProcessConfig batchProcessConfig,
-                                      StringBuilder sb) throws IOException {
+                                      StringBuilder tikaConfigBuilder) throws IOException {
 
-        if (batchProcessConfig.getMetadataMapper() == null) {
-            return;
-        }
-        Map<String, String> mappings = batchProcessConfig.getMetadataMapper().getAttributes();
-        if (mappings == null || mappings.size() == 0) {
-            return;
-        }
+
+        StringBuilder sb = new StringBuilder();
         String template = getTemplate("metadata-filters.xml");
+        Map<String, String> mappings = batchProcessConfig.getMetadataMapper().getAttributes();
+        if (batchProcessConfig.getMetadataMapper() != null &&
+                batchProcessConfig.getMetadataMapper().getAttributes().size() > 0) {
+            sb.append("<metadataFilter " +
+                    "class=\"org.apache.tika.metadata.filter.FieldNameMappingFilter\">");
+            sb.append("  <params>\n");
+            sb.append("    <excludeUnmapped>true</excludeUnmapped>\n");
+            sb.append("    <mappings>\n");
 
-        sb.append("<metadataFilter " +
-                "class=\"org.apache.tika.metadata.filter.FieldNameMappingFilter\">");
-        sb.append("  <params>\n");
-        sb.append("    <excludeUnmapped>true</excludeUnmapped>\n");
-        sb.append("    <mappings>\n");
+            mappings.entrySet().stream().forEach(e -> sb.append(
+                    "      <mapping from=\"" + e.getKey() + "\" to=\"" + e.getValue() + "\"/>"));
 
-        mappings
-                .entrySet()
-                .stream()
-                .forEach(e -> sb.append("      <mapping from=\"" + e.getKey() + "\" to=\"" + e.getValue() + "\"/>"));
-
-        sb.append("    </mappings>");
-        sb.append("  </params>");
-        sb.append("</metadataFilter>\n");
+            sb.append("    </mappings>");
+            sb.append("  </params>");
+            sb.append("</metadataFilter>\n");
+        }
         template = template.replace("{MAPPING_FILTER}", sb.toString());
-        sb.append(template);
+        tikaConfigBuilder.append(template);
     }
 
     private String getTemplate(String template) throws IOException {
-        try (InputStream is =
-                     this.getClass().getResourceAsStream("/templates/config/" + template)) {
+        try (InputStream is = this.getClass()
+                .getResourceAsStream("/templates/config/" + template)) {
             return IOUtils.toString(is, StandardCharsets.UTF_8);
         }
     }
+
     private String getTemplateLog4j2(String template) throws IOException {
-        try (InputStream is =
-                     this.getClass().getResourceAsStream("/templates/log4j2/" + template)) {
+        try (InputStream is = this.getClass()
+                .getResourceAsStream("/templates/log4j2/" + template)) {
             return IOUtils.toString(is, StandardCharsets.UTF_8);
         }
     }

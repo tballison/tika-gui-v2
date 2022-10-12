@@ -19,54 +19,69 @@
   under the License.
 -->
 
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.cell.TextFieldTableCell?>
-
-<?import javafx.collections.FXCollections?>
-<?import org.tallison.tika.app.fx.metadata.MetadataRow?>
-<?import javafx.scene.control.cell.PropertyValueFactory?>
-<?import org.tallison.tika.app.fx.metadata.FormattedTableCellFactory?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.control.cell.TextFieldTableCell?>
+<?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.geometry.Insets?>
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0"
-          xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/18" fx:controller="org.tallison.tika.app.fx.MetadataController">
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0"
+          prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+          fx:controller="org.tallison.tika.app.fx.MetadataController">
   <padding>
     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
   </padding>
-      <TableView fx:id="tableView" prefHeight="200.0"
-                 prefWidth="600.0" editable="true" GridPane.columnIndex="0" GridPane.rowIndex="1">
-        <columns>
-          <TableColumn fx:id="tikaMetadataColumn" prefWidth="170.0" text="Tika Metadata Key" onEditCommit="#onTikaCommit">
-            <cellValueFactory><PropertyValueFactory property="tika" />
-            </cellValueFactory>
-            <cellFactory>
-              <TextFieldTableCell fx:factory="forTableColumn" />
-            </cellFactory>
-          </TableColumn>
-          <TableColumn fx:id="OutputMetadataColumn" prefWidth="159.0" text="Output Metadata Key" onEditCommit="#onOutputCommit">
-            <cellValueFactory><PropertyValueFactory property="output" /></cellValueFactory>
-            <cellFactory>
-              <TextFieldTableCell fx:factory="forTableColumn" />
-            </cellFactory>
-          </TableColumn>
-        </columns>
-        <items>
-          <FXCollections fx:factory="observableArrayList">
-            <MetadataRow
-                tika="Content-Type" output="mime"/>
-          </FXCollections>
-        </items>
-      </TableView>
-     <HBox spacing="10" alignment="bottom_left" GridPane.columnIndex="0"
-           GridPane.rowIndex="2">
-       <TextField fx:id="tikaField" promptText="Tika Field"
-                  prefWidth="90"/>
-       <TextField fx:id="outputField" promptText="Output Field"
-                  prefWidth="90"/>
-       <Button text="Add" onAction="#addMetadataRow"/>
-     </HBox>
+  <TableView fx:id="tableView" items="${controller.rows}" editable="true" prefHeight="200.0" prefWidth="421.0" GridPane.columnIndex="0"
+             GridPane.rowIndex="1">
+    <columns>
+      <TableColumn fx:id="tikaMetadataColumn" prefWidth="212.0" text="Tika Metadata Key">
+        <cellValueFactory>
+          <PropertyValueFactory property="tika"/>
+        </cellValueFactory>
+        <cellFactory>
+          <TextFieldTableCell fx:factory="forTableColumn"/>
+        </cellFactory>
+      </TableColumn>
+      <TableColumn fx:id="OutputMetadataColumn" prefWidth="208.0" text="Output Metadata Key">
+        <cellValueFactory>
+          <PropertyValueFactory property="output"/>
+        </cellValueFactory>
+        <cellFactory>
+          <TextFieldTableCell fx:factory="forTableColumn"/>
+        </cellFactory>
+      </TableColumn>
+    </columns>
+    <items>
+      <FXCollections fx:id="backingData" fx:factory="observableArrayList">
+      </FXCollections>
+    </items>
+  </TableView>
+  <HBox alignment="bottom_left" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="2">
+    <TextField fx:id="tikaField" prefWidth="90" promptText="Tika Field"/>
+    <TextField fx:id="outputField" prefWidth="90" promptText="Output Field"/>
+    <Button onAction="#addMetadataRow" text="Add Pair"/>
+  </HBox>
+  <HBox alignment="bottom_left" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="4">
+    <Button fx:id="loadMetadataCSV" onAction="#loadMetadataCSV" text="Load CSV"/>
+    <Button fx:id="clearAll" onAction="#clearMetadata" text="Clear All"/>
+    <Button fx:id="saveMetadata" onAction="#saveMetadataToContext" text="Save"/>
+  </HBox>
+  <columnConstraints>
+    <ColumnConstraints/>
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints/>
+    <RowConstraints/>
+    <RowConstraints maxHeight="36.0" minHeight="22.0" prefHeight="22.0"/>
+    <RowConstraints maxHeight="30.0" minHeight="16.0" prefHeight="30.0"/>
+    <RowConstraints maxHeight="0.0" minHeight="0.0" prefHeight="0.0"/>
+  </rowConstraints>
+
 </GridPane>

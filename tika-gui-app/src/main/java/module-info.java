@@ -15,24 +15,20 @@
  * limitations under the License.
  */
 module org.tallison.tika.app.fx {
-    requires javafx.controls;
-    requires javafx.fxml;
-
-    requires org.apache.logging.log4j;
-    requires org.apache.logging.log4j.core;
-    requires org.controlsfx.controls;
-    requires com.fasterxml.jackson.databind;
+    requires javafx.graphics;
     requires org.apache.tika.core;
     requires org.apache.commons.io;
-    requires java.xml;
+    requires com.fasterxml.jackson.annotation;
+    requires javafx.controls;
+    requires javafx.fxml;
+    requires commons.csv;
+    requires org.apache.logging.log4j;
+    requires com.fasterxml.jackson.databind;
 
     exports org.tallison.tika.app.fx;
-    opens org.tallison.tika.app.fx to javafx.fxml,
-            com.fasterxml.jackson.databind;
-    exports org.tallison.tika.app.fx.ctx;
+
+    opens org.tallison.tika.app.fx to javafx.fxml, com.fasterxml.jackson.databind;
     opens org.tallison.tika.app.fx.ctx to com.fasterxml.jackson.databind, javafx.fxml;
-    exports org.tallison.tika.app.fx.tools;
     opens org.tallison.tika.app.fx.tools to com.fasterxml.jackson.databind, javafx.fxml;
-    exports org.tallison.tika.app.fx.metadata;
-    opens org.tallison.tika.app.fx.metadata to javafx.fxml;
+    opens org.tallison.tika.app.fx.metadata to javafx.fxml, javafx.base;
 }
