@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="Advanced Batch Options" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.AdvancedBatchController">
+  <content>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+         <children>
+            <Label layoutX="38.0" layoutY="117.0" text="Digest Options" />
+            <Label layoutX="40.0" layoutY="197.0" text="Parse Timeout (seconds)" />
+            <TextField fx:id="parseTimeoutSeconds" layoutX="170.0" layoutY="194.0" onAction="#setParseTimeoutSeconds" prefHeight="26.0" prefWidth="79.0" />
+            <Button layoutX="38.0" layoutY="289.0" mnemonicParsing="false" text="Show tika-config" />
+            <Label layoutX="40.0" layoutY="232.0" text="Max. Memory&#10;Per  Process (gb)" />
+            <TextField fx:id="memoryPerProcess" layoutX="170.0" layoutY="236.0" onAction="#setMemoryPerProcessGb" prefHeight="26.0" prefWidth="79.0" />
+            <Label layoutX="39.0" layoutY="157.0" text="Number of Processes" />
+            <TextField fx:id="numProcesses" layoutX="170.0" layoutY="153.0" prefHeight="26.0" prefWidth="79.0" onAction="#setNumProcesses" />
+            <ComboBox fx:id="digestOptions" layoutX="170.0" layoutY="113.0" onAction="#digestOptions" prefWidth="150.0">
+              <items>
+                <FXCollections fx:factory="observableArrayList">
+                  <String fx:value="No Digest" />
+                  <String fx:value="md5" />
+                  <String fx:value="sha256" />
+                </FXCollections>
+              </items>
+            </ComboBox>
+         </children>
+    </AnchorPane>
+  </content>
+</TitledPane>

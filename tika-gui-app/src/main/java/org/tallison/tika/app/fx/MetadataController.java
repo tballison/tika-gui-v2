@@ -117,10 +117,6 @@ public class MetadataController {
             APP_CONTEXT.getBatchProcessConfig().getMetadataMapper().getAttributes()
                     .put(metadataRow.getTika(), metadataRow.getOutput());
         }
-        try {
-            APP_CONTEXT.saveState();
-        } catch (IOException e) {
-            LOGGER.warn("unable to save context ", e);
-        }
+        APP_CONTEXT.saveState();
     }
 }

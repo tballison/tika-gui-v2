@@ -45,6 +45,14 @@ public class BatchProcessConfig {
     @JsonIgnore
     private StringProperty emitterLabel = new SimpleStringProperty("Unselected");
 
+    private String digest = "No Digest";
+
+    private int numProcesses = 5;
+
+    private int maxMemMb = 1024;
+
+    private int parseTimeoutSeconds = 120;
+
     public ConfigItem getPipesIterator() {
         return pipesIterator;
     }
@@ -140,5 +148,37 @@ public class BatchProcessConfig {
             sb.append(ProcessUtils.escapeCommandLine(
                     AppContext.TIKA_LIB_PATH.resolve("tika-emitter-fs").toAbsolutePath() + "/*"));
         }
+    }
+
+    public String getDigest() {
+        return digest;
+    }
+
+    public void setDigest(String digest) {
+        this.digest = digest;
+    }
+
+    public int getNumProcesses() {
+        return numProcesses;
+    }
+
+    public void setNumProcesses(int numProcesses) {
+        this.numProcesses = numProcesses;
+    }
+
+    public int getParseTimeoutSeconds() {
+        return parseTimeoutSeconds;
+    }
+
+    public void setParseTimeoutSeconds(int parseTimeoutSeconds) {
+        this.parseTimeoutSeconds = parseTimeoutSeconds;
+    }
+
+    public int getMaxMemMb() {
+        return maxMemMb;
+    }
+
+    public void setMaxMemMb(int maxMemMb) {
+        this.maxMemMb = maxMemMb;
     }
 }

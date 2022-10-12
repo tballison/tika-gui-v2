@@ -35,6 +35,8 @@ import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 
 public class AppContext {
 
+    private static Logger LOGGER = LogManager.getLogger(AppContext.class);
+
     private static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {
@@ -52,7 +54,7 @@ public class AppContext {
     public static Path ASYNC_LOG4J2_PATH = CONFIG_PATH.resolve("log4j2-async.xml");
     public static Path LOGS_PATH = TIKA_APP_HOME.resolve("logs");
     public static Path BATCH_STATUS_PATH = LOGS_PATH.resolve("batch_status.json");
-    private static Logger LOGGER = LogManager.getLogger(AppContext.class);
+
 
 
     private String tikaVersion = "2.4.1";
@@ -93,21 +95,21 @@ public class AppContext {
                 AppContext.getInstance().getBatchProcess().cancel();
             }
             AppContext.getInstance().getBatchProcess().close();
-            try {
-                saveState();
-            } catch (IOException e) {
-                LOGGER.warn("Failed to save state file " + APP_STATE_PATH, e);
-            }
+            saveState();
             closed = true;
         }
     }
 
-    public void saveState() throws IOException {
-        if (!Files.isDirectory(APP_STATE_PATH.getParent())) {
-            Files.createDirectories(APP_STATE_PATH.getParent());
+    public void saveState() {
+        try {
+            if (!Files.isDirectory(APP_STATE_PATH.getParent())) {
+                Files.createDirectories(APP_STATE_PATH.getParent());
+            }
+            LOGGER.info("writing state to " + APP_STATE_PATH);
+            OBJECT_MAPPER.writeValue(APP_STATE_PATH.toFile(), this);
+        } catch (IOException e) {
+            LOGGER.warn("can't save state!", e);
         }
-        LOGGER.info("writing state to " + APP_STATE_PATH);
-        OBJECT_MAPPER.writeValue(APP_STATE_PATH.toFile(), this);
     }
 
     public void reset() {
