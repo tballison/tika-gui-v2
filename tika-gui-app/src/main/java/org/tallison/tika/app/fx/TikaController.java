@@ -26,6 +26,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
@@ -58,9 +59,14 @@ public class TikaController {
     private Label outputLabel;
 
     @FXML
+    private ProgressIndicator batchProgress;
+
+    @FXML
     public void initialize() {
         inputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().getFetcherLabel());
         outputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().getEmitterLabel());
+        //batchProgress.setVisible(false);
+        batchProgress.progressProperty().bind(APP_CONTEXT.getBatchProcess().progressProperty());
     }
 
 
@@ -164,6 +170,7 @@ public class TikaController {
         //Is there already a batch process.
         //Do we have a fetcher and an emitter already set, etc.
         BatchProcess batchProcess = new BatchProcess();
+        batchProgress.progressProperty().bind(batchProcess.progressProperty());
         APP_CONTEXT.setBatchProcess(batchProcess);
         batchProcess.start(APP_CONTEXT.getBatchProcessConfig());
         APP_CONTEXT.saveState();
@@ -205,4 +212,7 @@ public class TikaController {
         mouseEvent.consume();
     }
 
+    public void openDetailedStatus(MouseEvent mouseEvent) {
+
+    }
 }

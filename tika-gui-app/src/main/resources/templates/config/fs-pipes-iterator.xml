@@ -3,5 +3,6 @@
     <fetcherName>fetcher</fetcherName>
     <emitterName>emitter</emitterName>
     <basePath>{BASE_PATH}</basePath>
+    <countTotal>true</countTotal>
   </params>
 </pipesIterator>

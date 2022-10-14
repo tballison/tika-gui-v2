@@ -22,31 +22,43 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import javafx.beans.property.SimpleFloatProperty;
+import javafx.beans.value.ObservableValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
 
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.pipes.FetchEmitTuple;
-import org.apache.tika.pipes.pipesiterator.PipesIterator;
+import org.apache.tika.pipes.PipesResult;
+import org.apache.tika.pipes.async.AsyncStatus;
 import org.apache.tika.utils.ProcessUtils;
 import org.apache.tika.utils.StreamGobbler;
 
 public class BatchProcess {
 
     private static Logger LOGGER = LogManager.getLogger(BatchProcess.class);
+
+    private static AppContext APP_CONTEXT = AppContext.getInstance();
     private STATUS status = STATUS.READY;
     private long runningProcessId = -1;
     private Path configFile;
-    private FileCounter fileCounter = null;
     private BatchRunner batchRunner = null;
-    private ExecutorService daemonExecutorService = Executors.newFixedThreadPool(3, r -> {
+
+    private SimpleFloatProperty progressProperty = new SimpleFloatProperty(0.0f);
+    private ObjectMapper objectMapper = JsonMapper.builder()
+            .addModule(new JavaTimeModule())
+            .build();
+    private ExecutorService daemonExecutorService = Executors.newFixedThreadPool(2, r -> {
         Thread t = Executors.defaultThreadFactory().newThread(r);
         t.setDaemon(true);
         return t;
@@ -54,6 +66,7 @@ public class BatchProcess {
     private ExecutorCompletionService<Integer> executorCompletionService =
             new ExecutorCompletionService<>(daemonExecutorService);
     public BatchProcess() {
+
     }
     public BatchProcess(STATUS status, long runningProcessId) {
 
@@ -72,9 +85,9 @@ public class BatchProcess {
             throw new TikaException("parser configuration", e);
         }
 
-        fileCounter = new FileCounter(configFile);
         batchRunner = new BatchRunner(configFile, batchProcessConfig);
-        executorCompletionService.submit(fileCounter);
+        StatusChecker statusChecker = new StatusChecker();
+        executorCompletionService.submit(statusChecker);
         executorCompletionService.submit(batchRunner);
     }
 
@@ -99,7 +112,17 @@ public class BatchProcess {
         }
     }
 
-    public STATUS checkStatus() {
+    public AsyncStatus checkStatus() {
+        try {
+            return objectMapper.readValue(AppContext.BATCH_STATUS_PATH.toFile(), AsyncStatus.class);
+        } catch (IOException e) {
+            LOGGER.warn("couldn't read status file", e);
+            return null;
+        }
+        //TODO -- fix this
+        //we need to check that the pid matches and that the status
+        //of that process is in alignment with what the AsyncProcessor is reporting
+        /*
         if (status == STATUS.COMPLETE) {
             return status;
         }
@@ -120,7 +143,7 @@ public class BatchProcess {
                 }
             }
         }
-        return status;
+        return status;*/
     }
 
     public void close() {
@@ -137,33 +160,18 @@ public class BatchProcess {
         return status;
     }
 
+    public ObservableValue<? extends Number> progressProperty() {
+        return progressProperty;
+    }
+
     public enum STATUS {
         //  this didn't work?!
         READY, RUNNING, COMPLETE
     }
 
     private enum PROCESS_ID {
-        FILE_COUNTER, BATCH_PROCESS
+        BATCH_PROCESS
     }
-
-    private static class FileCounter implements Callable<Integer> {
-
-        private final PipesIterator pipesIterator;
-        long counter = 0;
-
-        FileCounter(Path tikaConfig) throws IOException, TikaException {
-            pipesIterator = PipesIterator.build(tikaConfig);
-        }
-
-        @Override
-        public Integer call() throws Exception {
-            for (FetchEmitTuple t : pipesIterator) {
-                counter++;
-            }
-            return PROCESS_ID.FILE_COUNTER.ordinal();
-        }
-    }
-
 
     private class BatchRunner implements Callable<Integer> {
         private final Path tikaConfig;
@@ -183,8 +191,13 @@ public class BatchProcess {
             process = new ProcessBuilder(commandLine).start();
             StreamGobbler inputStreamGobbler = new StreamGobbler(process.getInputStream(), 100000);
             StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), 100000);
-            new Thread(inputStreamGobbler).start();
-            new Thread(errorGobbler).start();
+            Thread isgThread = new Thread(inputStreamGobbler);
+            isgThread.setDaemon(true);
+            isgThread.start();
+
+            Thread esgThread = new Thread(errorGobbler);
+            esgThread.setDaemon(true);
+            esgThread.start();
 
             runningProcessId = process.pid();
             Thread.sleep(10000);
@@ -219,6 +232,42 @@ public class BatchProcess {
 
         void cancel() {
             process.destroyForcibly();
+        }
+    }
+
+    private class StatusChecker implements Callable<Integer> {
+        @Override
+        public Integer call() throws Exception {
+            while (true) {
+                if (Files.isRegularFile(AppContext.BATCH_STATUS_PATH)) {
+                    AsyncStatus asyncStatus = null;
+                    try {
+                        asyncStatus = objectMapper.readValue(AppContext.BATCH_STATUS_PATH.toFile(),
+                                AsyncStatus.class);
+                    } catch (IOException e) {
+                        LOGGER.warn("bad json ", e);
+                    }
+                    if (asyncStatus != null) {
+                        long processed = 0;
+                        for (Map.Entry<PipesResult.STATUS, Long> e : asyncStatus.getStatusCounts().entrySet()) {
+                            processed += e.getValue();
+                        }
+                        LOGGER.info("processed " + asyncStatus);
+                        long total = asyncStatus.getTotalCountResult().getTotalCount();
+                        if (processed > total) {
+                            total = processed;
+                        }
+                        if (asyncStatus.getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
+                            progressProperty.set(100.0f);
+                        } else if (total > 0) {
+                            float percentage = 100f * ((float) processed / (float) total);
+                            LOGGER.info("setting " + percentage);
+                            progressProperty.set(percentage);
+                        }
+                    }
+                }
+                Thread.sleep(1000);
+            }
         }
     }
 }

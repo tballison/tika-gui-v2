@@ -24,6 +24,7 @@ module org.tallison.tika.app.fx {
     requires commons.csv;
     requires org.apache.logging.log4j;
     requires com.fasterxml.jackson.databind;
+    requires com.fasterxml.jackson.datatype.jsr310;
 
     exports org.tallison.tika.app.fx;
 
