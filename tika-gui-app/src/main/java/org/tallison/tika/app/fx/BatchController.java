@@ -17,7 +17,6 @@
 package org.tallison.tika.app.fx;
 
 import java.io.File;
-import java.io.IOException;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -42,7 +41,7 @@ public class BatchController {
     @FXML
     private Button outputButton;
 
-    public void inputDirectorySelect(ActionEvent actionEvent) throws IOException {
+    public void inputDirectorySelect(ActionEvent actionEvent) {
         final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Open Resource File");
@@ -70,7 +69,7 @@ public class BatchController {
         ((Stage) inputButton.getScene().getWindow()).close();
     }
 
-    public void outputDirectorySelect(ActionEvent actionEvent) throws IOException {
+    public void outputDirectorySelect(ActionEvent actionEvent) {
         final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Open Target Directory");

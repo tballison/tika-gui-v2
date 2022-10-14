@@ -87,18 +87,11 @@ public class TikaController {
         APP_CONTEXT.reset();
     }
 
-    public void saveState(ActionEvent actionEvent) {
-        try {
-            APP_CONTEXT.saveState();
-        } catch (IOException e) {
-            //TODO something
-        }
-    }
 
     @FXML
     public void configureInput(ActionEvent actionEvent) throws IOException {
         FXMLLoader fxmlLoader =
-                new FXMLLoader(TikaApplication.class.getResource("input-view.fxml"));
+                new FXMLLoader(TikaApplication.class.getResource("batch-input-view.fxml"));
         VBox dragTarget = new VBox();
         StackPane root = new StackPane();
         root.getChildren().add(dragTarget);
@@ -113,7 +106,7 @@ public class TikaController {
     @FXML
     public void configureMetadata(ActionEvent actionEvent) throws IOException {
         FXMLLoader fxmlLoader =
-                new FXMLLoader(TikaApplication.class.getResource("metadata-view.fxml"));
+                new FXMLLoader(TikaApplication.class.getResource("batch-metadata-view.fxml"));
         VBox dragTarget = new VBox();
         StackPane root = new StackPane();
         root.getChildren().add(dragTarget);
@@ -134,14 +127,14 @@ public class TikaController {
     @FXML
     public void configureAdvanced(ActionEvent actionEvent) throws IOException {
         FXMLLoader fxmlLoader =
-                new FXMLLoader(TikaApplication.class.getResource("input-view.fxml"));
+                new FXMLLoader(TikaApplication.class.getResource("batch-advanced-view.fxml"));
         VBox dragTarget = new VBox();
         StackPane root = new StackPane();
         root.getChildren().add(dragTarget);
         Scene scene = new Scene(fxmlLoader.load());
 
         final Stage stage = new Stage();
-        stage.setTitle("Select Input");
+        stage.setTitle("Advanced View");
         stage.setScene(scene);
         stage.show();
     }
@@ -149,7 +142,7 @@ public class TikaController {
     @FXML
     public void configureOutput(ActionEvent actionEvent) throws IOException {
         FXMLLoader fxmlLoader =
-                new FXMLLoader(TikaApplication.class.getResource("output-view.fxml"));
+                new FXMLLoader(TikaApplication.class.getResource("batch-output-view.fxml"));
         VBox dragTarget = new VBox();
         StackPane root = new StackPane();
         root.getChildren().add(dragTarget);
