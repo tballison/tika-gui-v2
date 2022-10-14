@@ -74,12 +74,14 @@ public class TikaConfigWriter {
     private void appendAsync(BatchProcessConfig batchProcessConfig, StringBuilder sb)
             throws IOException {
         String async = getTemplate("async.xml");
-        //TODO: fix this
-        async = async.replace("{NUM_CLIENTS}", "2");
-        async = async.replace("{XMX}", "-Xmx1g");
+        async = async.replace("{NUM_CLIENTS}",
+                Integer.toString(batchProcessConfig.getNumProcesses()));
+        async = async.replace("{XMX}", "-Xmx" +
+                batchProcessConfig.getMaxMemMb() + "m");
         async = async.replace("{ASYNC_LOG}",
                 AppContext.ASYNC_LOG4J2_PATH.toAbsolutePath().toString());
-        async = async.replace("{TIMEOUT_MS}", "60000");
+        async = async.replace("{TIMEOUT_MS}",
+                Long.toString(batchProcessConfig.getParseTimeoutSeconds() * 1000));
         async = async.replace("{STATUS_FILE}",
                 AppContext.BATCH_STATUS_PATH.toAbsolutePath().toString());
         async = async.replace("{CLASS_PATH}", buildClassPath(batchProcessConfig));
