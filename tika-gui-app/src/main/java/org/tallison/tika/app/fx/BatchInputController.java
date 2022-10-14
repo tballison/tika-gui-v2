@@ -31,17 +31,14 @@ import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 import org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator;
 import org.apache.tika.utils.StringUtils;
 
-public class BatchController {
+public class BatchInputController {
 
     private static AppContext APP_CONTEXT = AppContext.getInstance();
 
     @FXML
-    private Button inputButton;
+    private Button fsInputButton;
 
-    @FXML
-    private Button outputButton;
-
-    public void inputDirectorySelect(ActionEvent actionEvent) {
+    public void fileSystemInputDirectorySelect(ActionEvent actionEvent) {
         final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Open Resource File");
@@ -66,33 +63,7 @@ public class BatchController {
                 "basePath", directory.toPath().toAbsolutePath().toString());
 
         APP_CONTEXT.saveState();
-        ((Stage) inputButton.getScene().getWindow()).close();
-    }
-
-    public void outputDirectorySelect(ActionEvent actionEvent) {
-        final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("Open Target Directory");
-        BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig();
-
-        if (batchProcessConfig.getEmitter() != null &&
-                batchProcessConfig.getEmitter().getClazz() != null &&
-                batchProcessConfig.getEmitter().getClazz().equals(Constants.FS_EMITTER_CLASS)) {
-            String path = batchProcessConfig.getEmitter().getAttributes().get("basePath");
-            if (!StringUtils.isBlank(path)) {
-                directoryChooser.setInitialDirectory(new File(path));
-            }
-        }
-        File directory = directoryChooser.showDialog(parent);
-        if (directory == null) {
-            return;
-        }
-        String label = "FileSystem: " + directory.getName();
-        batchProcessConfig.setEmitter(label, Constants.FS_EMITTER_CLASS, "basePath",
-                directory.toPath().toAbsolutePath().toString());
-
-        APP_CONTEXT.saveState();
-        ((Stage) outputButton.getScene().getWindow()).close();
+        ((Stage) fsInputButton.getScene().getWindow()).close();
     }
 
 }

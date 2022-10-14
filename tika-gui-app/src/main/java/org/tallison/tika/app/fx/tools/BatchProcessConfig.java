@@ -147,6 +147,9 @@ public class BatchProcessConfig {
         if (getEmitter().getClazz().equals(Constants.FS_EMITTER_CLASS)) {
             sb.append(ProcessUtils.escapeCommandLine(
                     AppContext.TIKA_LIB_PATH.resolve("tika-emitter-fs").toAbsolutePath() + "/*"));
+        } else if (getEmitter().getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
+            sb.append(ProcessUtils.escapeCommandLine(
+                    AppContext.TIKA_LIB_PATH.resolve("tika-emitter-opensearch").toAbsolutePath() + "/*"));
         }
     }
 

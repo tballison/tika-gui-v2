@@ -26,13 +26,17 @@ import java.nio.file.StandardOpenOption;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.ctx.AppContext;
 
 import org.apache.tika.utils.ProcessUtils;
+import org.apache.tika.utils.StringUtils;
 
 /**
  * This is an embarrassment of hardcoding.  Need to figure out better
  * solution...
+ *
+ * This is also does not escape xml characters.  So, bad, very, very bad.
  */
 public class TikaConfigWriter {
 
@@ -96,13 +100,38 @@ public class TikaConfigWriter {
     private void appendEmitter(BatchProcessConfig batchProcessConfig, StringBuilder sb)
             throws IOException {
         switch (batchProcessConfig.getEmitter().getClazz()) {
-            case "org.apache.tika.pipes.emitter.fs.FileSystemEmitter":
+            case Constants.FS_EMITTER_CLASS:
                 appendFSEmitter(batchProcessConfig.getEmitter(), sb);
+                break;
+            case Constants.OPEN_SEARCH_EMITTER_CLASS:
+                appendOpenSearchEmitter(batchProcessConfig.getEmitter(), sb);
                 break;
             default:
                 throw new RuntimeException("I regret I don't yet support " +
                         batchProcessConfig.getEmitter().getClazz());
         }
+    }
+
+    private void appendOpenSearchEmitter(ConfigItem emitter, StringBuilder sb) throws IOException {
+        String template = getTemplate("opensearch-pipes-emitter.xml");
+
+        String userName = emitter.getAttributes().get("userName");
+        String password = emitter.getAttributes().get("password");
+        if (StringUtils.isBlank(userName) && StringUtils.isBlank(password)) {
+            template = template.replace("{USER_NAME}", "");
+            template = template.replace("{PASSWORD}", "");
+        } else {
+            template = template.replace("{USER_NAME}",
+                    "<userName>" + userName + "</userName>");
+            template = template.replace("{PASSWORD}",
+                    "<password>" + password + "</password>");
+        }
+
+        template = template.replace("{OPENSEARCH_URL}",
+                emitter.getAttributes().get("openSearchUrl"));
+        template = template.replace("{UPDATE_STRATEGY}",
+                emitter.getAttributes().get("updateStrategy"));
+        sb.append(template);
     }
 
     private void appendFSEmitter(ConfigItem fetcher, StringBuilder sb) throws IOException {

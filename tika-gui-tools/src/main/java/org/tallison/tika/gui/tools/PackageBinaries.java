@@ -82,6 +82,10 @@ public class PackageBinaries {
                         TIKA_VERSION + "/tika-emitter-fs-" + TIKA_VERSION + ".jar",
                 "lib/tika-emitter-fs");
         JARS_TO_PATH.put(
+                "org/apache/tika/tika-emitter-opensearch/" +
+                        TIKA_VERSION + "/tika-emitter-opensearch-" + TIKA_VERSION + ".jar",
+                "lib/tika-emitter-opensearch");
+        JARS_TO_PATH.put(
                 "com/h2database/h2/2.1.214/h2-2.1.214.jar",
                 "lib/db/h2");
         JARS_TO_PATH.put(

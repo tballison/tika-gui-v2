@@ -1,0 +1,16 @@
+<emitters>
+  <emitter class="org.apache.tika.pipes.emitter.opensearch.OpenSearchEmitter">
+    <params>
+      <name>emitter</name>
+      <idField>_id</idField>
+      <openSearchUrl>{OPENSEARCH_URL}</openSearchUrl>
+      <updateStrategy>{UPDATE_STRATEGY}</updateStrategy>
+      <attachmentStrategy>SEPARATE_DOCUMENTS</attachmentStrategy>
+      <connectionTimeout>60000</connectionTimeout>
+      <socketTimeout>120000</socketTimeout>
+      <!-- do something better than this for goodness sake -->
+      {USER_NAME}
+      {PASSWORD}
+    </params>
+  </emitter>
+</emitters>
