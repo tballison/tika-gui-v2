@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.control.cell.TextFieldTableCell?>
+<?import javafx.scene.layout.Pane?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.BatchStatusController">
+   <children>
+      <TextField fx:id="totalToProcess" editable="false" layoutX="146.0" layoutY="320.0" prefHeight="26.0" prefWidth="107.0" />
+      <TextField fx:id="totalProcessed" editable="false" layoutX="146.0" layoutY="281.0" prefHeight="26.0" prefWidth="107.0" />
+      <Label layoutX="42.0" layoutY="324.0" text="Total to Process" />
+      <Label layoutX="42.0" layoutY="286.0" text="Total Processed" />
+      <PieChart fx:id="statusPieChart" layoutX="28.0" layoutY="25.0" prefHeight="231.0" prefWidth="344.0" title="Processed" />
+      <TextField fx:id="overallStatus" editable="false" layoutX="146.0" layoutY="352.0" prefHeight="26.0" prefWidth="107.0" />
+      <Label layoutX="42.0" layoutY="357.0" text="Overall Status" />
+      <TableView fx:id="statusTable" items="${controller.statusCounts}" layoutX="374.0" layoutY="195.0" prefHeight="200.0" prefWidth="212.0">
+        <columns>
+          <TableColumn prefWidth="123.0" text="Status">
+            <cellValueFactory>
+              <PropertyValueFactory property="statusName" />
+            </cellValueFactory>
+            <cellFactory>
+              <TextFieldTableCell fx:factory="forTableColumn" />
+            </cellFactory>
+          </TableColumn>
+          <TableColumn fx:id="countColumn" prefWidth="88.0" text="Count">
+            <cellValueFactory>
+              <PropertyValueFactory property="count" />
+            </cellValueFactory>
+            <cellFactory>
+              <TextFieldTableCell fx:factory="forTableColumn" />
+            </cellFactory>
+          </TableColumn>
+        </columns>
+      </TableView>
+   </children>
+</Pane>

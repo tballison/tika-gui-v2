@@ -49,7 +49,7 @@
           <TextFieldTableCell fx:factory="forTableColumn"/>
         </cellFactory>
       </TableColumn>
-      <TableColumn fx:id="OutputMetadataColumn" prefWidth="208.0" text="Output Metadata Key">
+      <TableColumn fx:id="outputMetadataColumn" prefWidth="208.0" text="Output Metadata Key">
         <cellValueFactory>
           <PropertyValueFactory property="output"/>
         </cellValueFactory>

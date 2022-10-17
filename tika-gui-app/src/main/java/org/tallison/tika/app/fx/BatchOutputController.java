@@ -66,13 +66,24 @@ public class BatchOutputController implements Initializable {
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
         ConfigItem configItem = APP_CONTEXT.getBatchProcessConfig().getEmitter();
-        if (configItem.getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
-            //TODO -- get the last selected version out of the app context
+
+        if (configItem != null &&
+                configItem.getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
+            openSearchUrl.setText(configItem.getAttributes().get("openSearchUrl"));
+            openSearchUserName.setText(configItem.getAttributes().get("userName"));
+            String selected = configItem.getAttributes().get("updateStrategy");
+            if (! StringUtils.isBlank(selected)) {
+                openSearchUpdateStrategy.getSelectionModel().select(selected);
+            } else {
+                openSearchUpdateStrategy.getSelectionModel().select("Upsert");
+            }
+        } else {
+            openSearchUpdateStrategy.getSelectionModel().select("Upsert");
         }
-        openSearchUpdateStrategy.getSelectionModel().select("Upsert");
     }
 
     public void fileSystemOutputDirectorySelect(ActionEvent actionEvent) {
+
         final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Open Target Directory");
@@ -93,7 +104,8 @@ public class BatchOutputController implements Initializable {
         String label = "FileSystem: " + directory.getName();
         batchProcessConfig.setEmitter(label, Constants.FS_EMITTER_CLASS, "basePath",
                 directory.toPath().toAbsolutePath().toString());
-
+        //TODO -- do better than hard coding indices
+        APP_CONTEXT.getBatchProcessConfig().setOutputSelectedTab(0);
         APP_CONTEXT.saveState();
         ((Stage) fsOutputButton.getScene().getWindow()).close();
     }
@@ -139,10 +151,13 @@ public class BatchOutputController implements Initializable {
                 "openSearchUrl", url, "userName", userName,
                 "password", password, "updateStrategy",
                 openSearchUpdateStrategy.getSelectionModel().getSelectedItem());
+
+        APP_CONTEXT.getBatchProcessConfig().setOutputSelectedTab(1);
+        APP_CONTEXT.saveState();
         ((Stage) fsOutputButton.getScene().getWindow()).close();
     }
 
-    private void alert(String header, String content) {
+    void alert(String header, String content) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Fetcher");
         alert.setHeaderText(header);

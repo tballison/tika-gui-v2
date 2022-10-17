@@ -52,7 +52,6 @@ public class FormattedTableCellFactory<S, T>
         TableCell<S, T> cell = new TableCell<S, T>() {
             @Override
             public void updateItem(Object item, boolean empty) {
-                System.out.println(item + " :: " + empty);
                 if (item == getItem()) {
                     return;
                 }

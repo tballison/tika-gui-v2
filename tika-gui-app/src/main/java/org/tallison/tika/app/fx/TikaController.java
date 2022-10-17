@@ -27,6 +27,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
@@ -42,7 +43,7 @@ import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
 
-public class TikaController {
+public class TikaController extends ControllerBase {
 
     static AppContext APP_CONTEXT = AppContext.getInstance();
     private static Logger LOGGER = LogManager.getLogger(TikaController.class);
@@ -66,7 +67,9 @@ public class TikaController {
         inputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().getFetcherLabel());
         outputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().getEmitterLabel());
         //batchProgress.setVisible(false);
-        batchProgress.progressProperty().bind(APP_CONTEXT.getBatchProcess().progressProperty());
+        if (APP_CONTEXT.getBatchProcessConfig() != null) {
+            batchProgress.progressProperty().bind(APP_CONTEXT.getBatchProcess().progressProperty());
+        }
     }
 
 
@@ -95,7 +98,16 @@ public class TikaController {
         VBox dragTarget = new VBox();
         StackPane root = new StackPane();
         root.getChildren().add(dragTarget);
-        Scene scene = new Scene(fxmlLoader.load());
+        TabPane tabPane = fxmlLoader.load();
+        int selected = 0;
+
+        if (APP_CONTEXT.getBatchProcessConfig() != null) {
+            selected = APP_CONTEXT.getBatchProcessConfig().getInputSelectedTab();
+        }
+
+        tabPane.getSelectionModel().select(selected);
+
+        Scene scene = new Scene(tabPane);
 
         final Stage stage = new Stage();
         stage.setTitle("Select Input");
@@ -146,7 +158,13 @@ public class TikaController {
         VBox dragTarget = new VBox();
         StackPane root = new StackPane();
         root.getChildren().add(dragTarget);
-        Scene scene = new Scene(fxmlLoader.load());
+        TabPane tabPane = fxmlLoader.load();
+        Scene scene = new Scene(tabPane);
+        int selected = 0;
+        if (APP_CONTEXT.getBatchProcessConfig() != null) {
+            selected = APP_CONTEXT.getBatchProcessConfig().getOutputSelectedTab();
+        }
+        tabPane.getSelectionModel().select(selected);
 
         final Stage stage = new Stage();
         stage.setTitle("Select Output");
@@ -159,6 +177,12 @@ public class TikaController {
 
     @FXML
     public void runTika(ActionEvent actionEvent) throws Exception {
+        BatchProcess oldProcess = APP_CONTEXT.getBatchProcess();
+        if (oldProcess != null) {
+            if (oldProcess.getStatus() == BatchProcess.STATUS.RUNNING) {
+                alert("Still running?!", "Older process is still running");
+            }
+        }
         //TODO -- all sorts of checks
         //Is there already a batch process.
         //Do we have a fetcher and an emitter already set, etc.
@@ -207,5 +231,30 @@ public class TikaController {
 
     public void openDetailedStatus(MouseEvent mouseEvent) {
 
+    }
+
+    public void cancelBatch(ActionEvent actionEvent) {
+        APP_CONTEXT.getBatchProcess().cancel();
+    }
+
+    public void checkStatus(ActionEvent actionEvent) throws IOException {
+        FXMLLoader fxmlLoader =
+                new FXMLLoader(TikaApplication.class.getResource("batch-status-view.fxml"));
+        VBox dragTarget = new VBox();
+        StackPane root = new StackPane();
+        root.getChildren().add(dragTarget);
+
+        Scene scene = new Scene(fxmlLoader.load());
+
+        final Stage stage = new Stage();
+        stage.setTitle("Batch Status");
+        stage.setScene(scene);
+        final BatchStatusController batchStatusController = fxmlLoader.getController();
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+                batchStatusController.stop();
+            }
+        });
+        stage.show();
     }
 }

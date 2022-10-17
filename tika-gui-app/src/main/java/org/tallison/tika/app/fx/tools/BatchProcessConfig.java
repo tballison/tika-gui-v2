@@ -45,6 +45,10 @@ public class BatchProcessConfig {
     @JsonIgnore
     private StringProperty emitterLabel = new SimpleStringProperty("Unselected");
 
+    private int outputSelectedTab = 0;
+
+    private int inputSelectedTab = 0;
+
     private String digest = "No Digest";
 
     private int numProcesses = 5;
@@ -183,5 +187,21 @@ public class BatchProcessConfig {
 
     public void setMaxMemMb(int maxMemMb) {
         this.maxMemMb = maxMemMb;
+    }
+
+    public void setOutputSelectedTab(int outputSelectedTab) {
+        this.outputSelectedTab = outputSelectedTab;
+    }
+
+    public void setInputSelectedTab(int inputSelectedTab) {
+        this.inputSelectedTab = inputSelectedTab;
+    }
+
+    public int getOutputSelectedTab() {
+        return outputSelectedTab;
+    }
+
+    public int getInputSelectedTab() {
+        return inputSelectedTab;
     }
 }

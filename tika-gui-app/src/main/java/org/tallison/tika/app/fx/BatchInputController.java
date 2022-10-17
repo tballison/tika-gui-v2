@@ -61,7 +61,7 @@ public class BatchInputController {
                 directory.toPath().toAbsolutePath().toString());
         batchProcessConfig.setPipesIterator(label, FileSystemPipesIterator.class.getName(),
                 "basePath", directory.toPath().toAbsolutePath().toString());
-
+        APP_CONTEXT.getBatchProcessConfig().setInputSelectedTab(0);
         APP_CONTEXT.saveState();
         ((Stage) fsInputButton.getScene().getWindow()).close();
     }

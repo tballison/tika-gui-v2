@@ -30,54 +30,60 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.BatchOutputController">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0"
+         prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+         fx:controller="org.tallison.tika.app.fx.BatchOutputController">
   <tabs>
     <Tab text="File System">
       <content>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-               <children>
-                  <Label layoutX="76.0" layoutY="70.0" text="Output Directory" />
-                  <Button fx:id="fsOutputButton" layoutX="338.0" layoutY="66.0" mnemonicParsing="false" onAction="#fileSystemOutputDirectorySelect" text="Select" />
-               </children>
+          <children>
+            <Label layoutX="76.0" layoutY="70.0" text="Output Directory"/>
+            <Button fx:id="fsOutputButton" layoutX="338.0" layoutY="66.0" mnemonicParsing="false"
+                    onAction="#fileSystemOutputDirectorySelect" text="Select"/>
+          </children>
         </AnchorPane>
       </content>
     </Tab>
     <Tab text="OpenSearch">
       <content>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-               <children>
-                  <Label layoutX="70.0" layoutY="64.0" text="OpenSearch URL" />
-                  <Label layoutX="71.0" layoutY="96.0" text="User Name" />
-                  <Label layoutX="70.0" layoutY="130.0" text="Password" />
-                  <PasswordField fx:id="openSearchPassword" layoutX="190.0" layoutY="126.0" promptText="admin" />
-                  <TextField fx:id="openSearchUserName" layoutX="190.0" layoutY="92.0" promptText="admin" text="admin" />
-                  <TextField fx:id="openSearchUrl" layoutX="190.0" layoutY="60.0" prefHeight="26.0" prefWidth="214.0" promptText="https://localhost:9200/my-index" />
-                  <ComboBox fx:id="openSearchUpdateStrategy" layoutX="190.0" layoutY="172.0" prefWidth="150.0">
-                    <items>
-                      <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="Upsert" />
-                        <String fx:value="Overwrite" />
-                      </FXCollections>
-                    </items>
-                  </ComboBox>
-                  <Label layoutX="70.0" layoutY="177.0" text="Update Strategy" />
-                  <Button fx:id="updateOpenSearchEmitter" layoutX="241.0" layoutY="258.0" mnemonicParsing="false" onAction="#updateOpenSearchEmitter" text="Update" />
-               </children></AnchorPane>
+          <children>
+            <Label layoutX="70.0" layoutY="64.0" text="OpenSearch URL"/>
+            <Label layoutX="71.0" layoutY="96.0" text="User Name"/>
+            <Label layoutX="70.0" layoutY="130.0" text="Password"/>
+            <TextField fx:id="openSearchUrl" layoutX="190.0" layoutY="60.0" prefHeight="26.0" prefWidth="214.0"
+                       promptText="https://localhost:9200/my-index"/>
+            <TextField fx:id="openSearchUserName" layoutX="190.0" layoutY="92.0" promptText="admin" text="admin"/>
+            <Label layoutX="70.0" layoutY="177.0" text="Update Strategy"/>
+            <PasswordField fx:id="openSearchPassword" layoutX="190.0" layoutY="126.0" promptText="admin"/>
+            <ComboBox fx:id="openSearchUpdateStrategy" layoutX="190.0" layoutY="172.0" prefWidth="150.0">
+              <items>
+                <FXCollections fx:factory="observableArrayList">
+                  <String fx:value="Upsert"/>
+                  <String fx:value="Overwrite"/>
+                </FXCollections>
+              </items>
+            </ComboBox>
+            <Button fx:id="updateOpenSearchEmitter" layoutX="241.0" layoutY="258.0" mnemonicParsing="false"
+                    onAction="#updateOpenSearchEmitter" text="Update"/>
+          </children>
+        </AnchorPane>
       </content>
     </Tab>
     <Tab disable="true" text="JDBC">
       <content>
-        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0"/>
       </content>
     </Tab>
     <Tab disable="true" text="CSV">
       <content>
-        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0"/>
       </content>
     </Tab>
     <Tab disable="true" text="S3">
       <content>
-        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0"/>
       </content>
     </Tab>
   </tabs>

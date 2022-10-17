@@ -75,7 +75,8 @@ public class BatchProcess {
 
     public synchronized void start(BatchProcessConfig batchProcessConfig)
             throws TikaException, IOException {
-        status = STATUS.RUNNING;
+
+        deletePreviousRuns();
 
         TikaConfigWriter tikaConfigWriter = new TikaConfigWriter();
         try {
@@ -91,7 +92,30 @@ public class BatchProcess {
         executorCompletionService.submit(batchRunner);
     }
 
+    private void deletePreviousRuns() {
+        try {
+            if (Files.isRegularFile(AppContext.BATCH_STATUS_PATH)) {
+                Files.delete(APP_CONTEXT.BATCH_STATUS_PATH);
+            }
+        } catch (IOException e) {
+            LOGGER.warn("couldn't delete batch status file");
+        }
+
+        //TODO -- or should we just configure the logger to over write?!
+        for (File f : AppContext.LOGS_PATH.toFile().listFiles()) {
+            if (f.getName().endsWith(".log")) {
+                try {
+                    Files.delete(f.toPath());
+                } catch (IOException e) {
+                    LOGGER.warn("couldn't delete " + f, e);
+                }
+            }
+        }
+
+    }
+
     public synchronized void cancel() {
+        status = STATUS.CANCELED;
         if (batchRunner != null) {
             batchRunner.cancel();
         }
@@ -110,6 +134,7 @@ public class BatchProcess {
                 //swallow
             }
         }
+        daemonExecutorService.shutdownNow();
     }
 
     public AsyncStatus checkStatus() {
@@ -165,8 +190,7 @@ public class BatchProcess {
     }
 
     public enum STATUS {
-        //  this didn't work?!
-        READY, RUNNING, COMPLETE
+        READY, RUNNING, COMPLETE, CANCELED;
     }
 
     private enum PROCESS_ID {
@@ -201,8 +225,6 @@ public class BatchProcess {
 
             runningProcessId = process.pid();
             Thread.sleep(10000);
-            System.out.println("INPUT: " + inputStreamGobbler.getLines());
-            System.out.println(errorGobbler.getLines());
             return PROCESS_ID.BATCH_PROCESS.ordinal();
         }
 
@@ -246,22 +268,26 @@ public class BatchProcess {
                                 AsyncStatus.class);
                     } catch (IOException e) {
                         LOGGER.warn("bad json ", e);
+                        Thread.sleep(1000);
+                        continue;
                     }
                     if (asyncStatus != null) {
                         long processed = 0;
                         for (Map.Entry<PipesResult.STATUS, Long> e : asyncStatus.getStatusCounts().entrySet()) {
                             processed += e.getValue();
                         }
-                        LOGGER.info("processed " + asyncStatus);
+                        LOGGER.debug("processed {}", asyncStatus);
                         long total = asyncStatus.getTotalCountResult().getTotalCount();
                         if (processed > total) {
                             total = processed;
                         }
                         if (asyncStatus.getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
-                            progressProperty.set(100.0f);
+                            progressProperty.set(1.0f);
+                            return 1;
                         } else if (total > 0) {
-                            float percentage = 100f * ((float) processed / (float) total);
-                            LOGGER.info("setting " + percentage);
+                            float percentage = ((float) processed / (float) total);
+                            LOGGER.debug("setting {} :: {} / {}", percentage,
+                                    processed, total);
                             progressProperty.set(percentage);
                         }
                     }
