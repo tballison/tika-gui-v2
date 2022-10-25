@@ -19,6 +19,7 @@ package org.tallison.tika.app.fx;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -72,7 +73,12 @@ public class MetadataController {
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Metadata Mapping CSV");
-        BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig();
+        Optional<BatchProcessConfig> batchProcessConfig = APP_CONTEXT.getBatchProcessConfig();
+        if (batchProcessConfig.isEmpty()) {
+            LOGGER.warn("batch process config should not be null!");
+            actionEvent.consume();
+            return;
+        }
 
         File csvFile = fileChooser.showOpenDialog(parent);
         if (csvFile == null) {
@@ -83,7 +89,9 @@ public class MetadataController {
     }
 
     private void loadMetadataCSV(File csvFile) throws IOException {
-        char delimiter = csvFile.getName().endsWith(".txt") ? '\t' : ',';
+        char delimiter = csvFile.getName().endsWith(".txt") ||
+                csvFile.getName().endsWith(".tsv") ?
+                '\t' : ',';
         //TODO add a reader that removes the BOM
         CSVFormat format = CSVFormat.Builder.create(CSVFormat.EXCEL).setDelimiter(delimiter)
                 .setHeader() // no clue why this is needed,but it is
@@ -112,10 +120,11 @@ public class MetadataController {
     }
 
     public void saveMetadataToContext() {
-        APP_CONTEXT.getBatchProcessConfig().getMetadataMapper().getAttributes().clear();
-        for (MetadataRow metadataRow : rows) {
-            APP_CONTEXT.getBatchProcessConfig().getMetadataMapper().getAttributes()
-                    .put(metadataRow.getTika(), metadataRow.getOutput());
+        if (APP_CONTEXT.getBatchProcessConfig().isPresent()) {
+            APP_CONTEXT.getBatchProcessConfig().get().getMetadataMapper().getAttributes().clear();
+            for (MetadataRow metadataRow : rows) {
+                APP_CONTEXT.getBatchProcessConfig().get().getMetadataMapper().getAttributes().put(metadataRow.getTika(), metadataRow.getOutput());
+            }
         }
         APP_CONTEXT.saveState();
     }

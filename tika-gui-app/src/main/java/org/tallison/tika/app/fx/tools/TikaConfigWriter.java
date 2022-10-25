@@ -24,9 +24,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
+import org.tallison.tika.app.fx.TikaController;
 import org.tallison.tika.app.fx.ctx.AppContext;
 
 import org.apache.tika.utils.ProcessUtils;
@@ -39,6 +43,7 @@ import org.apache.tika.utils.StringUtils;
  * This is also does not escape xml characters.  So, bad, very, very bad.
  */
 public class TikaConfigWriter {
+    private static Logger LOGGER = LogManager.getLogger(TikaConfigWriter.class);
 
     public void writeLog4j2() throws IOException {
         String template = getTemplateLog4j2("log4j2-async.xml");
@@ -101,16 +106,22 @@ public class TikaConfigWriter {
 
     private void appendEmitter(BatchProcessConfig batchProcessConfig, StringBuilder sb)
             throws IOException {
-        switch (batchProcessConfig.getEmitter().getClazz()) {
+        Optional<ConfigItem> optionalEmitter = batchProcessConfig.getEmitter();
+        if (optionalEmitter.isEmpty()) {
+            LOGGER.warn("emitter is empty?!");
+            return;
+        }
+        ConfigItem emitter = optionalEmitter.get();
+        switch (emitter.getClazz()) {
             case Constants.FS_EMITTER_CLASS:
-                appendFSEmitter(batchProcessConfig.getEmitter(), sb);
+                appendFSEmitter(emitter, sb);
                 break;
             case Constants.OPEN_SEARCH_EMITTER_CLASS:
-                appendOpenSearchEmitter(batchProcessConfig.getEmitter(), sb);
+                appendOpenSearchEmitter(emitter, sb);
                 break;
             default:
                 throw new RuntimeException("I regret I don't yet support " +
-                        batchProcessConfig.getEmitter().getClazz());
+                        batchProcessConfig.getEmitter().get().getClazz());
         }
     }
 
@@ -145,13 +156,19 @@ public class TikaConfigWriter {
 
     private void appendFetcher(BatchProcessConfig batchProcessConfig, StringBuilder sb)
             throws IOException {
-        switch (batchProcessConfig.getFetcher().getClazz()) {
+        Optional<ConfigItem> optionalFetcher = batchProcessConfig.getFetcher();
+        if (optionalFetcher.isEmpty()) {
+            LOGGER.warn("fetcher is empty?!");
+            return;
+        }
+        ConfigItem fetcher = optionalFetcher.get();
+        switch (fetcher.getClazz()) {
             case "org.apache.tika.pipes.fetcher.fs.FileSystemFetcher":
-                appendFSFetcher(batchProcessConfig.getFetcher(), sb);
+                appendFSFetcher(fetcher, sb);
                 break;
             default:
                 throw new RuntimeException("I regret I don't yet support " +
-                        batchProcessConfig.getFetcher().getClazz());
+                        fetcher.getClazz());
         }
     }
 
@@ -163,13 +180,19 @@ public class TikaConfigWriter {
 
     private void appendPipesIterator(BatchProcessConfig batchProcessConfig, StringBuilder sb)
             throws IOException {
-        switch (batchProcessConfig.getPipesIterator().getClazz()) {
+        Optional<ConfigItem> optionalPipesIterator = batchProcessConfig.getPipesIterator();
+        if (optionalPipesIterator.isEmpty()) {
+            LOGGER.warn("pipesIterator is empty?!");
+            return;
+        }
+        ConfigItem pipesIterator = optionalPipesIterator.get();
+        switch (pipesIterator.getClazz()) {
             case "org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator":
-                appendFSPipesIterator(batchProcessConfig.getPipesIterator(), sb);
+                appendFSPipesIterator(pipesIterator, sb);
                 break;
             default:
                 throw new RuntimeException("I regret I don't yet support " +
-                        batchProcessConfig.getPipesIterator().getClazz());
+                       pipesIterator.getClazz());
         }
     }
 

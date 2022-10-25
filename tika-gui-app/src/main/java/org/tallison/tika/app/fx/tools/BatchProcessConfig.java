@@ -18,6 +18,7 @@ package org.tallison.tika.app.fx.tools;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -30,11 +31,11 @@ import org.apache.tika.utils.ProcessUtils;
 
 public class BatchProcessConfig {
 
-    private ConfigItem pipesIterator;
-    private ConfigItem fetcher;
-    private ConfigItem emitter;
+    private Optional<ConfigItem> pipesIterator;
+    private Optional<ConfigItem> fetcher;
+    private Optional<ConfigItem> emitter;
     private ConfigItem metadataMapper = ConfigItem.build("Metadata mapper",
-            "org.apache.tika.metadata" + ".filter.FieldNameMappingFilter");
+            "org.apache.tika.metadata.filter.FieldNameMappingFilter");
 
     private List<String> tikaMetadata = new ArrayList<>();
     private List<String> outputMetadata = new ArrayList<>();
@@ -49,7 +50,7 @@ public class BatchProcessConfig {
 
     private int inputSelectedTab = 0;
 
-    private String digest = "No Digest";
+    private Optional<String> digest = Optional.of("No Digest");
 
     private int numProcesses = 5;
 
@@ -57,26 +58,26 @@ public class BatchProcessConfig {
 
     private int parseTimeoutSeconds = 120;
 
-    public ConfigItem getPipesIterator() {
+    public Optional<ConfigItem> getPipesIterator() {
         return pipesIterator;
     }
 
     @JsonSetter
     public void setPipesIterator(ConfigItem pipesIterator) {
-        this.pipesIterator = pipesIterator;
+        this.pipesIterator = Optional.of(pipesIterator);
     }
 
     public void setPipesIterator(String... args) {
         setPipesIterator(ConfigItem.build(args));
     }
 
-    public ConfigItem getFetcher() {
+    public Optional<ConfigItem> getFetcher() {
         return fetcher;
     }
 
     @JsonSetter
     public void setFetcher(ConfigItem fetcher) {
-        this.fetcher = fetcher;
+        this.fetcher = Optional.of(fetcher);
         if (fetcher != null) {
             this.fetcherLabel.setValue(fetcher.getLabel());
         }
@@ -84,7 +85,6 @@ public class BatchProcessConfig {
 
     public void setFetcher(String... args) {
         setFetcher(ConfigItem.build(args));
-        setFetcherLabel(fetcher.getLabel());
     }
 
     public StringProperty getFetcherLabel() {
@@ -103,13 +103,13 @@ public class BatchProcessConfig {
         emitterLabel.setValue(label);
     }
 
-    public ConfigItem getEmitter() {
+    public Optional<ConfigItem> getEmitter() {
         return emitter;
     }
 
     @JsonSetter
     public void setEmitter(ConfigItem emitter) {
-        this.emitter = emitter;
+        this.emitter = Optional.of(emitter);
         setEmitterLabel(emitter.getLabel());
     }
 
@@ -147,22 +147,25 @@ public class BatchProcessConfig {
     }
 
     public void appendPipesClasspath(StringBuilder sb) {
-        //TODO -- build this out
-        if (getEmitter().getClazz().equals(Constants.FS_EMITTER_CLASS)) {
-            sb.append(ProcessUtils.escapeCommandLine(
-                    AppContext.TIKA_LIB_PATH.resolve("tika-emitter-fs").toAbsolutePath() + "/*"));
-        } else if (getEmitter().getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
-            sb.append(ProcessUtils.escapeCommandLine(
-                    AppContext.TIKA_LIB_PATH.resolve("tika-emitter-opensearch").toAbsolutePath() + "/*"));
+        //TODO -- build this out for fetchers, emitters and pipes iterators.
+        if (! getEmitter().isEmpty()) {
+            ConfigItem emitter = getEmitter().get();
+            if (emitter.getClazz().equals(Constants.FS_EMITTER_CLASS)) {
+                sb.append(ProcessUtils.escapeCommandLine(
+                        AppContext.TIKA_LIB_PATH.resolve("tika-emitter-fs").toAbsolutePath() + "/*"));
+            } else if (emitter.getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
+                sb.append(ProcessUtils.escapeCommandLine(
+                        AppContext.TIKA_LIB_PATH.resolve("tika-emitter-opensearch").toAbsolutePath() + "/*"));
+            }
         }
     }
 
-    public String getDigest() {
+    public Optional<String> getDigest() {
         return digest;
     }
 
     public void setDigest(String digest) {
-        this.digest = digest;
+        this.digest = Optional.of(digest);
     }
 
     public int getNumProcesses() {

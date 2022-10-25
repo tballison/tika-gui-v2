@@ -25,13 +25,17 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
+import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 
 import org.apache.tika.utils.StringUtils;
 
 public class AdvancedBatchController implements Initializable {
 
     static AppContext APP_CONTEXT = AppContext.getInstance();
+    private static Logger LOGGER = LogManager.getLogger(BatchInputController.class);
 
     @FXML
     private ComboBox<String> digestOptions;
@@ -46,15 +50,20 @@ public class AdvancedBatchController implements Initializable {
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
 
-        digestOptions.getSelectionModel().select(
-                APP_CONTEXT.getBatchProcessConfig().getDigest()
-        );
+        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
+            LOGGER.warn("batch process config is empty?!");
+            return;
+        }
+        BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig().get();
+        if (batchProcessConfig.getDigest().isPresent()) {
+            digestOptions.getSelectionModel().select(batchProcessConfig.getDigest().get());
+        }
         parseTimeoutSeconds.setText(
-                Integer.toString(APP_CONTEXT.getBatchProcessConfig().getParseTimeoutSeconds()));
+                Integer.toString(batchProcessConfig.getParseTimeoutSeconds()));
         memoryPerProcess.setText(
-                Integer.toString(APP_CONTEXT.getBatchProcessConfig().getMaxMemMb())
+                Integer.toString(batchProcessConfig.getMaxMemMb())
         );
-        numProcesses.setText(Integer.toString(APP_CONTEXT.getBatchProcessConfig().getNumProcesses()));
+        numProcesses.setText(Integer.toString(batchProcessConfig.getNumProcesses()));
     }
 
 
@@ -65,7 +74,12 @@ public class AdvancedBatchController implements Initializable {
     public void digestOptions(ActionEvent actionEvent) {
         //TODO -- allow multiple selections
         String selected = digestOptions.getSelectionModel().selectedItemProperty().get();
-        APP_CONTEXT.getBatchProcessConfig().setDigest(selected);
+        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
+            LOGGER.warn("batch process config should not be empty");
+            actionEvent.consume();
+            return;
+        }
+        APP_CONTEXT.getBatchProcessConfig().get().setDigest(selected);
         APP_CONTEXT.saveState();
     }
 
@@ -86,7 +100,7 @@ public class AdvancedBatchController implements Initializable {
             return;
         }
 
-        APP_CONTEXT.getBatchProcessConfig().setParseTimeoutSeconds(num);
+        APP_CONTEXT.getBatchProcessConfig().get().setParseTimeoutSeconds(num);
         APP_CONTEXT.saveState();
 
     }
@@ -111,7 +125,7 @@ public class AdvancedBatchController implements Initializable {
             //TODO -- alert
             return;
         }
-        APP_CONTEXT.getBatchProcessConfig().setMaxMemMb(num);
+        APP_CONTEXT.getBatchProcessConfig().get().setMaxMemMb(num);
         APP_CONTEXT.saveState();
     }
 
@@ -135,7 +149,7 @@ public class AdvancedBatchController implements Initializable {
             //TODO -- alert
             return;
         }
-        APP_CONTEXT.getBatchProcessConfig().setNumProcesses(num);
+        APP_CONTEXT.getBatchProcessConfig().get().setNumProcesses(num);
         APP_CONTEXT.saveState();
     }
 }

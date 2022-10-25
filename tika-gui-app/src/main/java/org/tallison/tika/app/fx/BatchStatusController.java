@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -114,20 +115,21 @@ public class BatchStatusController implements Initializable {
             AppContext appContext = AppContext.getInstance();
             overallStatus.setText("Running");
             while (true) {
-                BatchProcess batchProcess = appContext.getBatchProcess();
+                Optional<BatchProcess> batchProcess = appContext.getBatchProcess();
 
-                if (batchProcess != null) {
-                    final AsyncStatus status = batchProcess.checkStatus();
+                if (batchProcess.isPresent()) {
+                    final Optional<AsyncStatus> status = batchProcess.get().checkStatus();
 
-                    if (status != null) {
+                    if (! status.isEmpty()) {
                         Platform.runLater(() -> {
-                            updatePieChart(status);
-                            updateTotalToProcess(status);
+                            updatePieChart(status.get());
+                            updateTotalToProcess(status.get());
                         });
-                    }
-                    if (status.getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
-                        overallStatus.setText("COMPLETED");
-                        return;
+
+                        if (status.get().getAsyncStatus()  == AsyncStatus.ASYNC_STATUS.COMPLETED) {
+                            overallStatus.setText("COMPLETED");
+                            return;
+                        }
                     }
                     statusTable.sort();
                     statusTable.refresh();

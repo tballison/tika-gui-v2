@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -58,14 +59,15 @@ public class AppContext {
 
 
     private String tikaVersion = "2.4.1";
-    private BatchProcessConfig batchProcessConfig = new BatchProcessConfig();
-    private BatchProcess batchProcess;
+    private Optional<BatchProcessConfig> batchProcessConfig = Optional.of(new BatchProcessConfig());
+    private Optional<BatchProcess> batchProcess = Optional.empty();
     private volatile boolean closed = false;
     private volatile boolean allowBatchToRunOnExit = false;
 
     public static AppContext load() {
         if (Files.isRegularFile(APP_STATE_PATH)) {
             try {
+                LOGGER.debug("loading app state from {}", APP_STATE_PATH);
                 return AppContext.load(APP_STATE_PATH);
             } catch (IOException e) {
                 LOGGER.warn("failed to load " + APP_STATE_PATH, e);
@@ -89,12 +91,15 @@ public class AppContext {
         this.allowBatchToRunOnExit = allowBatchToRunOnExit;
     }
 
-    public void close() {
+    public synchronized void close() {
         if (!closed) {
-            if (!AppContext.getInstance().allowBatchToRunOnExit) {
-                AppContext.getInstance().getBatchProcess().cancel();
+            if (APP_CONTEXT.getBatchProcess().isPresent()) {
+                if (!AppContext.getInstance().allowBatchToRunOnExit) {
+                    APP_CONTEXT.getBatchProcess().get().cancel();
+
+                }
+                APP_CONTEXT.getBatchProcess().get().close();
             }
-            AppContext.getInstance().getBatchProcess().close();
             saveState();
             closed = true;
         }
@@ -131,20 +136,20 @@ public class AppContext {
         this.tikaVersion = tikaVersion;
     }
 
-    public BatchProcessConfig getBatchProcessConfig() {
+    public Optional<BatchProcessConfig> getBatchProcessConfig() {
         return batchProcessConfig;
     }
 
     @JsonSetter
     public void setBatchProcessConfig(BatchProcessConfig batchProcessConfig) {
-        this.batchProcessConfig = batchProcessConfig;
+        this.batchProcessConfig = Optional.of(batchProcessConfig);
     }
 
-    public BatchProcess getBatchProcess() {
+    public Optional<BatchProcess> getBatchProcess() {
         return batchProcess;
     }
 
     public void setBatchProcess(BatchProcess batchProcess) {
-        this.batchProcess = batchProcess;
+        this.batchProcess = Optional.of(batchProcess);
     }
 }

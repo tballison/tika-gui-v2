@@ -17,6 +17,7 @@
 package org.tallison.tika.app.fx;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -64,11 +65,15 @@ public class TikaController extends ControllerBase {
 
     @FXML
     public void initialize() {
-        inputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().getFetcherLabel());
-        outputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().getEmitterLabel());
+        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
+            LOGGER.warn("batch process config must not be null");
+            return;
+        }
+        inputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().get().getFetcherLabel());
+        outputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().get().getEmitterLabel());
         //batchProgress.setVisible(false);
-        if (APP_CONTEXT.getBatchProcessConfig() != null) {
-            batchProgress.progressProperty().bind(APP_CONTEXT.getBatchProcess().progressProperty());
+        if (APP_CONTEXT.getBatchProcess().isPresent()) {
+            batchProgress.progressProperty().bind(APP_CONTEXT.getBatchProcess().get().progressProperty());
         }
     }
 
@@ -101,8 +106,8 @@ public class TikaController extends ControllerBase {
         TabPane tabPane = fxmlLoader.load();
         int selected = 0;
 
-        if (APP_CONTEXT.getBatchProcessConfig() != null) {
-            selected = APP_CONTEXT.getBatchProcessConfig().getInputSelectedTab();
+        if (APP_CONTEXT.getBatchProcessConfig().isPresent()) {
+            selected = APP_CONTEXT.getBatchProcessConfig().get().getInputSelectedTab();
         }
 
         tabPane.getSelectionModel().select(selected);
@@ -161,8 +166,8 @@ public class TikaController extends ControllerBase {
         TabPane tabPane = fxmlLoader.load();
         Scene scene = new Scene(tabPane);
         int selected = 0;
-        if (APP_CONTEXT.getBatchProcessConfig() != null) {
-            selected = APP_CONTEXT.getBatchProcessConfig().getOutputSelectedTab();
+        if (APP_CONTEXT.getBatchProcessConfig().isPresent()) {
+            selected = APP_CONTEXT.getBatchProcessConfig().get().getOutputSelectedTab();
         }
         tabPane.getSelectionModel().select(selected);
 
@@ -177,11 +182,14 @@ public class TikaController extends ControllerBase {
 
     @FXML
     public void runTika(ActionEvent actionEvent) throws Exception {
-        BatchProcess oldProcess = APP_CONTEXT.getBatchProcess();
-        if (oldProcess != null) {
-            if (oldProcess.getStatus() == BatchProcess.STATUS.RUNNING) {
+        Optional<BatchProcess> oldProcess = APP_CONTEXT.getBatchProcess();
+        if (! oldProcess.isEmpty()) {
+            if (oldProcess.get().getStatus() == BatchProcess.STATUS.RUNNING) {
                 alert("Still running?!", "Older process is still running");
             }
+        }
+        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
+            LOGGER.warn("batch processConfig must not be empty!");
         }
         //TODO -- all sorts of checks
         //Is there already a batch process.
@@ -189,18 +197,18 @@ public class TikaController extends ControllerBase {
         BatchProcess batchProcess = new BatchProcess();
         batchProgress.progressProperty().bind(batchProcess.progressProperty());
         APP_CONTEXT.setBatchProcess(batchProcess);
-        batchProcess.start(APP_CONTEXT.getBatchProcessConfig());
+        batchProcess.start(APP_CONTEXT.getBatchProcessConfig().get());
         APP_CONTEXT.saveState();
     }
 
     public void showFetcher(MouseEvent mouseEvent) {
-        ConfigItem configItem = APP_CONTEXT.getBatchProcessConfig().getFetcher();
-        if (configItem != null) {
-            String path = configItem.getAttributes().get("basePath");
+        Optional<ConfigItem> configItem = APP_CONTEXT.getBatchProcessConfig().get().getFetcher();
+        if (configItem.isPresent()) {
+            String path = configItem.get().getAttributes().get("basePath");
             if (!StringUtils.isBlank(path)) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Fetcher");
-                alert.setHeaderText(configItem.getLabel());
+                alert.setHeaderText(configItem.get().getLabel());
                 alert.setResizable(true);
                 alert.setContentText("Path: " + path);
                 alert.getDialogPane().setMinWidth(500);
@@ -212,13 +220,13 @@ public class TikaController extends ControllerBase {
     }
 
     public void showEmitter(MouseEvent mouseEvent) {
-        ConfigItem configItem = APP_CONTEXT.getBatchProcessConfig().getEmitter();
-        if (configItem != null) {
-            String path = configItem.getAttributes().get("basePath");
+        Optional<ConfigItem> configItem = APP_CONTEXT.getBatchProcessConfig().get().getEmitter();
+        if (configItem.isPresent()) {
+            String path = configItem.get().getAttributes().get("basePath");
             if (!StringUtils.isBlank(path)) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Fetcher");
-                alert.setHeaderText(configItem.getLabel());
+                alert.setHeaderText(configItem.get().getLabel());
                 alert.setResizable(true);
                 alert.setContentText("Path: " + path);
                 alert.getDialogPane().setMinWidth(500);
@@ -234,7 +242,9 @@ public class TikaController extends ControllerBase {
     }
 
     public void cancelBatch(ActionEvent actionEvent) {
-        APP_CONTEXT.getBatchProcess().cancel();
+        if (APP_CONTEXT.getBatchProcess().isPresent()) {
+            APP_CONTEXT.getBatchProcess().get().cancel();
+        }
     }
 
     public void checkStatus(ActionEvent actionEvent) throws IOException {

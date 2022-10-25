@@ -18,6 +18,8 @@ package org.tallison.tika.app.fx;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,6 +37,8 @@ import javafx.scene.layout.Region;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 import org.tallison.tika.app.fx.tools.ConfigItem;
@@ -44,6 +48,7 @@ import org.apache.tika.utils.StringUtils;
 public class BatchOutputController implements Initializable {
 
     private static AppContext APP_CONTEXT = AppContext.getInstance();
+    private static Logger LOGGER = LogManager.getLogger(BatchOutputController.class);
 
     //TODO -- this is bad
     private static final Pattern SIMPLE_URL_PATTERN =
@@ -65,20 +70,28 @@ public class BatchOutputController implements Initializable {
 
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
-        ConfigItem configItem = APP_CONTEXT.getBatchProcessConfig().getEmitter();
+        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
+            LOGGER.warn("batch process config must not be null at this point");
+            return;
+        }
+        Optional<ConfigItem> emitterOptional =
+                APP_CONTEXT.getBatchProcessConfig().get().getEmitter();
 
-        if (configItem != null &&
-                configItem.getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
-            openSearchUrl.setText(configItem.getAttributes().get("openSearchUrl"));
-            openSearchUserName.setText(configItem.getAttributes().get("userName"));
-            String selected = configItem.getAttributes().get("updateStrategy");
-            if (! StringUtils.isBlank(selected)) {
-                openSearchUpdateStrategy.getSelectionModel().select(selected);
+        if (emitterOptional.isPresent()) {
+            ConfigItem emitter = emitterOptional.get();
+
+            if (emitter.getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
+                openSearchUrl.setText(emitter.getAttributes().get("openSearchUrl"));
+                openSearchUserName.setText(emitter.getAttributes().get("userName"));
+                String selected = emitter.getAttributes().get("updateStrategy");
+                if (!StringUtils.isBlank(selected)) {
+                    openSearchUpdateStrategy.getSelectionModel().select(selected);
+                } else {
+                    openSearchUpdateStrategy.getSelectionModel().select("Upsert");
+                }
             } else {
                 openSearchUpdateStrategy.getSelectionModel().select("Upsert");
             }
-        } else {
-            openSearchUpdateStrategy.getSelectionModel().select("Upsert");
         }
     }
 
@@ -87,14 +100,25 @@ public class BatchOutputController implements Initializable {
         final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Open Target Directory");
-        BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig();
-
-        if (batchProcessConfig.getEmitter() != null &&
-                batchProcessConfig.getEmitter().getClazz() != null &&
-                batchProcessConfig.getEmitter().getClazz().equals(Constants.FS_EMITTER_CLASS)) {
-            String path = batchProcessConfig.getEmitter().getAttributes().get("basePath");
-            if (!StringUtils.isBlank(path)) {
-                directoryChooser.setInitialDirectory(new File(path));
+        BatchProcessConfig batchProcessConfig;
+        if (APP_CONTEXT.getBatchProcessConfig().isPresent()) {
+            batchProcessConfig = APP_CONTEXT.getBatchProcessConfig().get();
+        } else {
+            LOGGER.warn("batch process config is null?!");
+            actionEvent.consume();
+            return;
+        }
+        Optional<ConfigItem> emitter = batchProcessConfig.getEmitter();
+        if (emitter.isPresent()) {
+            if (emitter.get().getClazz() != null &&
+                    emitter.get().getClazz().equals(Constants.FS_EMITTER_CLASS)) {
+                String path = emitter.get().getAttributes().get("basePath");
+                if (!StringUtils.isBlank(path)) {
+                    File f = new File(path);
+                    if (f.isDirectory()) {
+                        directoryChooser.setInitialDirectory(f);
+                    }
+                }
             }
         }
         File directory = directoryChooser.showDialog(parent);
@@ -104,26 +128,30 @@ public class BatchOutputController implements Initializable {
         String label = "FileSystem: " + directory.getName();
         batchProcessConfig.setEmitter(label, Constants.FS_EMITTER_CLASS, "basePath",
                 directory.toPath().toAbsolutePath().toString());
+
         //TODO -- do better than hard coding indices
-        APP_CONTEXT.getBatchProcessConfig().setOutputSelectedTab(0);
+        batchProcessConfig.setOutputSelectedTab(0);
         APP_CONTEXT.saveState();
         ((Stage) fsOutputButton.getScene().getWindow()).close();
     }
 
     public void updateOpenSearchEmitter(ActionEvent actionEvent) {
-        BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig();
+        Optional<BatchProcessConfig> batchProcessConfig = APP_CONTEXT.getBatchProcessConfig();
+        if (batchProcessConfig.isEmpty()) {
+            LOGGER.warn("batch process config is empty?!");
+            actionEvent.consume();
+            return;
+        }
         //TODO -- check that all required information is here...at least the url
         //check that the url includes an index and is not the bare url
 
         String url = openSearchUrl.getText();
         String index = getIndex(url);
         if (StringUtils.isEmpty(url)) {
-            alert("Missing URL?",
-                    "Must specify a url including the index, " +
-                            "e.g. https://localhost:9500/my-index");
+            alert("Missing URL?", "Must specify a url including the index, " +
+                    "e.g. https://localhost:9500/my-index");
             actionEvent.consume();
             return;
-
         }
         if (StringUtils.isEmpty(index)) {
             alert("Missing index?", "Please specify an index, I only see: " + url);
@@ -133,13 +161,13 @@ public class BatchOutputController implements Initializable {
         String label = "OpenSearch: " + index;
         String userName = openSearchUserName.getText();
         String password = openSearchPassword.getText();
-        if (StringUtils.isEmpty(userName) && ! StringUtils.isEmpty(password)) {
+        if (StringUtils.isEmpty(userName) && !StringUtils.isEmpty(password)) {
             alert("Credentials?", "Password with no username?!");
             actionEvent.consume();
             return;
         }
 
-        if (StringUtils.isEmpty(password) && ! StringUtils.isEmpty(userName)) {
+        if (StringUtils.isEmpty(password) && !StringUtils.isEmpty(userName)) {
             alert("Credentials?", "UserName with no password?!");
             actionEvent.consume();
             return;
@@ -147,12 +175,12 @@ public class BatchOutputController implements Initializable {
 
 
         //TODO -- check anything else?
-        batchProcessConfig.setEmitter(label, Constants.OPEN_SEARCH_EMITTER_CLASS,
-                "openSearchUrl", url, "userName", userName,
-                "password", password, "updateStrategy",
+        batchProcessConfig.get().setEmitter(label, Constants.OPEN_SEARCH_EMITTER_CLASS,
+                "openSearchUrl",
+                url, "userName", userName, "password", password, "updateStrategy",
                 openSearchUpdateStrategy.getSelectionModel().getSelectedItem());
 
-        APP_CONTEXT.getBatchProcessConfig().setOutputSelectedTab(1);
+        APP_CONTEXT.getBatchProcessConfig().get().setOutputSelectedTab(1);
         APP_CONTEXT.saveState();
         ((Stage) fsOutputButton.getScene().getWindow()).close();
     }

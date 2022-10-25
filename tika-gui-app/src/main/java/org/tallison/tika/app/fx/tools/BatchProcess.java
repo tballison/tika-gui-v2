@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
@@ -137,12 +138,13 @@ public class BatchProcess {
         daemonExecutorService.shutdownNow();
     }
 
-    public AsyncStatus checkStatus() {
+    public Optional<AsyncStatus> checkStatus() {
         try {
-            return objectMapper.readValue(AppContext.BATCH_STATUS_PATH.toFile(), AsyncStatus.class);
+            return Optional.of(objectMapper.readValue(AppContext.BATCH_STATUS_PATH.toFile(),
+                    AsyncStatus.class));
         } catch (IOException e) {
             LOGGER.warn("couldn't read status file", e);
-            return null;
+            return Optional.empty();
         }
         //TODO -- fix this
         //we need to check that the pid matches and that the status

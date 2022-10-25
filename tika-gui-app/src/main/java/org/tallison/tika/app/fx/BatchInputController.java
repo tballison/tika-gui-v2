@@ -17,6 +17,7 @@
 package org.tallison.tika.app.fx;
 
 import java.io.File;
+import java.util.Optional;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -25,8 +26,11 @@ import javafx.scene.control.Button;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
+import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator;
 import org.apache.tika.utils.StringUtils;
@@ -34,6 +38,7 @@ import org.apache.tika.utils.StringUtils;
 public class BatchInputController {
 
     private static AppContext APP_CONTEXT = AppContext.getInstance();
+    private static Logger LOGGER = LogManager.getLogger(BatchInputController.class);
 
     @FXML
     private Button fsInputButton;
@@ -42,13 +47,20 @@ public class BatchInputController {
         final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Open Resource File");
-        BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig();
-        if (batchProcessConfig.getFetcher() != null &&
-                batchProcessConfig.getFetcher().getClazz() != null &&
-                batchProcessConfig.getFetcher().getClazz().equals(Constants.FS_FETCHER_CLASS)) {
-            String path = batchProcessConfig.getFetcher().getAttributes().get("basePath");
+        if (! APP_CONTEXT.getBatchProcessConfig().isPresent()) {
+            LOGGER.warn("BatchProcessConfig must not be empty");
+            actionEvent.consume();
+            return;
+        }
+        BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig().get();
+        Optional<ConfigItem> fetcher = batchProcessConfig.getFetcher();
+        if (fetcher.isPresent() && fetcher.get().getClazz().equals(Constants.FS_FETCHER_CLASS)) {
+            String path = fetcher.get().getAttributes().get("basePath");
             if (!StringUtils.isBlank(path)) {
-                directoryChooser.setInitialDirectory(new File(path));
+                File f = new File(path);
+                if (f.isDirectory()) {
+                    directoryChooser.setInitialDirectory(f);
+                }
             }
         }
 
@@ -61,7 +73,7 @@ public class BatchInputController {
                 directory.toPath().toAbsolutePath().toString());
         batchProcessConfig.setPipesIterator(label, FileSystemPipesIterator.class.getName(),
                 "basePath", directory.toPath().toAbsolutePath().toString());
-        APP_CONTEXT.getBatchProcessConfig().setInputSelectedTab(0);
+        batchProcessConfig.setInputSelectedTab(0);
         APP_CONTEXT.saveState();
         ((Stage) fsInputButton.getScene().getWindow()).close();
     }
