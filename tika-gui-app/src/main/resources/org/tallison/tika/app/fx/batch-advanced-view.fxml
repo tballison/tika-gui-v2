@@ -28,19 +28,19 @@
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="Advanced Batch Options" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.AdvancedBatchController">
+<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="Advanced Batch Options" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.AdvancedBatchController">
   <content>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
          <children>
-            <Label layoutX="38.0" layoutY="117.0" text="Digest Options" />
+            <Label layoutX="41.0" layoutY="35.0" prefHeight="16.0" prefWidth="41.0" text="Parsers" />
             <Label layoutX="40.0" layoutY="197.0" text="Parse Timeout (seconds)" />
-            <TextField fx:id="parseTimeoutSeconds" layoutX="191.0" layoutY="194.0" onAction="#setParseTimeoutSeconds" prefHeight="26.0" prefWidth="79.0" />
-            <Button layoutX="38.0" layoutY="289.0" mnemonicParsing="false" text="Show tika-config" />
+            <TextField fx:id="parseTimeoutSeconds" layoutX="191.0" layoutY="194.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="79.0" />
+            <Button layoutX="191.0" layoutY="290.0" mnemonicParsing="false" text="Show tika-config" />
             <Label layoutX="40.0" layoutY="232.0" text="Max. Memory&#10;Per  Process (mb)" />
-            <TextField fx:id="memoryPerProcess" layoutX="191.0" layoutY="236.0" onAction="#setMemoryPerProcessGb" prefHeight="26.0" prefWidth="79.0" />
+            <TextField fx:id="memoryPerProcess" layoutX="191.0" layoutY="236.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="79.0" />
             <Label layoutX="39.0" layoutY="157.0" text="Number of Processes" />
-            <TextField fx:id="numProcesses" layoutX="191.0" layoutY="153.0" onAction="#setNumProcesses" prefHeight="26.0" prefWidth="79.0" />
-            <ComboBox fx:id="digestOptions" layoutX="170.0" layoutY="113.0" onAction="#digestOptions" prefWidth="150.0">
+            <TextField fx:id="numProcesses" layoutX="191.0" layoutY="153.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="79.0" />
+            <ComboBox fx:id="digestOptions" layoutX="184.0" layoutY="114.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="115.0">
               <items>
                 <FXCollections fx:factory="observableArrayList">
                   <String fx:value="No Digest" />
@@ -49,6 +49,17 @@
                 </FXCollections>
               </items>
             </ComboBox>
+            <Label layoutX="41.0" layoutY="118.0" text="Digest Options" />
+            <Button disable="true" layoutX="191.0" layoutY="31.0" mnemonicParsing="false" onAction="#configureParsers" text="Configure" />
+            <Label layoutX="41.0" layoutY="72.0" prefHeight="17.0" prefWidth="69.0" text="File Crawler" />
+            <Button disable="true" layoutX="191.0" layoutY="68.0" mnemonicParsing="false" onAction="#configurePipesIterator" text="Configure" />
+            <Label layoutX="299.0" layoutY="140.0" prefHeight="52.0" prefWidth="116.0" text="Per File Emit &#10;Threshold (mb)" />
+            <TextField fx:id="perFileEmitThresholdMb" layoutX="451.0" layoutY="153.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="79.0" />
+            <Label layoutX="299.0" layoutY="197.0" text="Total Emit Threshold (mb)" />
+            <TextField fx:id="totalEmitThresholdMb" layoutX="451.0" layoutY="193.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="79.0" />
+            <Button fx:id="saveAdvanced" layoutX="43.0" layoutY="290.0" mnemonicParsing="false" onAction="#saveAdvanced" text="Save" />
+            <Label layoutX="300.0" layoutY="240.0" text="Emit Within (milliseconds)" />
+            <TextField fx:id="emitWithinMs" layoutX="452.0" layoutY="236.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="79.0" />
          </children>
     </AnchorPane>
   </content>

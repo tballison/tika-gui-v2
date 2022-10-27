@@ -151,6 +151,14 @@ public class TikaController extends ControllerBase {
         Scene scene = new Scene(fxmlLoader.load());
 
         final Stage stage = new Stage();
+        final AdvancedBatchController advancedBatchController = fxmlLoader.getController();
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+                advancedBatchController.saveState();
+            }
+        });
+        stage.show();
+
         stage.setTitle("Advanced View");
         stage.setScene(scene);
         stage.show();

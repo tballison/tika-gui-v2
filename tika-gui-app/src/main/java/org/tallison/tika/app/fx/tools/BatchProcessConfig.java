@@ -58,6 +58,12 @@ public class BatchProcessConfig {
 
     private int parseTimeoutSeconds = 120;
 
+    private int perFileEmitThresholdMb = 100;
+
+    private int totalEmitThesholdMb = 1000;
+
+    private long emitWithinMs = 10000;
+
     public Optional<ConfigItem> getPipesIterator() {
         return pipesIterator;
     }
@@ -206,5 +212,29 @@ public class BatchProcessConfig {
 
     public int getInputSelectedTab() {
         return inputSelectedTab;
+    }
+
+    public int getPerFileEmitThresholdMb() {
+        return perFileEmitThresholdMb;
+    }
+
+    public void setPerFileEmitThresholdMb(int perFileEmitThresholdMb) {
+        this.perFileEmitThresholdMb = perFileEmitThresholdMb;
+    }
+
+    public int getTotalEmitThesholdMb() {
+        return totalEmitThesholdMb;
+    }
+
+    public void setTotalEmitThesholdMb(int totalEmitThesholdMb) {
+        this.totalEmitThesholdMb = totalEmitThesholdMb;
+    }
+
+    public long getEmitWithinMs() {
+        return emitWithinMs;
+    }
+
+    public void setEmitWithinMs(long emitWithinMs) {
+        this.emitWithinMs = emitWithinMs;
     }
 }
