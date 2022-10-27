@@ -31,9 +31,9 @@ import org.apache.tika.utils.ProcessUtils;
 
 public class BatchProcessConfig {
 
-    private Optional<ConfigItem> pipesIterator;
-    private Optional<ConfigItem> fetcher;
-    private Optional<ConfigItem> emitter;
+    private Optional<ConfigItem> pipesIterator = Optional.ofNullable(null);
+    private Optional<ConfigItem> fetcher = Optional.ofNullable(null);
+    private Optional<ConfigItem> emitter = Optional.ofNullable(null);
     private ConfigItem metadataMapper = ConfigItem.build("Metadata mapper",
             "org.apache.tika.metadata.filter.FieldNameMappingFilter");
 

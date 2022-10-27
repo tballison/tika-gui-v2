@@ -16,6 +16,8 @@
  */
 package org.tallison.tika.app.fx.tools;
 
+import static org.tallison.tika.app.fx.Constants.NO_DIGEST;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,25 +73,50 @@ public class TikaConfigWriter {
         appendFetcher(batchProcessConfig, sb);
         appendEmitter(batchProcessConfig, sb);
         appendAsync(batchProcessConfig, sb);
+        appendAutoDetectParserConfig(batchProcessConfig, sb);
         sb.append("</properties>");
         Files.write(tmp, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE);
         return tmp;
     }
 
-    private void appendAsync(BatchProcessConfig batchProcessConfig, StringBuilder sb)
+    private void appendAutoDetectParserConfig(BatchProcessConfig batchProcessConfig,
+                                              StringBuilder sb) throws IOException {
+        //good enough for now.  we'll have to figure out
+        //a better option if we add more params
+        if (batchProcessConfig.getDigest().isEmpty()) {
+            return;
+        }
+        String digestString = batchProcessConfig.getDigest().get();
+        if (digestString.equals(NO_DIGEST)) {
+            return;
+        }
+        String async = getTemplate("autoDetectParserConfig.xml");
+
+        async = async.replace("{DIGEST_STRING}", digestString);
+        sb.append(async).append("\n");
+    }
+
+    private void appendAsync(BatchProcessConfig bpc, StringBuilder sb)
             throws IOException {
         String async = getTemplate("async.xml");
         async = async.replace("{NUM_CLIENTS}",
-                Integer.toString(batchProcessConfig.getNumProcesses()));
+                Integer.toString(bpc.getNumProcesses()));
         async = async.replace("{XMX}", "-Xmx" +
-                batchProcessConfig.getMaxMemMb() + "m");
+                bpc.getMaxMemMb() + "m");
         async = async.replace("{ASYNC_LOG}",
                 AppContext.ASYNC_LOG4J2_PATH.toAbsolutePath().toString());
         async = async.replace("{TIMEOUT_MS}",
-                Long.toString(batchProcessConfig.getParseTimeoutSeconds() * 1000));
+                Long.toString(bpc.getParseTimeoutSeconds() * 1000));
         async = async.replace("{STATUS_FILE}",
                 AppContext.BATCH_STATUS_PATH.toAbsolutePath().toString());
-        async = async.replace("{CLASS_PATH}", buildClassPath(batchProcessConfig));
+        async = async.replace("{EMIT_WITHIN_MS}",
+                Long.toString(bpc.getEmitWithinMs()));
+        async = async.replace("{TOTAL_EMIT_THRESHOLD}",
+                Long.toString((long)bpc.getTotalEmitThesholdMb() * 1024l * 1024l));
+        async = async.replace("{PER_FILE_EMIT_THRESHOLD}",
+                Long.toString((long)bpc.getPerFileEmitThresholdMb() * 1024l * 1024l));
+
+        async = async.replace("{CLASS_PATH}", buildClassPath(bpc));
         sb.append(async).append("\n");
     }
 
@@ -226,7 +253,7 @@ public class TikaConfigWriter {
             sb.append("</metadataFilter>\n");
         }
         template = template.replace("{MAPPING_FILTER}", sb.toString());
-        tikaConfigBuilder.append(template);
+        tikaConfigBuilder.append(template).append("\n");
     }
 
     private String getTemplate(String template) throws IOException {

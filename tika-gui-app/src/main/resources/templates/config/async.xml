@@ -1,8 +1,8 @@
 <async>
   <params>
-    <maxForEmitBatchBytes>100000</maxForEmitBatchBytes>
-    <emitMaxEstimatedBytes>1000000</emitMaxEstimatedBytes>
-    <emitWithinMillis>60000</emitWithinMillis>
+    <maxForEmitBatchBytes>{PER_FILE_EMIT_THRESHOLD}</maxForEmitBatchBytes>
+    <emitMaxEstimatedBytes>{TOTAL_EMIT_THRESHOLD}</emitMaxEstimatedBytes>
+    <emitWithinMillis>{EMIT_WITHIN_MS}</emitWithinMillis>
     <numEmitters>1</numEmitters>
     <numClients>{NUM_CLIENTS}</numClients>
     <forkedJvmArgs>
