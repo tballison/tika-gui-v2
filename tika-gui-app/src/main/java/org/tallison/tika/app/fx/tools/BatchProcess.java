@@ -214,7 +214,7 @@ public class BatchProcess {
             List<String> commandLine = buildCommandLine();
             //try {
 
-            process = new ProcessBuilder(commandLine).start();
+            process = new ProcessBuilder(commandLine).inheritIO().start();
             StreamGobbler inputStreamGobbler = new StreamGobbler(process.getInputStream(), 100000);
             StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), 100000);
             Thread isgThread = new Thread(inputStreamGobbler);
@@ -238,7 +238,7 @@ public class BatchProcess {
             LOGGER.info("class path: {}", cp);
 
             commandLine.add(cp);
-            commandLine.add("org.apache.tika.pipes.async.AsyncProcessor");
+            commandLine.add("org.apache.tika.async.cli.TikaAsyncCLI");
             commandLine.add(ProcessUtils.escapeCommandLine(tikaConfig.toAbsolutePath().toString()));
             LOGGER.info(commandLine);
             return commandLine;
@@ -246,10 +246,14 @@ public class BatchProcess {
 
         private String buildClassPath() {
             StringBuilder sb = new StringBuilder();
-            sb.append(AppContext.TIKA_CORE_BIN_PATH + "/*");
+            sb.append(ProcessUtils.escapeCommandLine(
+                    AppContext.TIKA_CORE_BIN_PATH.toAbsolutePath() + "/*"));
+            sb.append(File.pathSeparator);
+            sb.append(ProcessUtils.escapeCommandLine(
+                    AppContext.TIKA_EXTRAS_BIN_PATH.toAbsolutePath() + "/*"));
+            sb.append(File.pathSeparator);
             //TODO refactor batch process config to generate class path
             //for fetchers/emitters
-            sb.append(File.pathSeparator);
             batchProcessConfig.appendPipesClasspath(sb);
             return sb.toString();
         }

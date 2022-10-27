@@ -51,6 +51,7 @@ public class AppContext {
     public static Path TIKA_LIB_PATH = TIKA_APP_HOME.resolve("lib");
     public static Path TIKA_CORE_BIN_PATH = TIKA_LIB_PATH.resolve("tika-core");
     public static Path TIKA_APP_BIN_PATH = TIKA_LIB_PATH.resolve("tika-app");
+    public static Path TIKA_EXTRAS_BIN_PATH = TIKA_LIB_PATH.resolve("tika-extras");
     public static Path APP_STATE_PATH = TIKA_APP_HOME.resolve("tika-app-v2-config.json");
     private static AppContext APP_CONTEXT = load();
     public static Path CONFIG_PATH = TIKA_APP_HOME.resolve("config");

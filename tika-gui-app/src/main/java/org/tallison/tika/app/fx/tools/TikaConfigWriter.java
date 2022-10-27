@@ -126,6 +126,9 @@ public class TikaConfigWriter {
         sb.append(ProcessUtils.escapeCommandLine(
                 AppContext.TIKA_APP_BIN_PATH.toAbsolutePath() + "/*"));
         sb.append(File.pathSeparator);
+        sb.append(ProcessUtils.escapeCommandLine(
+                AppContext.TIKA_EXTRAS_BIN_PATH.toAbsolutePath() + "/*"));
+        sb.append(File.pathSeparator);
         batchProcessConfig.appendPipesClasspath(sb);
         //TODO add s3 and jdbc
         return sb.toString();

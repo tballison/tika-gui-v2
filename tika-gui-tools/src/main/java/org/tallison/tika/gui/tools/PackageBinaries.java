@@ -52,8 +52,8 @@ public class PackageBinaries {
     static {
 
         JARS_TO_PATH.put(
-                "org/apache/tika/tika-core/" +
-                TIKA_VERSION + "/tika-core-" + TIKA_VERSION + ".jar",
+                "org/apache/tika/tika-async-cli/" +
+                        TIKA_VERSION + "/tika-async-cli-" + TIKA_VERSION + ".jar",
                 "lib/tika-core"
         );
 
@@ -76,7 +76,14 @@ public class PackageBinaries {
                         "/tika-parser-sqlite3-package-" + TIKA_VERSION + ".jar", "lib/tika-app");
         JARS_TO_PATH.put(
                 "org/apache/tika/tika-eval-core/" +
-                        TIKA_VERSION + "/tika-eval-core-" + TIKA_VERSION + ".jar", "lib/tika-app");
+                        TIKA_VERSION + "/tika-eval-core-" + TIKA_VERSION + ".jar",
+                "lib/tika-extras");
+
+        JARS_TO_PATH.put(
+                "org/apache/tika/tika-detector-siegfried/" +
+                        TIKA_VERSION + "/tika-detector-siegfried-" + TIKA_VERSION + ".jar",
+                "lib/tika-extras");
+
         JARS_TO_PATH.put(
                 "org/apache/tika/tika-emitter-fs/" +
                         TIKA_VERSION + "/tika-emitter-fs-" + TIKA_VERSION + ".jar",
@@ -109,19 +116,6 @@ public class PackageBinaries {
         JARS_TO_PATH.put(
                 "org/postgresql/postgresql/42.5.0/postgresql-42.5.0.jar",
                 "lib/db/postrgresql");
-
-        //now add logging to tika-core
-        JARS_TO_PATH.put("org/apache/logging/log4j/log4j-core/2.19.0/log4j-core-2.19.0.jar",
-                "lib/tika-core");
-        JARS_TO_PATH.put("org/apache/logging/log4j/log4j-api/2.19.0/log4j-api-2.19.0.jar",
-                "lib/tika-core");
-        JARS_TO_PATH.put("org/apache/logging/log4j/log4j-slf4j2-impl/2.19.0/log4j-slf4j2-impl-2.19.0.jar",
-                "lib/tika-core");
-        JARS_TO_PATH.put("org/slf4j/slf4j-api/2.0.1/slf4j-api-2.0.1.jar",
-                "lib/tika-core");
-        JARS_TO_PATH.put("commons-io/commons-io/2.8.0/commons-io-2.8.0.jar",
-                "lib/tika-core");
-
 
 
     }
