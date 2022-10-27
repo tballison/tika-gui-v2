@@ -17,6 +17,7 @@
 package org.tallison.tika.app.fx;
 
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import javafx.event.ActionEvent;
@@ -28,6 +29,7 @@ import javafx.scene.input.MouseEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
+import org.tallison.tika.app.fx.tools.BatchProcess;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 
 import org.apache.tika.utils.StringUtils;
@@ -47,6 +49,15 @@ public class AdvancedBatchController implements Initializable {
     @FXML
     private TextField numProcesses;
 
+    @FXML
+    private TextField perFileEmitThresholdMb;
+
+    @FXML
+    private TextField totalEmitThresholdMb;
+
+    @FXML
+    private TextField emitWithinMs;
+
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
 
@@ -64,92 +75,120 @@ public class AdvancedBatchController implements Initializable {
                 Integer.toString(batchProcessConfig.getMaxMemMb())
         );
         numProcesses.setText(Integer.toString(batchProcessConfig.getNumProcesses()));
+
+        perFileEmitThresholdMb.setText(Integer.toString(batchProcessConfig.getPerFileEmitThresholdMb()));
+
+        totalEmitThresholdMb.setText(Integer.toString(batchProcessConfig.getTotalEmitThesholdMb()));
+        emitWithinMs.setText(Long.toString(batchProcessConfig.getEmitWithinMs()));
     }
 
 
     public void showConfig(MouseEvent mouseEvent) {
-
+        //NO-OP for now
     }
 
-    public void digestOptions(ActionEvent actionEvent) {
+    public void configureParsers(ActionEvent actionEvent) {
+        //NO-OP for now
+    }
+
+    public void configurePipesIterator(ActionEvent actionEvent) {
+        //NO-OP for now
+    }
+
+
+    public void saveAdvanced(ActionEvent actionEvent) {
+        Optional<BatchProcessConfig> optionalBpc = APP_CONTEXT.getBatchProcessConfig();
+        if (optionalBpc.isEmpty()) {
+            actionEvent.consume();
+            //log/warn
+        }
+        saveState();
+    }
+
+
+    public void saveState() {
+        Optional<BatchProcessConfig> optionalBpc = APP_CONTEXT.getBatchProcessConfig();
+        if (optionalBpc.isEmpty()) {
+            LOGGER.warn("batch process config is empty during savestate?!");
+            return;
+        }
+        BatchProcessConfig bpc = optionalBpc.get();
+
         //TODO -- allow multiple selections
         String selected = digestOptions.getSelectionModel().selectedItemProperty().get();
-        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
-            LOGGER.warn("batch process config should not be empty");
-            actionEvent.consume();
-            return;
-        }
-        APP_CONTEXT.getBatchProcessConfig().get().setDigest(selected);
+        bpc.setDigest(selected);
+
+        int val = getInt("parseTimeoutSeconds", parseTimeoutSeconds, 0, 100000,
+                bpc.getParseTimeoutSeconds());
+        bpc.setParseTimeoutSeconds(val);
+
+        val = getInt("memoryPerProcess", memoryPerProcess, 0, 10000000, bpc.getMaxMemMb());
+        bpc.setMaxMemMb(val);
+
+        val = getInt("numProcesses", numProcesses, 1, 100, bpc.getNumProcesses());
+        bpc.setNumProcesses(val);
+
+        val = getInt("perFileEmitThresholdMb", perFileEmitThresholdMb, 0, 1000000,
+                bpc.getPerFileEmitThresholdMb());
+        bpc.setPerFileEmitThresholdMb(val);
+
+        val = getInt("totalEmitThresholdMb", totalEmitThresholdMb, 0, 1000000,
+                bpc.getTotalEmitThesholdMb());
+        bpc.setTotalEmitThesholdMb(val);
+
+        long longVal = getLong("emitWithinMs", emitWithinMs, 0, 1000000000, bpc.getEmitWithinMs());
+        bpc.setEmitWithinMs(longVal);
+
         APP_CONTEXT.saveState();
     }
 
-    public void setParseTimeoutSeconds(ActionEvent actionEvent) {
-        String parseTimeoutString = parseTimeoutSeconds.getText();
-        if (StringUtils.isBlank(parseTimeoutString)) {
-            return;
+    private int getInt(String label, TextField textField, int min, int max,
+                       int defaultVal) {
+
+        String txt = textField.getText();
+        if (StringUtils.isBlank(txt)) {
+            return defaultVal;
         }
         int num = -1;
         try {
-            num = Integer.parseInt(parseTimeoutString);
+            num = Integer.parseInt(txt);
         } catch (NumberFormatException e) {
             //TODO -- alert
-            return;
+            return defaultVal;
         }
-        if (num < 0) {
+        if (num < min) {
             //TODO -- alert
-            return;
+            return defaultVal;
         }
-
-        APP_CONTEXT.getBatchProcessConfig().get().setParseTimeoutSeconds(num);
-        APP_CONTEXT.saveState();
-
+        if (num > 1_000_000_000) {
+            //TODO -- alert
+            return defaultVal;
+        }
+        return num;
     }
 
-    public void setMemoryPerProcessGb(ActionEvent actionEvent) {
-        String memoryPerProcessText = memoryPerProcess.getText();
-        if (StringUtils.isBlank(memoryPerProcessText)) {
-            return;
-        }
-        int num = -1;
-        try {
-            num = Integer.parseInt(memoryPerProcessText);
-        } catch (NumberFormatException e) {
-            //TODO -- alert
-            return;
-        }
-        if (num < 0) {
-            //TODO -- alert
-            return;
-        }
-        if (num > 100000) {
-            //TODO -- alert
-            return;
-        }
-        APP_CONTEXT.getBatchProcessConfig().get().setMaxMemMb(num);
-        APP_CONTEXT.saveState();
-    }
+    private long getLong(String label, TextField textField, long min, long max,
+                       long defaultVal) {
 
-    public void setNumProcesses(ActionEvent actionEvent) {
-        String numProcessesString = numProcesses.getText();
-        if (StringUtils.isBlank(numProcessesString)) {
-            return;
+        String txt = textField.getText();
+        if (StringUtils.isBlank(txt)) {
+            return defaultVal;
         }
-        int num = -1;
+        long num = -1;
         try {
-            num = Integer.parseInt(numProcessesString);
+            num = Long.parseLong(txt);
         } catch (NumberFormatException e) {
             //TODO -- alert
-            return;
+            return defaultVal;
         }
-        if (num < 0) {
+        if (num < min) {
             //TODO -- alert
-            return;
+            return defaultVal;
         }
-        if (num > 1000) {
+        if (num > 1_000_000_000) {
             //TODO -- alert
-            return;
+            return defaultVal;
         }
-        APP_CONTEXT.getBatchProcessConfig().get().setNumProcesses(num);
-        APP_CONTEXT.saveState();
+        return num;
     }
 }

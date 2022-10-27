@@ -1,0 +1,26 @@
+<autoDetectParserConfig>
+  <params>
+    <!-- if the incoming metadata object has a ContentLength entry and it is larger than this
+         value, spool the file to disk; this is useful for some file formats that are more efficiently
+         processed via a file instead of an InputStream -->
+    <spoolToDisk>1</spoolToDisk>
+    <!-- the next four are parameters for the SecureContentHandler -->
+    <!-- threshold used in zip bomb detection. This many characters must be written
+         before the maximum compression ratio is calculated -->
+    <outputThreshold>10000</outputThreshold>
+    <!-- maximum compression ratio between output characters and input bytes -->
+    <maximumCompressionRatio>100</maximumCompressionRatio>
+    <!-- maximum XML element nesting level -->
+    <maximumDepth>100</maximumDepth>
+    <!-- maximum embedded file depth -->
+    <maximumPackageEntryDepth>100</maximumPackageEntryDepth>
+  </params>
+  <!-- as of Tika 2.5.x, this is the preferred way to configure digests -->
+  <digesterFactory class="org.apache.tika.parser.digestutils.CommonsDigesterFactory">
+    <params>
+      <markLimit>100000</markLimit>
+      <!-- this specifies SHA256, base32 and MD5 -->
+      <algorithmString>{DIGEST_STRING}</algorithmString>
+    </params>
+  </digesterFactory>
+</autoDetectParserConfig>

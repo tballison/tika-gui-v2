@@ -31,9 +31,9 @@ import org.apache.tika.utils.ProcessUtils;
 
 public class BatchProcessConfig {
 
-    private Optional<ConfigItem> pipesIterator;
-    private Optional<ConfigItem> fetcher;
-    private Optional<ConfigItem> emitter;
+    private Optional<ConfigItem> pipesIterator = Optional.ofNullable(null);
+    private Optional<ConfigItem> fetcher = Optional.ofNullable(null);
+    private Optional<ConfigItem> emitter = Optional.ofNullable(null);
     private ConfigItem metadataMapper = ConfigItem.build("Metadata mapper",
             "org.apache.tika.metadata.filter.FieldNameMappingFilter");
 
@@ -57,6 +57,12 @@ public class BatchProcessConfig {
     private int maxMemMb = 1024;
 
     private int parseTimeoutSeconds = 120;
+
+    private int perFileEmitThresholdMb = 100;
+
+    private int totalEmitThesholdMb = 1000;
+
+    private long emitWithinMs = 10000;
 
     public Optional<ConfigItem> getPipesIterator() {
         return pipesIterator;
@@ -206,5 +212,29 @@ public class BatchProcessConfig {
 
     public int getInputSelectedTab() {
         return inputSelectedTab;
+    }
+
+    public int getPerFileEmitThresholdMb() {
+        return perFileEmitThresholdMb;
+    }
+
+    public void setPerFileEmitThresholdMb(int perFileEmitThresholdMb) {
+        this.perFileEmitThresholdMb = perFileEmitThresholdMb;
+    }
+
+    public int getTotalEmitThesholdMb() {
+        return totalEmitThesholdMb;
+    }
+
+    public void setTotalEmitThesholdMb(int totalEmitThesholdMb) {
+        this.totalEmitThesholdMb = totalEmitThesholdMb;
+    }
+
+    public long getEmitWithinMs() {
+        return emitWithinMs;
+    }
+
+    public void setEmitWithinMs(long emitWithinMs) {
+        this.emitWithinMs = emitWithinMs;
     }
 }

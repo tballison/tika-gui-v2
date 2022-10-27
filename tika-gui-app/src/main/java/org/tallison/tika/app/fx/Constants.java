@@ -25,4 +25,6 @@ public class Constants {
 
     public static final String OPEN_SEARCH_EMITTER_CLASS =
             "org.apache.tika.pipes.emitter.opensearch.OpenSearchEmitter";
+
+    public static final String NO_DIGEST = "No Digest";
 }
