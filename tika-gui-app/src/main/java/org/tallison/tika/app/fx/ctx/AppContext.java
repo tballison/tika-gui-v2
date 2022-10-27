@@ -65,9 +65,10 @@ public class AppContext {
     private Optional<BatchProcessConfig> batchProcessConfig = Optional.of(new BatchProcessConfig());
     private Optional<BatchProcess> batchProcess = Optional.empty();
     private volatile boolean closed = false;
-    private volatile boolean allowBatchToRunOnExit = false;
+    private final boolean allowBatchToRunOnExit = false;
 
     public static AppContext load() {
+
         if (Files.isRegularFile(APP_STATE_PATH)) {
             try {
                 LOGGER.debug("loading app state from {}", APP_STATE_PATH);
@@ -86,20 +87,22 @@ public class AppContext {
 
     private static AppContext load(Path configPath) throws IOException {
         try (Reader reader = Files.newBufferedReader(configPath, StandardCharsets.UTF_8)) {
-            return OBJECT_MAPPER.readValue(reader, AppContext.class);
+            AppContext appContext =  OBJECT_MAPPER.readValue(reader, AppContext.class);
+            //for now, set the batch process to null
+            appContext.setBatchProcess(null);
+            return appContext;
         }
     }
 
-    public void setAllowBatchToRunOnExit(boolean allowBatchToRunOnExit) {
+    /*public void setAllowBatchToRunOnExit(boolean allowBatchToRunOnExit) {
         this.allowBatchToRunOnExit = allowBatchToRunOnExit;
-    }
+    }*/
 
     public synchronized void close() {
         if (!closed) {
             if (APP_CONTEXT.getBatchProcess().isPresent()) {
                 if (!AppContext.getInstance().allowBatchToRunOnExit) {
                     APP_CONTEXT.getBatchProcess().get().cancel();
-
                 }
                 APP_CONTEXT.getBatchProcess().get().close();
             }
@@ -122,6 +125,7 @@ public class AppContext {
 
     public void reset() {
         try {
+            Files.delete(AppContext.BATCH_STATUS_PATH);
             Files.delete(TIKA_APP_HOME.resolve("tika-app-v2-config.json"));
             FileUtils.deleteDirectory(TIKA_APP_HOME.resolve("config").toFile());
             FileUtils.deleteDirectory(TIKA_APP_HOME.resolve("logs").toFile());

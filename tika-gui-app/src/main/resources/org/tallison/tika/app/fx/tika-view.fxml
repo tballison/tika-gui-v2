@@ -47,8 +47,8 @@
                         <Button fx:id="configureMetadata" layoutX="400.0" layoutY="118.0" mnemonicParsing="false" onAction="#configureMetadata" text="Configure" />
                         <Button fx:id="advanced" layoutX="399.0" layoutY="220.0" mnemonicParsing="false" onAction="#configureAdvanced" text="Advanced" />
                         <ProgressIndicator fx:id="batchProgress" layoutX="409.0" layoutY="272.0" onMouseClicked="#openDetailedStatus" progress="0.0" />
-                        <Button fx:id="cancelBatch" layoutX="213.0" layoutY="274.0" mnemonicParsing="false" onAction="#cancelBatch" prefHeight="33.0" prefWidth="72.0" text="Cancel" />
-                        <Button fx:id="batchStatus" layoutX="319.0" layoutY="274.0" mnemonicParsing="false" onAction="#checkStatus" prefHeight="33.0" prefWidth="72.0" text="Status" />
+                        <Button fx:id="cancelButton" disable="true" layoutX="213.0" layoutY="274.0" mnemonicParsing="false" onAction="#cancelBatch" prefHeight="33.0" prefWidth="72.0" text="Cancel" />
+                        <Button fx:id="statusButton" disable="true" layoutX="319.0" layoutY="274.0" mnemonicParsing="false" onAction="#checkStatus" prefHeight="33.0" prefWidth="72.0" text="Status" />
                      </children>
                   </AnchorPane>
             </content>

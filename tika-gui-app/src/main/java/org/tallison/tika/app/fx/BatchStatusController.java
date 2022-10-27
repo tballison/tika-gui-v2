@@ -125,8 +125,13 @@ public class BatchStatusController implements Initializable {
                             updatePieChart(status.get());
                             updateTotalToProcess(status.get());
                         });
+                        BatchProcess.STATUS batchProcessStatus = batchProcess.get().getStatus();
+                        if (batchProcessStatus == BatchProcess.STATUS.CANCELED) {
+                            overallStatus.setText("CANCELED");
+                            return;
+                        }
 
-                        if (status.get().getAsyncStatus()  == AsyncStatus.ASYNC_STATUS.COMPLETED) {
+                        if (status.get().getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
                             overallStatus.setText("COMPLETED");
                             return;
                         }

@@ -40,6 +40,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.tools.BatchProcess;
+import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
@@ -53,6 +54,13 @@ public class TikaController extends ControllerBase {
 
     @FXML
     private Button runButton;
+
+    @FXML
+    private Button cancelButton;
+
+    @FXML
+    private Button statusButton;
+
 
     @FXML
     private Label inputLabel;
@@ -75,6 +83,7 @@ public class TikaController extends ControllerBase {
         if (APP_CONTEXT.getBatchProcess().isPresent()) {
             batchProgress.progressProperty().bind(APP_CONTEXT.getBatchProcess().get().progressProperty());
         }
+        updateButtons();
     }
 
 
@@ -117,7 +126,8 @@ public class TikaController extends ControllerBase {
         final Stage stage = new Stage();
         stage.setTitle("Select Input");
         stage.setScene(scene);
-        stage.show();
+        stage.showAndWait();
+        updateButtons();
     }
 
     @FXML
@@ -136,6 +146,7 @@ public class TikaController extends ControllerBase {
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent we) {
                 metadataController.saveMetadataToContext();
+                updateButtons();
             }
         });
         stage.show();
@@ -155,6 +166,7 @@ public class TikaController extends ControllerBase {
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent we) {
                 advancedBatchController.saveState();
+                updateButtons();
             }
         });
         stage.show();
@@ -182,18 +194,63 @@ public class TikaController extends ControllerBase {
         final Stage stage = new Stage();
         stage.setTitle("Select Output");
         stage.setScene(scene);
-        stage.show();
-        // TODO add check that both input and output are selected
-        // TODO add this to configureInput
-        runButton.setDisable(false);
+        stage.showAndWait();
+        updateButtons();
     }
 
+    private void updateButtons() {
+        if (APP_CONTEXT.getBatchProcess().isPresent()) {
+            BatchProcess pb = APP_CONTEXT.getBatchProcess().get();
+            System.out.println("BATCH status " + pb.getStatus());
+            if (pb.getStatus() == BatchProcess.STATUS.RUNNING) {
+                runButton.setDisable(true);
+                cancelButton.setDisable(false);
+                statusButton.setDisable(false);
+            } else if (pb.getStatus() == BatchProcess.STATUS.CANCELED) {
+                if (fullyConfigured()) {
+                    runButton.setDisable(false);
+                    cancelButton.setDisable(true);
+                    statusButton.setDisable(false);
+                } else {
+                    runButton.setDisable(true);
+                    cancelButton.setDisable(true);
+                    statusButton.setDisable(false);
+                }
+            } else if (pb.getStatus() == BatchProcess.STATUS.COMPLETE) {
+                runButton.setDisable(false);
+                cancelButton.setDisable(true);
+                statusButton.setDisable(false);
+            }
+            return;
+        }
+        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
+            return;
+        }
+        BatchProcessConfig config = APP_CONTEXT.getBatchProcessConfig().get();
+        if (config.getEmitter().isPresent() &&
+                config.getPipesIterator().isPresent() &&
+                config.getEmitter().isPresent()
+        ) {
+            runButton.setDisable(false);
+            cancelButton.setDisable(true);
+            statusButton.setDisable(true);
+        }
+    }
+
+    private boolean fullyConfigured() {
+        BatchProcessConfig config = APP_CONTEXT.getBatchProcessConfig().get();
+        return config.getEmitter().isPresent() &&
+                config.getPipesIterator().isPresent() &&
+                config.getEmitter().isPresent();
+    }
     @FXML
     public void runTika(ActionEvent actionEvent) throws Exception {
         Optional<BatchProcess> oldProcess = APP_CONTEXT.getBatchProcess();
         if (! oldProcess.isEmpty()) {
             if (oldProcess.get().getStatus() == BatchProcess.STATUS.RUNNING) {
                 alert("Still running?!", "Older process is still running");
+                actionEvent.consume();
+                return;
             }
         }
         if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
@@ -207,6 +264,7 @@ public class TikaController extends ControllerBase {
         APP_CONTEXT.setBatchProcess(batchProcess);
         batchProcess.start(APP_CONTEXT.getBatchProcessConfig().get());
         APP_CONTEXT.saveState();
+        updateButtons();
     }
 
     public void showFetcher(MouseEvent mouseEvent) {
@@ -253,6 +311,7 @@ public class TikaController extends ControllerBase {
         if (APP_CONTEXT.getBatchProcess().isPresent()) {
             APP_CONTEXT.getBatchProcess().get().cancel();
         }
+        updateButtons();
     }
 
     public void checkStatus(ActionEvent actionEvent) throws IOException {
@@ -273,6 +332,7 @@ public class TikaController extends ControllerBase {
                 batchStatusController.stop();
             }
         });
+        stage.setOnCloseRequest(windowEvent -> updateButtons());
         stage.show();
     }
 }

@@ -31,9 +31,9 @@ import org.apache.tika.utils.ProcessUtils;
 
 public class BatchProcessConfig {
 
-    private Optional<ConfigItem> pipesIterator = Optional.ofNullable(null);
-    private Optional<ConfigItem> fetcher = Optional.ofNullable(null);
-    private Optional<ConfigItem> emitter = Optional.ofNullable(null);
+    private Optional<ConfigItem> pipesIterator = Optional.empty();
+    private Optional<ConfigItem> fetcher = Optional.empty();
+    private Optional<ConfigItem> emitter = Optional.empty();
     private ConfigItem metadataMapper = ConfigItem.build("Metadata mapper",
             "org.apache.tika.metadata.filter.FieldNameMappingFilter");
 
@@ -70,7 +70,7 @@ public class BatchProcessConfig {
 
     @JsonSetter
     public void setPipesIterator(ConfigItem pipesIterator) {
-        this.pipesIterator = Optional.of(pipesIterator);
+        this.pipesIterator = Optional.ofNullable(pipesIterator);
     }
 
     public void setPipesIterator(String... args) {
@@ -83,9 +83,9 @@ public class BatchProcessConfig {
 
     @JsonSetter
     public void setFetcher(ConfigItem fetcher) {
-        this.fetcher = Optional.of(fetcher);
-        if (fetcher != null) {
-            this.fetcherLabel.setValue(fetcher.getLabel());
+        this.fetcher = Optional.ofNullable(fetcher);
+        if (this.fetcher.isPresent()) {
+            this.fetcherLabel.setValue(this.fetcher.get().getLabel());
         }
     }
 
@@ -115,8 +115,10 @@ public class BatchProcessConfig {
 
     @JsonSetter
     public void setEmitter(ConfigItem emitter) {
-        this.emitter = Optional.of(emitter);
-        setEmitterLabel(emitter.getLabel());
+        this.emitter = Optional.ofNullable(emitter);
+        if (this.emitter.isPresent()) {
+            setEmitterLabel(this.emitter.get().getLabel());
+        }
     }
 
     public void setEmitter(String... args) {

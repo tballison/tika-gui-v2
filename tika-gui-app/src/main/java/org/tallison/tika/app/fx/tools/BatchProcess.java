@@ -50,7 +50,7 @@ public class BatchProcess {
     private static Logger LOGGER = LogManager.getLogger(BatchProcess.class);
 
     private static AppContext APP_CONTEXT = AppContext.getInstance();
-    private STATUS status = STATUS.READY;
+    private volatile STATUS status = STATUS.READY;
     private long runningProcessId = -1;
     private Path configFile;
     private BatchRunner batchRunner = null;
@@ -67,17 +67,14 @@ public class BatchProcess {
     private ExecutorCompletionService<Integer> executorCompletionService =
             new ExecutorCompletionService<>(daemonExecutorService);
     public BatchProcess() {
-
     }
     public BatchProcess(STATUS status, long runningProcessId) {
-
-
     }
 
     public synchronized void start(BatchProcessConfig batchProcessConfig)
             throws TikaException, IOException {
 
-        deletePreviousRuns();
+        status = STATUS.RUNNING;
 
         TikaConfigWriter tikaConfigWriter = new TikaConfigWriter();
         try {
@@ -95,7 +92,7 @@ public class BatchProcess {
 
     private void deletePreviousRuns() {
         try {
-            if (Files.isRegularFile(AppContext.BATCH_STATUS_PATH)) {
+            if (Files.isRegularFile(APP_CONTEXT.BATCH_STATUS_PATH)) {
                 Files.delete(APP_CONTEXT.BATCH_STATUS_PATH);
             }
         } catch (IOException e) {
@@ -177,6 +174,13 @@ public class BatchProcess {
         LOGGER.info("closing/shutting down now");
         daemonExecutorService.shutdownNow();
         LOGGER.info("after shutdown: " + daemonExecutorService.isShutdown());
+        try {
+            if (Files.isRegularFile(AppContext.BATCH_STATUS_PATH)) {
+                Files.delete(AppContext.BATCH_STATUS_PATH);
+            }
+        } catch (IOException e) {
+            LOGGER.warn("couldn't delete batch status: " + AppContext.BATCH_STATUS_PATH, e);
+        }
     }
 
     public long getRunningProcessId() {

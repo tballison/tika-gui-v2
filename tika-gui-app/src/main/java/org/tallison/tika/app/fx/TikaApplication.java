@@ -31,8 +31,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.tallison.tika.app.fx.ctx.AppContext;
+import org.tallison.tika.app.fx.tools.BatchProcess;
 
 public class TikaApplication extends Application {
+
+    private static final AppContext APP_CONTEXT = AppContext.getInstance();
 
     public static void main(String[] args) {
         launch();
@@ -58,28 +61,27 @@ public class TikaApplication extends Application {
     }
 
     private void onClose(WindowEvent windowEvent) {
-        // if(AppContext.getInstance().getBatchProcess().getStatus() == BatchProcess.STATUS
-        // .RUNNING) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("A batch process is still running");
-        alert.setContentText("Cancel?");
-        ButtonType okButton = new ButtonType("Yes, cancel the process", ButtonBar.ButtonData.YES);
-        ButtonType noButton =
-                new ButtonType("No, keep running when closed", ButtonBar.ButtonData.NO);
-        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-        alert.getButtonTypes().setAll(okButton, noButton, cancelButton);
-        AtomicBoolean close = new AtomicBoolean(false);
-        alert.showAndWait().ifPresent(type -> {
-            if (type.getText().startsWith("Yes")) {
-                AppContext.getInstance().setAllowBatchToRunOnExit(false);
-                close.set(true);
-            } else if (type.getText().startsWith("No")) {
-                AppContext.getInstance().setAllowBatchToRunOnExit(true);
-                close.set(true);
-            } else {
 
+        AtomicBoolean close = new AtomicBoolean(true);
+        if (APP_CONTEXT.getBatchProcess().isPresent()) {
+            BatchProcess batchProcess = APP_CONTEXT.getBatchProcess().get();
+            if (batchProcess.getStatus() == BatchProcess.STATUS.RUNNING) {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("A batch process is still running");
+                alert.setContentText("Cancel the process and quit?");
+                ButtonType okButton = new ButtonType("Yes", ButtonBar.ButtonData.YES);
+                ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.NO);
+                //ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+                alert.getButtonTypes().setAll(okButton, noButton);
+                alert.showAndWait().ifPresent(type -> {
+                    if (type.getText().startsWith("Yes")) {
+                        close.set(true);
+                    } else if (type.getText().startsWith("No")) {
+                        close.set(false);
+                    }
+                });
             }
-        });
+        }
         //}
         if (close.get()) {
             AppContext.getInstance().close();
