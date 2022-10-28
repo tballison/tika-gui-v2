@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<?import javafx.scene.control.Button?>
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.emitters.OpenSearchEmitterController">
+  <children>
+    <Label layoutX="70.0" layoutY="64.0" text="OpenSearch URL" />
+    <Label layoutX="71.0" layoutY="96.0" text="User Name" />
+    <Label layoutX="70.0" layoutY="130.0" text="Password" />
+    <TextField fx:id="openSearchUrl" layoutX="190.0" layoutY="60.0" prefHeight="26.0" prefWidth="214.0" promptText="https://localhost:9200/my-index" />
+    <TextField fx:id="openSearchUserName" layoutX="190.0" layoutY="92.0" promptText="admin" text="admin" />
+    <Label layoutX="70.0" layoutY="177.0" text="Update Strategy" />
+    <PasswordField fx:id="openSearchPassword" layoutX="190.0" layoutY="126.0" promptText="admin" />
+    <ComboBox fx:id="openSearchUpdateStrategy" layoutX="190.0" layoutY="172.0" prefWidth="150.0">
+      <items>
+        <FXCollections fx:factory="observableArrayList">
+          <String fx:value="Upsert" />
+          <String fx:value="Overwrite" />
+        </FXCollections>
+      </items>
+    </ComboBox>
+    <Button fx:id="updateOpenSearchEmitter" layoutX="241.0" layoutY="258.0" mnemonicParsing="false" onAction="#updateOpenSearchEmitter" text="Update" />
+  </children>
+</AnchorPane>

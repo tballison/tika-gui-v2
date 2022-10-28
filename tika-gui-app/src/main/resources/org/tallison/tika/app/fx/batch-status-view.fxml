@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -17,6 +18,8 @@
   specific language governing permissions and limitations
   under the License.
 -->
+
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
@@ -26,18 +29,18 @@
 <?import javafx.scene.control.cell.TextFieldTableCell?>
 <?import javafx.scene.layout.Pane?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.BatchStatusController">
+<Pane maxHeight="800.0" maxWidth="1200.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.BatchStatusController">
    <children>
-      <TextField fx:id="totalToProcess" editable="false" layoutX="146.0" layoutY="320.0" prefHeight="26.0" prefWidth="107.0" />
+      <TextField fx:id="totalToProcess" editable="false" layoutX="146.0" layoutY="318.0" prefHeight="26.0" prefWidth="107.0" />
       <TextField fx:id="totalProcessed" editable="false" layoutX="146.0" layoutY="281.0" prefHeight="26.0" prefWidth="107.0" />
-      <Label layoutX="42.0" layoutY="324.0" text="Total to Process" />
+      <Label layoutX="42.0" layoutY="321.0" text="Total to Process" />
       <Label layoutX="42.0" layoutY="286.0" text="Total Processed" />
-      <PieChart fx:id="statusPieChart" layoutX="28.0" layoutY="25.0" prefHeight="231.0" prefWidth="344.0" title="Processed" />
+      <PieChart fx:id="statusPieChart" layoutX="6.0" layoutY="14.0" prefHeight="231.0" prefWidth="344.0" title="Processed" />
       <TextField fx:id="overallStatus" editable="false" layoutX="146.0" layoutY="352.0" prefHeight="26.0" prefWidth="107.0" />
       <Label layoutX="42.0" layoutY="357.0" text="Overall Status" />
-      <TableView fx:id="statusTable" items="${controller.statusCounts}" layoutX="374.0" layoutY="195.0" prefHeight="200.0" prefWidth="212.0">
+      <TableView fx:id="statusTable" items="${controller.statusCounts}" layoutX="328.0" layoutY="195.0" prefHeight="200.0" prefWidth="258.0">
         <columns>
-          <TableColumn prefWidth="123.0" text="Status">
+          <TableColumn prefWidth="183.0" text="Status">
             <cellValueFactory>
               <PropertyValueFactory property="statusName" />
             </cellValueFactory>
@@ -45,7 +48,7 @@
               <TextFieldTableCell fx:factory="forTableColumn" />
             </cellFactory>
           </TableColumn>
-          <TableColumn fx:id="countColumn" prefWidth="88.0" text="Count">
+          <TableColumn fx:id="countColumn" prefWidth="73.0" text="Count">
             <cellValueFactory>
               <PropertyValueFactory property="count" />
             </cellValueFactory>
@@ -54,6 +57,12 @@
             </cellFactory>
           </TableColumn>
         </columns>
+         <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+         </columnResizePolicy>
+         <cursor>
+            <Cursor fx:constant="DEFAULT" />
+         </cursor>
       </TableView>
    </children>
 </Pane>
