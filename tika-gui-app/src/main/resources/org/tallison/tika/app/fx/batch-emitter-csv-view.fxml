@@ -46,9 +46,9 @@
               <children>
                 <Label layoutX="61.0" layoutY="54.0" text="File Name" />
                 <Label layoutX="61.0" layoutY="93.0" text="Directory" />
-                <TextField fx:id="csvFileName" layoutX="191.0" layoutY="50.0" />
+                <TextField fx:id="csvFileName" layoutX="191.0" layoutY="50.0" text="tika-extracts.csv" />
                 <Button layoutX="191.0" layoutY="89.0" mnemonicParsing="false" onAction="#selectCSVOutputDirectory" prefHeight="26.0" prefWidth="84.0" text="Choose" />
-                        <Button layoutX="244.0" layoutY="161.0" mnemonicParsing="false" onAction="#updateCSV" text="Update" />
+                <Button fx:id="updateCSV" layoutX="244.0" layoutY="161.0" mnemonicParsing="false" onAction="#updateCSV" text="Update" />
               </children>
             </AnchorPane>
           </content>
@@ -94,13 +94,12 @@
               <HBox alignment="bottom_left" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="2">
                 <TextField fx:id="tikaField" prefHeight="26.0" prefWidth="119.0" promptText="Tika Field" />
                 <TextField fx:id="outputField" prefHeight="26.0" prefWidth="133.0" promptText="Output Field" />
-                        <TextField fx:id="colProperty" prefWidth="90" promptText="1000" />
+                <TextField fx:id="propertyField" prefWidth="90" promptText="1000" />
                 <Button onAction="#addMetadataRow" text="Add Row" />
               </HBox>
               <HBox alignment="bottom_left" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="4">
                 <Button fx:id="loadMetadataCSV" onAction="#loadMetadataCSV" text="Load CSV" />
                 <Button fx:id="clearAll" onAction="#clearMetadata" text="Clear All" />
-                <Button fx:id="saveMetadata" onAction="#saveMetadataToContext" text="Save" />
               </HBox>
               <columnConstraints>
                 <ColumnConstraints />
@@ -108,7 +107,7 @@
               <rowConstraints>
                 <RowConstraints />
                 <RowConstraints />
-                <RowConstraints maxHeight="36.0" minHeight="22.0" prefHeight="22.0" />
+                <RowConstraints maxHeight="36.0" minHeight="22.0" prefHeight="30.0" />
                 <RowConstraints maxHeight="30.0" minHeight="16.0" prefHeight="30.0" />
                 <RowConstraints maxHeight="0.0" minHeight="0.0" prefHeight="0.0" />
               </rowConstraints>

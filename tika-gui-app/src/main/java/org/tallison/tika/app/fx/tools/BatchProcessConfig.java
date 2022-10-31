@@ -34,11 +34,7 @@ public class BatchProcessConfig {
     private Optional<ConfigItem> pipesIterator = Optional.empty();
     private Optional<ConfigItem> fetcher = Optional.empty();
     private Optional<ConfigItem> emitter = Optional.empty();
-    private ConfigItem metadataMapper = ConfigItem.build("Metadata mapper",
-            "org.apache.tika.metadata.filter.FieldNameMappingFilter");
 
-    private List<String> tikaMetadata = new ArrayList<>();
-    private List<String> outputMetadata = new ArrayList<>();
 
     @JsonIgnore
     private StringProperty fetcherLabel = new SimpleStringProperty("Unselected");
@@ -125,34 +121,6 @@ public class BatchProcessConfig {
         setEmitter(ConfigItem.build(args));
     }
 
-    public ConfigItem getMetadataMapper() {
-        return metadataMapper;
-    }
-
-    @JsonSetter
-    public void setMetadataMapper(ConfigItem metadataMapper) {
-        this.metadataMapper = metadataMapper;
-    }
-
-    public void addTikaMetadata(int row, String data) {
-        if (tikaMetadata.size() <= row) {
-            for (int i = tikaMetadata.size(); i <= row; i++) {
-                tikaMetadata.add("");
-            }
-        }
-        System.out.println("adding to tika " + row + " : " + data);
-        tikaMetadata.set(row, data);
-    }
-
-    public void addOutputMetadata(int row, String data) {
-        if (outputMetadata.size() <= row) {
-            for (int i = outputMetadata.size(); i <= row; i++) {
-                outputMetadata.add("");
-            }
-        }
-        System.out.println("adding to output " + row + " : " + data);
-        outputMetadata.set(row, data);
-    }
 
     public void appendPipesClasspath(StringBuilder sb) {
         //TODO -- build this out for fetchers, emitters and pipes iterators.

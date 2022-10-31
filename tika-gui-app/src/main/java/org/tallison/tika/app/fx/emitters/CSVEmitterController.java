@@ -2,15 +2,18 @@ package org.tallison.tika.app.fx.emitters;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -26,12 +29,13 @@ import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
+import org.tallison.tika.app.fx.metadata.MetadataTuple;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
 
-public class CSVEmitterController {
+public class CSVEmitterController implements Initializable {
 
     @FXML
     private final ObservableList<MetadataRow> metadataRows = FXCollections.observableArrayList();
@@ -39,19 +43,61 @@ public class CSVEmitterController {
     private static AppContext APP_CONTEXT = AppContext.getInstance();
     private static Logger LOGGER = LogManager.getLogger(OpenSearchEmitterController.class);
 
+
+
+
     public ObservableList<MetadataRow> getMetadataRows() {
         return metadataRows;
     }
 
     @FXML
+    private TextField csvFileName;
+
+    @FXML
+    private Button updateCSV;
+    @FXML
     private TextField tikaField;
     @FXML
     private TextField outputField;
-
     @FXML
     private TextField propertyField;
-    @FXML
-    private Button updateButton;
+
+    private Optional<File> directory = Optional.empty();
+
+    @Override
+    public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
+
+        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
+            LOGGER.warn("batch process config is empty?!");
+            return;
+        }
+        BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig().get();
+        Optional<ConfigItem> configItem = batchProcessConfig.getEmitter();
+        if (configItem.isEmpty()) {
+            return;
+        }
+        ConfigItem emitter = configItem.get();
+        if (! emitter.getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
+            return;
+        }
+        if (emitter.getMetadataTuples().isPresent() && emitter.getMetadataTuples().get().size() > 0) {
+            metadataRows.clear();
+            for (MetadataTuple t : emitter.getMetadataTuples().get()) {
+                metadataRows.add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
+            }
+        }
+        if (emitter.getAttributes().containsKey("basePath")) {
+            File directory = new File(emitter.getAttributes().get("basePath"));
+            if (directory.isDirectory()) {
+                this.directory = Optional.of(directory);
+            }
+        }
+        if (emitter.getAttributes().containsKey("csvFileName")) {
+            csvFileName.setText(emitter.getAttributes().get("csvFileName"));
+        }
+
+    }
+
 
     public void selectCSVOutputDirectory(ActionEvent actionEvent) {
         final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
@@ -82,12 +128,7 @@ public class CSVEmitterController {
         if (directory == null) {
             return;
         }
-        String label = "Directory: " + directory.getName();
-        batchProcessConfig.setEmitter(label, Constants.FS_EMITTER_CLASS, "basePath",
-                directory.toPath().toAbsolutePath().toString());
-
-        //TODO -- do better than hard coding indices
-        batchProcessConfig.setOutputSelectedTab(TAB_INDEX);
+        this.directory = Optional.of(directory);
     }
 
     @FXML
@@ -103,6 +144,11 @@ public class CSVEmitterController {
             return;
         }
 
+        if (directory.isPresent()) {
+            if(directory.get().isDirectory()) {
+                fileChooser.setInitialDirectory(directory.get());
+            }
+        }
         File csvFile = fileChooser.showOpenDialog(parent);
         if (csvFile == null) {
             return;
@@ -130,29 +176,13 @@ public class CSVEmitterController {
                 metadataRows.add(new MetadataRow(record.get(0), record.get(0), ""));
             }
         }
-
-        saveMetadataToContext();
+        saveState();
     }
 
     @FXML
     public void clearMetadata(ActionEvent actionEvent) {
         metadataRows.clear();
-        saveMetadataToContext();
-    }
-
-    @FXML
-    public void saveMetadataToContext(ActionEvent actionEvent) {
-        saveMetadataToContext();
-    }
-
-    public void saveMetadataToContext() {
-        if (APP_CONTEXT.getBatchProcessConfig().isPresent()) {
-            APP_CONTEXT.getBatchProcessConfig().get().getMetadataMapper().getAttributes().clear();
-            for (MetadataRow metadataRow : metadataRows) {
-                APP_CONTEXT.getBatchProcessConfig().get().getMetadataMapper().getAttributes().put(metadataRow.getTika(), metadataRow.getOutput());
-            }
-        }
-        APP_CONTEXT.saveState();
+        saveState();
     }
 
     @FXML
@@ -167,12 +197,52 @@ public class CSVEmitterController {
             outputField.setText("");
             propertyField.setText("");
         }
-        saveMetadataToContext();
+        saveState();
+    }
+
+    private void saveState() {
+        String label = StringUtils.EMPTY;
+        String csvOutputFileString = StringUtils.EMPTY;
+        String directoryString = StringUtils.EMPTY;
+
+        if (directory.isPresent()) {
+            directoryString = directory.get().getAbsolutePath();
+        }
+        if (csvFileName != null) {
+            String fString = csvFileName.getText();
+            if (!StringUtils.isBlank(fString)) {
+                label = "CSV file: " + fString;
+                csvOutputFileString = fString;
+            }
+        }
+
+
+        ConfigItem emitter = ConfigItem.build(label, Constants.CSV_EMITTER_CLASS, "basePath",
+                directoryString, "csvFileName", csvOutputFileString);
+        saveMetadataToEmitter(emitter);
+        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
+            LOGGER.warn("no app context?!");
+            return;
+        }
+        BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig().get();
+        batchProcessConfig.setEmitter(emitter);
+        //TODO -- do better than hard coding indices
+        batchProcessConfig.setOutputSelectedTab(TAB_INDEX);
+
+        APP_CONTEXT.saveState();
+    }
+
+    private void saveMetadataToEmitter(ConfigItem emitter) {
+        List<MetadataTuple> metadataTuples = new ArrayList<>();
+        for (MetadataRow metadataRow : metadataRows) {
+            metadataTuples.add(new MetadataTuple(metadataRow.getTika(),
+                    metadataRow.getOutput(), metadataRow.getProperty()));
+        }
+        emitter.setMetadataTuples(metadataTuples);
     }
 
     public void updateCSV(ActionEvent actionEvent) {
-        APP_CONTEXT.saveState();
-
-        ((Stage)updateButton.getScene().getWindow()).close();
+        saveState();
+        ((Stage)updateCSV.getScene().getWindow()).close();
     }
 }

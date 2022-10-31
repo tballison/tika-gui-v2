@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,7 +35,9 @@ import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.TikaController;
 import org.tallison.tika.app.fx.ctx.AppContext;
+import org.tallison.tika.app.fx.metadata.MetadataTuple;
 
+import org.apache.tika.pipes.emitter.Emitter;
 import org.apache.tika.utils.ProcessUtils;
 import org.apache.tika.utils.StringUtils;
 
@@ -236,25 +239,32 @@ public class TikaConfigWriter {
     private void appendMetadataFilter(BatchProcessConfig batchProcessConfig,
                                       StringBuilder tikaConfigBuilder) throws IOException {
 
-
         StringBuilder sb = new StringBuilder();
         String template = getTemplate("metadata-filters.xml");
-        Map<String, String> mappings = batchProcessConfig.getMetadataMapper().getAttributes();
-        if (batchProcessConfig.getMetadataMapper() != null &&
-                batchProcessConfig.getMetadataMapper().getAttributes().size() > 0) {
-            sb.append("<metadataFilter " +
-                    "class=\"org.apache.tika.metadata.filter.FieldNameMappingFilter\">");
-            sb.append("  <params>\n");
-            sb.append("    <excludeUnmapped>true</excludeUnmapped>\n");
-            sb.append("    <mappings>\n");
-
-            mappings.entrySet().stream().forEach(e -> sb.append(
-                    "      <mapping from=\"" + e.getKey() + "\" to=\"" + e.getValue() + "\"/>"));
-
-            sb.append("    </mappings>");
-            sb.append("  </params>");
-            sb.append("</metadataFilter>\n");
+        Optional<ConfigItem> configItem = batchProcessConfig.getEmitter();
+        if (configItem.isEmpty()) {
+            LOGGER.warn("emitter is empty?!");
+            return;
         }
+        ConfigItem emitter = configItem.get();
+        Optional<List<MetadataTuple>> metadataTuples = emitter.getMetadataTuples();
+        if (metadataTuples.isEmpty() || metadataTuples.get().size() == 0) {
+            return;
+        }
+
+        sb.append("<metadataFilter " +
+                "class=\"org.apache.tika.metadata.filter.FieldNameMappingFilter\">");
+        sb.append("  <params>\n");
+        sb.append("    <excludeUnmapped>true</excludeUnmapped>\n");
+        sb.append("    <mappings>\n");
+
+        metadataTuples.get().stream().forEach(e -> sb.append(
+                "      <mapping from=\"" + e.getTika() + "\" to=\"" + e.getOutput() + "\"/>"));
+
+        sb.append("    </mappings>");
+        sb.append("  </params>");
+        sb.append("</metadataFilter>\n");
+
         template = template.replace("{MAPPING_FILTER}", sb.toString());
         tikaConfigBuilder.append(template).append("\n");
     }
