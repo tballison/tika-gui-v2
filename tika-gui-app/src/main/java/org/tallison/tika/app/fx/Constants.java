@@ -31,4 +31,6 @@ public class Constants {
             "org.apache.tika.pipes.emitter.opensearch.OpenSearchEmitter";
 
     public static final String NO_DIGEST = "No Digest";
+
+    public static final String CSV_DB_NAME = "tika-tmp-db";
 }

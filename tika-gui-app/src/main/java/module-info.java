@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 module org.tallison.tika.app.fx {
+    requires java.sql;
     requires javafx.graphics;
     requires org.apache.tika.core;
     requires org.apache.commons.io;

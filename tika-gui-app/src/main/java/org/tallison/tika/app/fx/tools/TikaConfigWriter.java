@@ -152,10 +152,17 @@ public class TikaConfigWriter {
             case Constants.OPEN_SEARCH_EMITTER_CLASS:
                 appendOpenSearchEmitter(emitter, sb);
                 break;
+            case Constants.CSV_EMITTER_CLASS:
+                appendCSVEmitter(emitter, sb);
             default:
                 throw new RuntimeException("I regret I don't yet support " +
                         batchProcessConfig.getEmitter().get().getClazz());
         }
+    }
+
+    private void appendCSVEmitter(ConfigItem emitter, StringBuilder sb) {
+        //TODO
+        sb.append(build table, etc);
     }
 
     private void appendOpenSearchEmitter(ConfigItem emitter, StringBuilder sb) throws IOException {

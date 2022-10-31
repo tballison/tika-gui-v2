@@ -37,6 +37,8 @@ import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.value.ObservableValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tallison.tika.app.fx.Constants;
+import org.tallison.tika.app.fx.csv.CSVEmitterHelper;
 import org.tallison.tika.app.fx.ctx.AppContext;
 
 import org.apache.tika.exception.TikaException;
@@ -77,6 +79,9 @@ public class BatchProcess {
         status = STATUS.RUNNING;
 
         TikaConfigWriter tikaConfigWriter = new TikaConfigWriter();
+
+        CSVEmitterHelper.setUp(APP_CONTEXT);
+
         try {
             configFile = tikaConfigWriter.writeConfig(batchProcessConfig);
             tikaConfigWriter.writeLog4j2();
@@ -133,6 +138,7 @@ public class BatchProcess {
             }
         }
         daemonExecutorService.shutdownNow();
+        CSVEmitterHelper.cleanTmpResources(APP_CONTEXT);
     }
 
     public Optional<AsyncStatus> checkStatus() {
@@ -183,6 +189,8 @@ public class BatchProcess {
         }
     }
 
+    //If the emitter is a csv file,
+
     public long getRunningProcessId() {
         return runningProcessId;
     }
@@ -230,8 +238,15 @@ public class BatchProcess {
             esgThread.start();
 
             runningProcessId = process.pid();
-            Thread.sleep(10000);
-            return PROCESS_ID.BATCH_PROCESS.ordinal();
+
+            while (true) {
+                if (!process.isAlive()) {
+                    CSVEmitterHelper.writeCSV(APP_CONTEXT);
+                    return PROCESS_ID.BATCH_PROCESS.ordinal();
+                } else {
+                    Thread.sleep(500);
+                }
+            }
         }
 
         private List<String> buildCommandLine() {
