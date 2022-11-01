@@ -60,7 +60,7 @@ public class FileSystemEmitterController {
         if (emitter.isPresent()) {
             if (emitter.get().getClazz() != null &&
                     emitter.get().getClazz().equals(Constants.FS_EMITTER_CLASS)) {
-                String path = emitter.get().getAttributes().get("basePath");
+                String path = emitter.get().getAttributes().get(Constants.BASE_PATH);
                 if (!StringUtils.isBlank(path)) {
                     File f = new File(path);
                     if (f.isDirectory()) {
@@ -74,7 +74,7 @@ public class FileSystemEmitterController {
             return;
         }
         String label = "FileSystem: " + directory.getName();
-        batchProcessConfig.setEmitter(label, Constants.FS_EMITTER_CLASS, "basePath",
+        batchProcessConfig.setEmitter(label, Constants.FS_EMITTER_CLASS, Constants.BASE_PATH,
                 directory.toPath().toAbsolutePath().toString());
 
         //TODO -- do better than hard coding indices

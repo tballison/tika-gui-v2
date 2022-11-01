@@ -36,7 +36,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="360.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.emitters.CSVEmitterController">
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="360.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.emitters.JDBCEmitterController">
   <children>
     <Accordion fx:id="csvAccordion" layoutX="1.0" layoutY="5.0" prefHeight="359.0" prefWidth="586.0">
       <panes>
@@ -44,11 +44,12 @@
           <content>
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="200.0">
               <children>
-                <Label layoutX="61.0" layoutY="54.0" text="File Name" />
-                <Label layoutX="61.0" layoutY="93.0" text="Directory" />
-                <TextField fx:id="csvFileName" layoutX="191.0" layoutY="50.0" text="tika-extracts.csv" />
-                <Button layoutX="191.0" layoutY="89.0" mnemonicParsing="false" onAction="#selectCSVOutputDirectory" prefHeight="26.0" prefWidth="84.0" text="Choose" />
-                <Button fx:id="updateCSV" layoutX="244.0" layoutY="161.0" mnemonicParsing="false" onAction="#updateCSV" text="Update" />
+                <Label layoutX="61.0" layoutY="54.0" text="JDBC Connection String" />
+                <TextField fx:id="jdbcConnection" layoutX="210.0" layoutY="50.0" prefHeight="26.0" prefWidth="279.0" promptText="jdbc:sqlite:/data/sqlite/db/tika-extracts.db" />
+                <Button fx:id="updateJDBC" layoutX="387.0" layoutY="161.0" mnemonicParsing="false" onAction="#updateJDBC" text="Update" />
+                <Label layoutX="61.0" layoutY="99.0" text="Table Name" />
+                <TextField fx:id="tableName" layoutX="210.0" layoutY="95.0" prefHeight="26.0" prefWidth="279.0" text="tika_extracts" />
+                <Button fx:id="updateCSV1" disable="true" layoutX="210.0" layoutY="161.0" mnemonicParsing="false" onAction="#createTable" text="Create Table" />
               </children>
             </AnchorPane>
           </content>
@@ -69,7 +70,7 @@
                       <TextFieldTableCell fx:factory="forTableColumn" />
                     </cellFactory>
                   </TableColumn>
-                  <TableColumn fx:id="outputMetadataColumn" prefWidth="219.0" text="Output Metadata Key">
+                  <TableColumn fx:id="outputMetadataColumn" prefWidth="186.0" text="Column Name">
                     <cellValueFactory>
                       <PropertyValueFactory property="output" />
                     </cellValueFactory>
@@ -77,7 +78,7 @@
                       <TextFieldTableCell fx:factory="forTableColumn" />
                     </cellFactory>
                   </TableColumn>
-                  <TableColumn fx:id="propertyColumn" prefWidth="106.0" text="Max Length">
+                  <TableColumn fx:id="propertyColumn" prefWidth="139.0" text="SQL Type">
                     <cellValueFactory>
                       <PropertyValueFactory property="property" />
                     </cellValueFactory>
@@ -93,8 +94,8 @@
               </TableView>
               <HBox alignment="bottom_left" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="2">
                 <TextField fx:id="tikaField" prefHeight="26.0" prefWidth="119.0" promptText="Tika Field" />
-                <TextField fx:id="outputField" prefHeight="26.0" prefWidth="133.0" promptText="Output Field" />
-                <TextField fx:id="propertyField" prefWidth="90" promptText="1000" />
+                <TextField fx:id="outputField" prefHeight="26.0" prefWidth="133.0" promptText="Column Name" />
+                <TextField fx:id="propertyField" prefHeight="26.0" prefWidth="123.0" promptText="VARCHAR(1000)" />
                 <Button onAction="#addMetadataRow" text="Add Row" />
               </HBox>
               <HBox alignment="bottom_left" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="4">

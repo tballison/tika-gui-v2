@@ -29,8 +29,32 @@ public class Constants {
 
     public static final String OPEN_SEARCH_EMITTER_CLASS =
             "org.apache.tika.pipes.emitter.opensearch.OpenSearchEmitter";
+    public static final String JDBC_EMITTER_CLASS =
+            "org.apache.tika.pipes.emitter.jdbc.JDBCEmitter";
 
     public static final String NO_DIGEST = "No Digest";
 
+    //JDBC emitter
+    public static final String JDBC_TABLE_CREATED = "tableCreated";
+    public static final String JDBC_CONNECTION_STRING = "jdbcConnection";
+
+
+    //AbstractEmitterController
+    public static final String CSV_METADATA_PATH = "csvMetadataPath";
+
+    //Used by filesystem emitter, fetcher and pipes iterator
+    //used as working directory for csv emitter
+    public static final String BASE_PATH = "basePath";
+
+
+    //opensearch
+    public static final String OPEN_SEARCH_URL = "openSearchUrl";
+    public static final String OPEN_SEARCH_USER = "userName";
+    public static final String OPEN_SEARCH_PW = "password";
+    public static final String OPEN_SEARCH_UPDATE_STRATEGY = "updateStrategy";
+
+    //csv emitter
+    public static final String CSV_DB_TABLE_NAME = "tika_table";
+    public static final String CSV_FILE_NAME = "csvFilePath";
     public static final String CSV_DB_NAME = "tika-tmp-db";
 }

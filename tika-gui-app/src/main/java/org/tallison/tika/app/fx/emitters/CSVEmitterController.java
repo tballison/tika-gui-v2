@@ -17,16 +17,13 @@
 package org.tallison.tika.app.fx.emitters;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -34,16 +31,11 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
-import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
@@ -51,34 +43,20 @@ import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
 
-public class CSVEmitterController implements Initializable {
+public class CSVEmitterController extends AbstractEmitterController implements Initializable {
 
-    @FXML
-    private final ObservableList<MetadataRow> metadataRows = FXCollections.observableArrayList();
     private final static int TAB_INDEX = 1;
-    private static AppContext APP_CONTEXT = AppContext.getInstance();
     private static Logger LOGGER = LogManager.getLogger(OpenSearchEmitterController.class);
-
-
-
-
-    public ObservableList<MetadataRow> getMetadataRows() {
-        return metadataRows;
-    }
 
     @FXML
     private TextField csvFileName;
 
     @FXML
     private Button updateCSV;
-    @FXML
-    private TextField tikaField;
-    @FXML
-    private TextField outputField;
-    @FXML
-    private TextField propertyField;
 
-    private Optional<File> directory = Optional.empty();
+
+
+    private Optional<File> csvWorkingDirectory = Optional.empty();
 
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
@@ -97,23 +75,24 @@ public class CSVEmitterController implements Initializable {
             return;
         }
         if (emitter.getMetadataTuples().isPresent() && emitter.getMetadataTuples().get().size() > 0) {
-            metadataRows.clear();
+            getMetadataRows().clear();
             for (MetadataTuple t : emitter.getMetadataTuples().get()) {
-                metadataRows.add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
+                getMetadataRows().add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
             }
         }
-        if (emitter.getAttributes().containsKey("basePath")) {
-            File directory = new File(emitter.getAttributes().get("basePath"));
+        if (emitter.getAttributes().containsKey(Constants.BASE_PATH)) {
+            File directory = new File(emitter.getAttributes().get(Constants.BASE_PATH));
             if (directory.isDirectory()) {
-                this.directory = Optional.of(directory);
+                this.csvWorkingDirectory = Optional.of(directory);
             }
         }
-        if (emitter.getAttributes().containsKey("csvFileName")) {
-            csvFileName.setText(emitter.getAttributes().get("csvFileName"));
+        if (emitter.getAttributes().containsKey(Constants.CSV_FILE_NAME)) {
+            csvFileName.setText(emitter.getAttributes().get(Constants.CSV_FILE_NAME));
         }
+
+        safelySetCsvMetadataPath(emitter.getAttributes().get(Constants.CSV_METADATA_PATH));
 
     }
-
 
     public void selectCSVOutputDirectory(ActionEvent actionEvent) {
         final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
@@ -144,85 +123,18 @@ public class CSVEmitterController implements Initializable {
         if (directory == null) {
             return;
         }
-        this.directory = Optional.of(directory);
+        this.csvWorkingDirectory = Optional.of(directory);
     }
 
-    @FXML
-    public void loadMetadataCSV(ActionEvent actionEvent) throws IOException {
-        final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
 
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select Metadata Mapping CSV");
-        Optional<BatchProcessConfig> batchProcessConfig = APP_CONTEXT.getBatchProcessConfig();
-        if (batchProcessConfig.isEmpty()) {
-            LOGGER.warn("batch process config should not be null!");
-            actionEvent.consume();
-            return;
-        }
-
-        if (directory.isPresent()) {
-            if(directory.get().isDirectory()) {
-                fileChooser.setInitialDirectory(directory.get());
-            }
-        }
-        File csvFile = fileChooser.showOpenDialog(parent);
-        if (csvFile == null) {
-            return;
-        }
-        //TODO -- warn about deleting existing data
-        loadMetadataCSV(csvFile);
-    }
-
-    private void loadMetadataCSV(File csvFile) throws IOException {
-        char delimiter = csvFile.getName().endsWith(".txt") ||
-                csvFile.getName().endsWith(".tsv") ?
-                '\t' : ',';
-        //TODO add a reader that removes the BOM
-        CSVFormat format = CSVFormat.Builder.create(CSVFormat.EXCEL).setDelimiter(delimiter)
-                .setHeader() // no clue why this is needed,but it is
-                .setSkipHeaderRecord(true).build();
-        metadataRows.clear();
-        for (CSVRecord record : CSVParser.parse(csvFile, StandardCharsets.UTF_8, format)) {
-            List<String> data = new ArrayList<>();
-            if (record.size() > 2) {
-                metadataRows.add(new MetadataRow(record.get(0), record.get(1), record.get(2)));
-            } else if (record.size() > 1) {
-                metadataRows.add(new MetadataRow(record.get(0), record.get(1), ""));
-            } else if (record.size() == 1) {
-                metadataRows.add(new MetadataRow(record.get(0), record.get(0), ""));
-            }
-        }
-        saveState();
-    }
-
-    @FXML
-    public void clearMetadata(ActionEvent actionEvent) {
-        metadataRows.clear();
-        saveState();
-    }
-
-    @FXML
-    protected void addMetadataRow(ActionEvent event) {
-        //TODO -- check that key doesn't already exist
-        if (!StringUtils.isBlank(tikaField.getText()) &&
-                !StringUtils.isBlank(outputField.getText())) {
-            //check that property can be parsed to int > 0 if exists
-            metadataRows.add(new MetadataRow(tikaField.getText(),
-                    outputField.getText(), propertyField.getText()));
-            tikaField.setText("");
-            outputField.setText("");
-            propertyField.setText("");
-        }
-        saveState();
-    }
-
-    private void saveState() {
+    @Override
+    public void saveState() {
         String label = StringUtils.EMPTY;
         String csvOutputFileString = StringUtils.EMPTY;
         String directoryString = StringUtils.EMPTY;
 
-        if (directory.isPresent()) {
-            directoryString = directory.get().getAbsolutePath();
+        if (csvWorkingDirectory.isPresent()) {
+            directoryString = csvWorkingDirectory.get().getAbsolutePath();
         }
         if (csvFileName != null) {
             String fString = csvFileName.getText();
@@ -232,9 +144,15 @@ public class CSVEmitterController implements Initializable {
             }
         }
 
+        Optional<Path> csvMetadataPath = getCsvMetadataPath();
+        String csvMetadataPathString = csvMetadataPath.isPresent() ?
+                csvMetadataPath.get().toAbsolutePath().toString() : StringUtils.EMPTY;
 
-        ConfigItem emitter = ConfigItem.build(label, Constants.CSV_EMITTER_CLASS, "basePath",
-                directoryString, "csvFileName", csvOutputFileString);
+        ConfigItem emitter = ConfigItem.build(label, Constants.CSV_EMITTER_CLASS,
+                Constants.BASE_PATH, directoryString,
+                Constants.CSV_FILE_NAME, csvOutputFileString,
+                Constants.CSV_METADATA_PATH, csvMetadataPathString);
+
         saveMetadataToEmitter(emitter);
         if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
             LOGGER.warn("no app context?!");
@@ -244,17 +162,7 @@ public class CSVEmitterController implements Initializable {
         batchProcessConfig.setEmitter(emitter);
         //TODO -- do better than hard coding indices
         batchProcessConfig.setOutputSelectedTab(TAB_INDEX);
-
         APP_CONTEXT.saveState();
-    }
-
-    private void saveMetadataToEmitter(ConfigItem emitter) {
-        List<MetadataTuple> metadataTuples = new ArrayList<>();
-        for (MetadataRow metadataRow : metadataRows) {
-            metadataTuples.add(new MetadataTuple(metadataRow.getTika(),
-                    metadataRow.getOutput(), metadataRow.getProperty()));
-        }
-        emitter.setMetadataTuples(metadataTuples);
     }
 
     public void updateCSV(ActionEvent actionEvent) {

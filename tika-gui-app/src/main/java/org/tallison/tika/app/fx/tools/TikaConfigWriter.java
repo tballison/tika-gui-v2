@@ -16,7 +16,12 @@
  */
 package org.tallison.tika.app.fx.tools;
 
+import static org.tallison.tika.app.fx.Constants.BASE_PATH;
 import static org.tallison.tika.app.fx.Constants.NO_DIGEST;
+import static org.tallison.tika.app.fx.Constants.OPEN_SEARCH_PW;
+import static org.tallison.tika.app.fx.Constants.OPEN_SEARCH_UPDATE_STRATEGY;
+import static org.tallison.tika.app.fx.Constants.OPEN_SEARCH_URL;
+import static org.tallison.tika.app.fx.Constants.OPEN_SEARCH_USER;
 
 import java.io.File;
 import java.io.IOException;
@@ -165,11 +170,15 @@ public class TikaConfigWriter {
         sb.append(build table, etc);
     }
 
+    private void appendJDBCEmitter(ConfigItem emitter, StringBuilder sb) throws IOException {
+        String template = getTemplate("jdbc-pipes-emitter.xml");
+    }
+
     private void appendOpenSearchEmitter(ConfigItem emitter, StringBuilder sb) throws IOException {
         String template = getTemplate("opensearch-pipes-emitter.xml");
 
-        String userName = emitter.getAttributes().get("userName");
-        String password = emitter.getAttributes().get("password");
+        String userName = emitter.getAttributes().get(OPEN_SEARCH_USER);
+        String password = emitter.getAttributes().get(OPEN_SEARCH_PW);
         if (StringUtils.isBlank(userName) && StringUtils.isBlank(password)) {
             template = template.replace("{USER_NAME}", "");
             template = template.replace("{PASSWORD}", "");
@@ -181,15 +190,15 @@ public class TikaConfigWriter {
         }
 
         template = template.replace("{OPENSEARCH_URL}",
-                emitter.getAttributes().get("openSearchUrl"));
+                emitter.getAttributes().get(OPEN_SEARCH_URL));
         template = template.replace("{UPDATE_STRATEGY}",
-                emitter.getAttributes().get("updateStrategy"));
+                emitter.getAttributes().get(OPEN_SEARCH_UPDATE_STRATEGY));
         sb.append(template);
     }
 
     private void appendFSEmitter(ConfigItem fetcher, StringBuilder sb) throws IOException {
         String template = getTemplate("fs-pipes-emitter.xml");
-        template = template.replace("{BASE_PATH}", fetcher.getAttributes().get("basePath"));
+        template = template.replace("{BASE_PATH}", fetcher.getAttributes().get(BASE_PATH));
         sb.append(template).append("\n");
     }
 
@@ -214,7 +223,7 @@ public class TikaConfigWriter {
 
     private void appendFSFetcher(ConfigItem fetcher, StringBuilder sb) throws IOException {
         String template = getTemplate("fs-pipes-fetcher.xml");
-        template = template.replace("{BASE_PATH}", fetcher.getAttributes().get("basePath"));
+        template = template.replace("{BASE_PATH}", fetcher.getAttributes().get(BASE_PATH));
         sb.append(template).append("\n");
     }
 
@@ -239,7 +248,7 @@ public class TikaConfigWriter {
     private void appendFSPipesIterator(ConfigItem pipesIterator, StringBuilder sb)
             throws IOException {
         String template = getTemplate("fs-pipes-iterator.xml");
-        template = template.replace("{BASE_PATH}", pipesIterator.getAttributes().get("basePath"));
+        template = template.replace("{BASE_PATH}", pipesIterator.getAttributes().get(BASE_PATH));
         sb.append(template).append("\n");
     }
 

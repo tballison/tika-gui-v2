@@ -33,7 +33,6 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
-import org.tallison.tika.app.fx.ControllerBase;
 import org.tallison.tika.app.fx.MyControllerBase;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
@@ -76,9 +75,9 @@ public class OpenSearchEmitterController extends MyControllerBase implements Ini
             ConfigItem emitter = emitterOptional.get();
 
             if (emitter.getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
-                openSearchUrl.setText(emitter.getAttributes().get("openSearchUrl"));
-                openSearchUserName.setText(emitter.getAttributes().get("userName"));
-                String selected = emitter.getAttributes().get("updateStrategy");
+                openSearchUrl.setText(emitter.getAttributes().get(Constants.OPEN_SEARCH_URL));
+                openSearchUserName.setText(emitter.getAttributes().get(Constants.OPEN_SEARCH_USER));
+                String selected = emitter.getAttributes().get(Constants.OPEN_SEARCH_UPDATE_STRATEGY);
                 if (!StringUtils.isBlank(selected)) {
                     openSearchUpdateStrategy.getSelectionModel().select(selected);
                 } else {
@@ -131,8 +130,10 @@ public class OpenSearchEmitterController extends MyControllerBase implements Ini
 
         //TODO -- check anything else?
         batchProcessConfig.get().setEmitter(label, Constants.OPEN_SEARCH_EMITTER_CLASS,
-                "openSearchUrl",
-                url, "userName", userName, "password", password, "updateStrategy",
+                Constants.OPEN_SEARCH_URL, url,
+                Constants.OPEN_SEARCH_USER, userName,
+                Constants.OPEN_SEARCH_PW, password,
+                Constants.OPEN_SEARCH_UPDATE_STRATEGY,
                 openSearchUpdateStrategy.getSelectionModel().getSelectedItem());
 
         //TODO -- do better than hard coding indices
