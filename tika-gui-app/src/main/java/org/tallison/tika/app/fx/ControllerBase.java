@@ -20,9 +20,9 @@ import javafx.scene.control.Alert;
 import javafx.scene.layout.Region;
 
 public class ControllerBase {
-    void alert(String header, String content) {
+    public void alert(String title, String header, String content) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Fetcher");
+        alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setResizable(true);
         alert.setContentText(content);

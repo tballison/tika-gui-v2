@@ -75,7 +75,7 @@ public class ConfigItem {
     }
 
     public void setMetadataTuples(List<MetadataTuple> metadataTuples) {
-        this.metadataTuples = Optional.of(metadataTuples);
+        this.metadataTuples = Optional.ofNullable(metadataTuples);
     }
 
     public Optional<List<MetadataTuple>> getMetadataTuples() {

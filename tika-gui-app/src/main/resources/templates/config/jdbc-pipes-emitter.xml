@@ -1,8 +1,7 @@
 <emitters>
-  <name>emitter</name>
   <emitter class="org.apache.tika.pipes.emitter.jdbc.JDBCEmitter">
     <params>
-      <name>jdbc</name>
+      <name>emitter</name>
       <connection>{CONNECTION_STRING}</connection>
       <!--<createTable>create table test
         (path varchar(512) not null,

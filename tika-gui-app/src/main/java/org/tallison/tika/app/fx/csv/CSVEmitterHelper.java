@@ -101,6 +101,24 @@ public class CSVEmitterHelper {
 
     }
 
+    private static void cleanCSVTempResources() {
+        //TODO
+    }
+
+    private static String getConnectionString(ConfigItem item) {
+        //TODO
+        return null;
+    }
+
+    private static void writeHeaders(CSVPrinter printer, Optional<ConfigItem> configItem) {
+        //TODO
+    }
+
+    private static Path getCsvPath(Optional<ConfigItem> configItem) {
+        //TODO
+        return null;
+    }
+
     private static void writeRow(ResultSet rs, CSVPrinter printer, List<String> cells,
                                  int columnCount) throws SQLException, IOException {
         for (int i = 1; i <= columnCount; i++) {

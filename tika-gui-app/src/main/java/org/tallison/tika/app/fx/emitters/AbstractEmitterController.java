@@ -39,6 +39,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tallison.tika.app.fx.ControllerBase;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
@@ -47,7 +48,7 @@ import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
 
-public abstract class AbstractEmitterController {
+public abstract class AbstractEmitterController extends ControllerBase {
     static AppContext APP_CONTEXT = AppContext.getInstance();
     private static Logger LOGGER = LogManager.getLogger(AbstractEmitterController.class);
 

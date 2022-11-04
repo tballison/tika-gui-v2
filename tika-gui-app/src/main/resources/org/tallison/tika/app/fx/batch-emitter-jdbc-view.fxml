@@ -40,16 +40,15 @@
   <children>
     <Accordion fx:id="csvAccordion" layoutX="1.0" layoutY="5.0" prefHeight="359.0" prefWidth="586.0">
       <panes>
-        <TitledPane fx:id="files" animated="false" prefHeight="100.0" prefWidth="586.0" text="Output File">
+        <TitledPane fx:id="files" animated="false" prefHeight="100.0" prefWidth="586.0" text="JDBC Connection">
           <content>
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="200.0">
               <children>
                 <Label layoutX="61.0" layoutY="54.0" text="JDBC Connection String" />
                 <TextField fx:id="jdbcConnection" layoutX="210.0" layoutY="50.0" prefHeight="26.0" prefWidth="279.0" promptText="jdbc:sqlite:/data/sqlite/db/tika-extracts.db" />
-                <Button fx:id="updateJDBC" layoutX="387.0" layoutY="161.0" mnemonicParsing="false" onAction="#updateJDBC" text="Update" />
+                <Button fx:id="updateJDBC" layoutX="321.0" layoutY="159.0" mnemonicParsing="false" onAction="#updateJDBC" text="Update" />
                 <Label layoutX="61.0" layoutY="99.0" text="Table Name" />
                 <TextField fx:id="tableName" layoutX="210.0" layoutY="95.0" prefHeight="26.0" prefWidth="279.0" text="tika_extracts" />
-                <Button fx:id="updateCSV1" disable="true" layoutX="210.0" layoutY="161.0" mnemonicParsing="false" onAction="#createTable" text="Create Table" />
               </children>
             </AnchorPane>
           </content>

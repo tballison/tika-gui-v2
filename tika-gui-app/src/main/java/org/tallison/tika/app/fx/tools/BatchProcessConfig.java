@@ -16,6 +16,10 @@
  */
 package org.tallison.tika.app.fx.tools;
 
+import static org.tallison.tika.app.fx.Constants.JDBC_CONNECTION_STRING;
+import static org.tallison.tika.app.fx.Constants.JDBC_EMITTER_CLASS;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -124,14 +128,31 @@ public class BatchProcessConfig {
 
     public void appendPipesClasspath(StringBuilder sb) {
         //TODO -- build this out for fetchers, emitters and pipes iterators.
-        if (! getEmitter().isEmpty()) {
+        //TODO -- this is a disaster
+        if (!getEmitter().isEmpty()) {
             ConfigItem emitter = getEmitter().get();
             if (emitter.getClazz().equals(Constants.FS_EMITTER_CLASS)) {
                 sb.append(ProcessUtils.escapeCommandLine(
-                        AppContext.TIKA_LIB_PATH.resolve("tika-emitter-fs").toAbsolutePath() + "/*"));
+                        AppContext.TIKA_LIB_PATH.resolve("tika-emitter-fs").toAbsolutePath() +
+                                "/*"));
             } else if (emitter.getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
                 sb.append(ProcessUtils.escapeCommandLine(
-                        AppContext.TIKA_LIB_PATH.resolve("tika-emitter-opensearch").toAbsolutePath() + "/*"));
+                        AppContext.TIKA_LIB_PATH.resolve("tika-emitter-opensearch")
+                                .toAbsolutePath() + "/*"));
+            } else if (emitter.getClazz().equals(Constants.JDBC_EMITTER_CLASS)) {
+                sb.append(AppContext.TIKA_LIB_PATH.resolve("tika-emitter-jdbc").toAbsolutePath() + "/*");
+                sb.append(File.pathSeparator);
+                String connectString =
+                        getEmitter().get().getAttributes().get(JDBC_CONNECTION_STRING);
+                if (connectString.startsWith("jdbc:sqlite")) {
+                    sb.append(
+                            AppContext.TIKA_LIB_PATH.resolve("db/sqlite").toAbsolutePath() + "/*");
+                } else if (connectString.startsWith("jdbc:h2")) {
+                    sb.append(AppContext.TIKA_LIB_PATH.resolve("db/h2").toAbsolutePath() + "/*");
+                } else if (connectString.startsWith("jdbc:postgres")) {
+                    sb.append(AppContext.TIKA_LIB_PATH.resolve("db/postgersql").toAbsolutePath() +
+                            "/*");
+                }
             }
         }
     }

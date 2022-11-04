@@ -226,7 +226,7 @@ public class TikaController extends ControllerBase {
         Optional<BatchProcess> oldProcess = APP_CONTEXT.getBatchProcess();
         if (! oldProcess.isEmpty()) {
             if (oldProcess.get().getStatus() == BatchProcess.STATUS.RUNNING) {
-                alert("Still running?!", "Older process is still running");
+                alert("Tika App", "Still running?!", "Older process is still running");
                 actionEvent.consume();
                 return;
             }

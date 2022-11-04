@@ -51,9 +51,9 @@
         <fx:include fx:id="opensearch_emitter" source="batch-emitter-opensearch-view.fxml"/>
       </content>
     </Tab>
-    <Tab disable="true" text="JDBC">
+    <Tab text="JDBC">
       <content>
-        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+        <fx:include fx:id="jdbc_emitter" source="batch-emitter-jdbc-view.fxml"/>
       </content>
     </Tab>
     <Tab disable="true" text="S3">

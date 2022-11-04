@@ -17,6 +17,9 @@
 package org.tallison.tika.app.fx.tools;
 
 import static org.tallison.tika.app.fx.Constants.BASE_PATH;
+import static org.tallison.tika.app.fx.Constants.JDBC_CONNECTION_STRING;
+import static org.tallison.tika.app.fx.Constants.JDBC_EMITTER_CLASS;
+import static org.tallison.tika.app.fx.Constants.JDBC_INSERT_SQL;
 import static org.tallison.tika.app.fx.Constants.NO_DIGEST;
 import static org.tallison.tika.app.fx.Constants.OPEN_SEARCH_PW;
 import static org.tallison.tika.app.fx.Constants.OPEN_SEARCH_UPDATE_STRATEGY;
@@ -31,24 +34,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
-import org.tallison.tika.app.fx.TikaController;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
 
-import org.apache.tika.pipes.emitter.Emitter;
+
 import org.apache.tika.utils.ProcessUtils;
 import org.apache.tika.utils.StringUtils;
 
 /**
  * This is an embarrassment of hardcoding.  Need to figure out better
  * solution...
+ *
+ * This also requires knowledge of all fetchers/emitters in one class. This is, erm,
+ * less than entirely ideal.
  *
  * This is also does not escape xml characters.  So, bad, very, very bad.
  */
@@ -138,7 +142,6 @@ public class TikaConfigWriter {
                 AppContext.TIKA_EXTRAS_BIN_PATH.toAbsolutePath() + "/*"));
         sb.append(File.pathSeparator);
         batchProcessConfig.appendPipesClasspath(sb);
-        //TODO add s3 and jdbc
         return sb.toString();
     }
 
@@ -159,6 +162,10 @@ public class TikaConfigWriter {
                 break;
             case Constants.CSV_EMITTER_CLASS:
                 appendCSVEmitter(emitter, sb);
+                break;
+            case Constants.JDBC_EMITTER_CLASS:
+                appendJDBCEmitter(emitter, sb);
+                break;
             default:
                 throw new RuntimeException("I regret I don't yet support " +
                         batchProcessConfig.getEmitter().get().getClazz());
@@ -167,11 +174,28 @@ public class TikaConfigWriter {
 
     private void appendCSVEmitter(ConfigItem emitter, StringBuilder sb) {
         //TODO
-        sb.append(build table, etc);
+        //sb.append(build table, etc);
     }
 
     private void appendJDBCEmitter(ConfigItem emitter, StringBuilder sb) throws IOException {
         String template = getTemplate("jdbc-pipes-emitter.xml");
+        //assume this exists
+        String connectionString = emitter.getAttributes().get(JDBC_CONNECTION_STRING);
+        template = template.replace("{CONNECTION_STRING}", connectionString);
+        //for now we assume the table was created via the dialog
+        template = template.replace("{CREATE_TABLE_SQL}", StringUtils.EMPTY);
+
+        template = template.replace("{INSERT_SQL}", emitter.getAttributes().get(JDBC_INSERT_SQL));
+
+        StringBuilder columns = new StringBuilder();
+        //assume these exist
+        for (MetadataTuple t : emitter.getMetadataTuples().get()) {
+            columns.append("<key k=\"").append(t.getOutput()).append("\"");
+            columns.append(" v=\"").append(t.getProperty()).append("\"/>");
+        }
+        template = template.replace("{COLUMNS_AND_TYPES}", columns.toString());
+
+        sb.append(template);
     }
 
     private void appendOpenSearchEmitter(ConfigItem emitter, StringBuilder sb) throws IOException {
