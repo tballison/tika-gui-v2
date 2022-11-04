@@ -50,6 +50,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
 
     private enum VALIDITY {
         NO_CONNECTION_STRING,
+        METADATA_NOT_CONFIGURED,
         FAILED_TO_CONNECT,
         VALID,
         COLUMN_MISMATCH,
@@ -65,7 +66,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
 
     private static String ATTACHMENT_NUM_COL_NAME = "attach_num";
 
-    private final static int TAB_INDEX = 4;
+    private final static int TAB_INDEX = 3;
 
     private String insertSql = StringUtils.EMPTY;
 
@@ -157,10 +158,18 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         VALIDITY validity = validate();
         switch (validity) {
             case VALID:
+                if (StringUtils.isBlank(insertSql)) {
+                    insertSql = createInsertString();
+                }
+                saveState();
                 ((Stage)updateJDBC.getScene().getWindow()).close();
+                return;
+            case METADATA_NOT_CONFIGURED:
+                alert(ALERT_TITLE, "Metadata Not Configured", "Need to configure metadata");
+                //TODO -- figure out if we can open the metadata accordion
                 break;
             case NO_CONNECTION_STRING:
-                alert("JDBC Emitter", "No connection string?",
+                alert(ALERT_TITLE, "No connection string?",
                         "Need to specify a jdbc connection string");
                 break;
             case COLUMN_MISMATCH:
@@ -176,29 +185,40 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
                 existingDataDialog();
                 break;
         }
-        if (StringUtils.isBlank(insertSql)) {
-            insertSql = createInsertString();
-        }
         saveState();
         actionEvent.consume();
     }
 
     private void columnMismatchDialog() {
-        alert(ALERT_TITLE, "Column mismatch", "Couldn't open jdbc connection");
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(ALERT_TITLE);
+        alert.setContentText("Column mismatch. Drop table and recreate?");
+        ButtonType dropButton = new ButtonType("Drop table", ButtonBar.ButtonData.YES);
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        alert.getButtonTypes().setAll(dropButton, cancelButton);
+        alert.showAndWait().ifPresent(type -> {
+            if (type.getText().startsWith("Drop")) {
+                dropTable();
+            } else if (type.getText().startsWith("Cancel")) {
+                return;
+            }
+        });
     }
+
 
     private void existingDataDialog() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(ALERT_TITLE);
         alert.setContentText("Data exists. Truncate table, append data or cancel?");
-        ButtonType truncateButton = new ButtonType("Truncate", ButtonBar.ButtonData.YES);
+        ButtonType truncateButton = new ButtonType("Truncate Table", ButtonBar.ButtonData.YES);
         ButtonType appendButton = new ButtonType("Append", ButtonBar.ButtonData.NO);
 
         alert.getButtonTypes().setAll(truncateButton, appendButton);
         alert.showAndWait().ifPresent(type -> {
-            if (type.getText().startsWith("Truncate Table")) {
+            if (type.getText().startsWith("Truncate")) {
                 truncate();
-            } else if (type.getText().startsWith("Append Data")) {
+            } else if (type.getText().startsWith("Append")) {
                 return;
             }
         });
@@ -206,14 +226,17 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
     }
 
     private boolean truncate() {
+        //TODO -- pop up "are you sure?"
         String sql = "truncate table " + tableName.getText();
+        //TODO -- fix this horror show
+        if (jdbcConnection.getText().startsWith("jdbc:sqlite")) {
+            sql = "delete from " + tableName.getText();
+        }
         String msg = StringUtils.EMPTY;
         try (Connection connection = DriverManager.getConnection(jdbcConnection.getText())) {
             try (Statement st = connection.createStatement()) {
-                boolean result = st.execute(sql);
-                if (result) {
-                    return true;
-                }
+                st.execute(sql);
+                return true;
             }
         } catch (SQLException e) {
             LOGGER.warn("failed to truncate", e);
@@ -223,23 +246,47 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         return false;
     }
 
+    private boolean dropTable() {
+        //TODO -- pop up "are you sure?"
+        String sql = "drop table " + tableName.getText();
+
+        String msg = StringUtils.EMPTY;
+        try (Connection connection = DriverManager.getConnection(jdbcConnection.getText())) {
+            try (Statement st = connection.createStatement()) {
+                st.execute(sql);
+                return true;
+            }
+        } catch (SQLException e) {
+            LOGGER.warn("failed to drop table", e);
+            msg = e.getMessage();
+        }
+        alert(ALERT_TITLE, "Dropping table failed", "Failed to drop: " + msg);
+        return false;
+    }
+
     private VALIDITY validate() {
+
+        if (getMetadataRows().size() == 0) {
+            return VALIDITY.METADATA_NOT_CONFIGURED;
+        }
+
         String connectionString = jdbcConnection.getText();
         if (StringUtils.isBlank(connectionString)) {
             return VALIDITY.NO_CONNECTION_STRING;
         }
+        String cString = connectionString.replace("AUTO_SERVER=TRUE", "");
 
-        try (Connection connection = DriverManager.getConnection(connectionString)) {
+        try (Connection connection = DriverManager.getConnection(cString)) {
 
         } catch (SQLException e) {
             LOGGER.warn("couldn't connect", e);
             return VALIDITY.FAILED_TO_CONNECT;
         }
 
-        try (Connection connection = DriverManager.getConnection(connectionString)) {
+        try (Connection connection = DriverManager.getConnection(cString)) {
             try (Statement st = connection.createStatement()) {
                 int rows = 0;
-                try (ResultSet rs = st.executeQuery("select * from " + tableName + " limit 10;")) {
+                try (ResultSet rs = st.executeQuery("select * from " + tableName.getText() + " limit 10;")) {
                     boolean validColumns = validateColumns(rs.getMetaData());
                     if (! validColumns) {
                         //TODO -- add a drop table or modify option
@@ -265,8 +312,45 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         }
     }
 
-    private boolean validateColumns(ResultSetMetaData metaData) {
-        //TODO -- looks good for now!
+    private boolean validateColumns(ResultSetMetaData metaData) throws SQLException {
+        //TODO -- check column types!
+        for (int i = 1;  i <= metaData.getColumnCount(); i++) {
+            if (i == 1) {
+                if (! PATH_COL_NAME.equalsIgnoreCase(metaData.getColumnName(i))) {
+                    alert(ALERT_TITLE, "Unexpected column name", "First column should be: " + PATH_COL_NAME);
+                    return false;
+                }
+            }
+            if (i == 2) {
+                if (! ATTACHMENT_NUM_COL_NAME.equalsIgnoreCase(metaData.getColumnName(i))) {
+                    alert(ALERT_TITLE, "Unexpected column name",
+                            "Second column should be: " + ATTACHMENT_NUM_COL_NAME);
+                    return false;
+                }
+            }
+            if (i > 2) {
+                int tableRow = i - 3;
+                if (!metaData.getColumnName(i).equalsIgnoreCase(getMetadataRows().get(tableRow).getOutput())) {
+                    alert(ALERT_TITLE, "Unexpected column name",
+                            "Column number (" + i + ")  should be: " +
+                                    getMetadataRows().get(tableRow).getOutput() + " but is " +
+                            metaData.getColumnName(i));
+                    return false;
+                }
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = metaData.getColumnCount() - 2; i < getMetadataRows().size(); i++) {
+            String col = getMetadataRows().get(i).getOutput();
+            sb.append("'").append(col).append("'").append(" ");
+        }
+        String warn = sb.toString().trim();
+        if (! StringUtils.isBlank(warn)) {
+            alert(ALERT_TITLE, "Unexpected column(s)",
+                    "Columns defined in metadata but not defined in the table: " + warn);
+            return false;
+        }
         return true;
     }
 
@@ -280,7 +364,9 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             sb.append(r.getOutput()).append(" ").append(r.getProperty());
         }
         sb.append(")");
-        try (Connection connection = DriverManager.getConnection(jdbcConnection.getText())) {
+        String cString = jdbcConnection.getText();
+        cString = cString.replace("AUTO_SERVER=TRUE", "");
+        try (Connection connection = DriverManager.getConnection(cString)) {
             try (Statement st = connection.createStatement()) {
                 st.execute(sb.toString());
             }

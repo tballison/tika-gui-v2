@@ -115,7 +115,7 @@ public class PackageBinaries {
                 "lib/tika-fetcher-s3");
         JARS_TO_PATH.put(
                 "org/postgresql/postgresql/42.5.0/postgresql-42.5.0.jar",
-                "lib/db/postrgresql");
+                "lib/db/postgresql");
 
 
     }

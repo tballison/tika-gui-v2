@@ -150,8 +150,7 @@ public class BatchProcessConfig {
                 } else if (connectString.startsWith("jdbc:h2")) {
                     sb.append(AppContext.TIKA_LIB_PATH.resolve("db/h2").toAbsolutePath() + "/*");
                 } else if (connectString.startsWith("jdbc:postgres")) {
-                    sb.append(AppContext.TIKA_LIB_PATH.resolve("db/postgersql").toAbsolutePath() +
-                            "/*");
+                    sb.append(AppContext.TIKA_LIB_PATH.resolve("db/postgresql").toAbsolutePath() + "/*");
                 }
             }
         }

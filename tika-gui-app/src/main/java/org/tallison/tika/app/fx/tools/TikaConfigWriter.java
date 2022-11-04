@@ -181,6 +181,8 @@ public class TikaConfigWriter {
         String template = getTemplate("jdbc-pipes-emitter.xml");
         //assume this exists
         String connectionString = emitter.getAttributes().get(JDBC_CONNECTION_STRING);
+        //TODO -- a lot better than this.  LOL...
+        connectionString = connectionString.replaceAll("&", "&amp;");
         template = template.replace("{CONNECTION_STRING}", connectionString);
         //for now we assume the table was created via the dialog
         template = template.replace("{CREATE_TABLE_SQL}", StringUtils.EMPTY);
