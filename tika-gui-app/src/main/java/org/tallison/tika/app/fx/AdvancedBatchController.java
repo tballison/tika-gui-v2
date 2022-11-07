@@ -29,7 +29,6 @@ import javafx.scene.input.MouseEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
-import org.tallison.tika.app.fx.tools.BatchProcess;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 
 import org.apache.tika.utils.StringUtils;

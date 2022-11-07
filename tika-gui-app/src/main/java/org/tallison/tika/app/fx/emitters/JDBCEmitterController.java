@@ -17,7 +17,6 @@
 package org.tallison.tika.app.fx.emitters;
 
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;

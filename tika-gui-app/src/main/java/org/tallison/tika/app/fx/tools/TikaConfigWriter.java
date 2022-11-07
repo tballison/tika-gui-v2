@@ -18,7 +18,6 @@ package org.tallison.tika.app.fx.tools;
 
 import static org.tallison.tika.app.fx.Constants.BASE_PATH;
 import static org.tallison.tika.app.fx.Constants.JDBC_CONNECTION_STRING;
-import static org.tallison.tika.app.fx.Constants.JDBC_EMITTER_CLASS;
 import static org.tallison.tika.app.fx.Constants.JDBC_INSERT_SQL;
 import static org.tallison.tika.app.fx.Constants.NO_DIGEST;
 import static org.tallison.tika.app.fx.Constants.OPEN_SEARCH_PW;
@@ -42,7 +41,6 @@ import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
-
 
 import org.apache.tika.utils.ProcessUtils;
 import org.apache.tika.utils.StringUtils;

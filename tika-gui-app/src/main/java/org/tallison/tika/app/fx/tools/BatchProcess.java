@@ -37,7 +37,6 @@ import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.value.ObservableValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.csv.CSVEmitterHelper;
 import org.tallison.tika.app.fx.ctx.AppContext;
 

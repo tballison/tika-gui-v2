@@ -17,11 +17,8 @@
 package org.tallison.tika.app.fx.tools;
 
 import static org.tallison.tika.app.fx.Constants.JDBC_CONNECTION_STRING;
-import static org.tallison.tika.app.fx.Constants.JDBC_EMITTER_CLASS;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

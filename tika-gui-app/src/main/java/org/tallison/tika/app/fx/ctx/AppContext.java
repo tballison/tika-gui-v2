@@ -42,7 +42,9 @@ public class AppContext {
     private static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {
+        //this is necessary for optionals
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        //this is necessary for timestamps
         OBJECT_MAPPER.registerModule(new Jdk8Module());
     }
 
