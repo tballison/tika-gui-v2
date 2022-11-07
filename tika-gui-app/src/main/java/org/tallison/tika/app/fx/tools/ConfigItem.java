@@ -17,22 +17,23 @@
 package org.tallison.tika.app.fx.tools;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import org.tallison.tika.app.fx.metadata.MetadataTuple;
 
 public class ConfigItem {
 
     private String label;
     private String clazz;
     private Map<String, String> attributes;
+
+    private Optional<List<MetadataTuple>> metadataTuples = Optional.empty();
+
     public ConfigItem() {
         //needed for serialization for now...should figure out cleaner solution
 
-    }
-
-    public ConfigItem(String label, String clazz, Map<String, String> attributes) {
-        this.label = label;
-        this.clazz = clazz;
-        this.attributes = attributes;
     }
 
     public static ConfigItem build(String... args) {
@@ -41,6 +42,12 @@ public class ConfigItem {
             params.put(args[i], args[++i]);
         }
         return new ConfigItem(args[0], args[1], params);
+    }
+
+    public ConfigItem(String label, String clazz, Map<String, String> attributes) {
+        this.label = label;
+        this.clazz = clazz;
+        this.attributes = attributes;
     }
 
     public String getClazz() {
@@ -67,9 +74,17 @@ public class ConfigItem {
         this.label = label;
     }
 
+    public void setMetadataTuples(List<MetadataTuple> metadataTuples) {
+        this.metadataTuples = Optional.ofNullable(metadataTuples);
+    }
+
+    public Optional<List<MetadataTuple>> getMetadataTuples() {
+        return this.metadataTuples;
+    }
+
     @Override
     public String toString() {
         return "ConfigItem{" + "label='" + label + '\'' + ", clazz='" + clazz + '\'' +
-                ", attributes=" + attributes + '}';
+                ", attributes=" + attributes + ", metadataTuples=" + metadataTuples + '}';
     }
 }

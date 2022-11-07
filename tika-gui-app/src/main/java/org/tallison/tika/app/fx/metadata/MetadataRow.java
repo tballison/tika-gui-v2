@@ -24,12 +24,15 @@ public class MetadataRow {
     private final SimpleStringProperty tika = new SimpleStringProperty("");
     private final SimpleStringProperty output = new SimpleStringProperty("");
 
+    private final SimpleStringProperty property = new SimpleStringProperty("");
+
     public MetadataRow() {
     }
 
-    public MetadataRow(String tikaVal, String outputVal) {
+    public MetadataRow(String tikaVal, String outputVal, String propertyVal) {
         tika.set(tikaVal);
         output.set(outputVal);
+        property.set(propertyVal);
     }
 
     public String getTika() {
@@ -57,8 +60,21 @@ public class MetadataRow {
         return tika;
     }
 
+    public String getProperty() {
+        return property.get();
+    }
+
+    public SimpleStringProperty propertyProperty() {
+        return property;
+    }
+
+    public void setProperty(String property) {
+        this.property.set(property);
+    }
+
     @Override
     public String toString() {
-        return "MetadataRow{" + "tika=" + tika + ", output=" + output + '}';
+        return "MetadataRow{" + "tika=" + tika + ", output=" + output + ", property=" + property +
+                '}';
     }
 }

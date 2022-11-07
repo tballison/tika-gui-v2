@@ -131,28 +131,6 @@ public class TikaController extends ControllerBase {
     }
 
     @FXML
-    public void configureMetadata(ActionEvent actionEvent) throws IOException {
-        FXMLLoader fxmlLoader =
-                new FXMLLoader(TikaApplication.class.getResource("batch-metadata-view.fxml"));
-        VBox dragTarget = new VBox();
-        StackPane root = new StackPane();
-        root.getChildren().add(dragTarget);
-        Scene scene = new Scene(fxmlLoader.load());
-
-        final Stage stage = new Stage();
-        stage.setTitle("Select Metadata");
-        stage.setScene(scene);
-        final MetadataController metadataController = fxmlLoader.getController();
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            public void handle(WindowEvent we) {
-                metadataController.saveMetadataToContext();
-                updateButtons();
-            }
-        });
-        stage.show();
-    }
-
-    @FXML
     public void configureAdvanced(ActionEvent actionEvent) throws IOException {
         FXMLLoader fxmlLoader =
                 new FXMLLoader(TikaApplication.class.getResource("batch-advanced-view.fxml"));
@@ -248,7 +226,7 @@ public class TikaController extends ControllerBase {
         Optional<BatchProcess> oldProcess = APP_CONTEXT.getBatchProcess();
         if (! oldProcess.isEmpty()) {
             if (oldProcess.get().getStatus() == BatchProcess.STATUS.RUNNING) {
-                alert("Still running?!", "Older process is still running");
+                alert("Tika App", "Still running?!", "Older process is still running");
                 actionEvent.consume();
                 return;
             }

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 module org.tallison.tika.app.fx {
+    requires java.sql;
     requires javafx.graphics;
     requires org.apache.tika.core;
     requires org.apache.commons.io;
@@ -33,5 +34,8 @@ module org.tallison.tika.app.fx {
     opens org.tallison.tika.app.fx.ctx to com.fasterxml.jackson.databind, javafx.fxml;
     opens org.tallison.tika.app.fx.status to javafx.base;
     opens org.tallison.tika.app.fx.tools to com.fasterxml.jackson.databind, javafx.fxml;
-    opens org.tallison.tika.app.fx.metadata to javafx.fxml, javafx.base;
+    opens org.tallison.tika.app.fx.metadata to com.fasterxml.jackson.databind, javafx.fxml,
+            javafx.base;
+    exports org.tallison.tika.app.fx.emitters;
+    opens org.tallison.tika.app.fx.emitters to com.fasterxml.jackson.databind, javafx.fxml;
 }

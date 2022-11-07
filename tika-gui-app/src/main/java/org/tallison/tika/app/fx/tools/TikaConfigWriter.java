@@ -16,7 +16,14 @@
  */
 package org.tallison.tika.app.fx.tools;
 
+import static org.tallison.tika.app.fx.Constants.BASE_PATH;
+import static org.tallison.tika.app.fx.Constants.JDBC_CONNECTION_STRING;
+import static org.tallison.tika.app.fx.Constants.JDBC_INSERT_SQL;
 import static org.tallison.tika.app.fx.Constants.NO_DIGEST;
+import static org.tallison.tika.app.fx.Constants.OPEN_SEARCH_PW;
+import static org.tallison.tika.app.fx.Constants.OPEN_SEARCH_UPDATE_STRATEGY;
+import static org.tallison.tika.app.fx.Constants.OPEN_SEARCH_URL;
+import static org.tallison.tika.app.fx.Constants.OPEN_SEARCH_USER;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,15 +32,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
-import org.tallison.tika.app.fx.TikaController;
 import org.tallison.tika.app.fx.ctx.AppContext;
+import org.tallison.tika.app.fx.metadata.MetadataTuple;
 
 import org.apache.tika.utils.ProcessUtils;
 import org.apache.tika.utils.StringUtils;
@@ -41,6 +48,9 @@ import org.apache.tika.utils.StringUtils;
 /**
  * This is an embarrassment of hardcoding.  Need to figure out better
  * solution...
+ *
+ * This also requires knowledge of all fetchers/emitters in one class. This is, erm,
+ * less than entirely ideal.
  *
  * This is also does not escape xml characters.  So, bad, very, very bad.
  */
@@ -130,7 +140,6 @@ public class TikaConfigWriter {
                 AppContext.TIKA_EXTRAS_BIN_PATH.toAbsolutePath() + "/*"));
         sb.append(File.pathSeparator);
         batchProcessConfig.appendPipesClasspath(sb);
-        //TODO add s3 and jdbc
         return sb.toString();
     }
 
@@ -149,17 +158,51 @@ public class TikaConfigWriter {
             case Constants.OPEN_SEARCH_EMITTER_CLASS:
                 appendOpenSearchEmitter(emitter, sb);
                 break;
+            case Constants.CSV_EMITTER_CLASS:
+                appendCSVEmitter(emitter, sb);
+                break;
+            case Constants.JDBC_EMITTER_CLASS:
+                appendJDBCEmitter(emitter, sb);
+                break;
             default:
                 throw new RuntimeException("I regret I don't yet support " +
                         batchProcessConfig.getEmitter().get().getClazz());
         }
     }
 
+    private void appendCSVEmitter(ConfigItem emitter, StringBuilder sb) {
+        //TODO
+        //sb.append(build table, etc);
+    }
+
+    private void appendJDBCEmitter(ConfigItem emitter, StringBuilder sb) throws IOException {
+        String template = getTemplate("jdbc-pipes-emitter.xml");
+        //assume this exists
+        String connectionString = emitter.getAttributes().get(JDBC_CONNECTION_STRING);
+        //TODO -- a lot better than this.  LOL...
+        connectionString = connectionString.replaceAll("&", "&amp;");
+        template = template.replace("{CONNECTION_STRING}", connectionString);
+        //for now we assume the table was created via the dialog
+        template = template.replace("{CREATE_TABLE_SQL}", StringUtils.EMPTY);
+
+        template = template.replace("{INSERT_SQL}", emitter.getAttributes().get(JDBC_INSERT_SQL));
+
+        StringBuilder columns = new StringBuilder();
+        //assume these exist
+        for (MetadataTuple t : emitter.getMetadataTuples().get()) {
+            columns.append("<key k=\"").append(t.getOutput()).append("\"");
+            columns.append(" v=\"").append(t.getProperty()).append("\"/>");
+        }
+        template = template.replace("{COLUMNS_AND_TYPES}", columns.toString());
+
+        sb.append(template);
+    }
+
     private void appendOpenSearchEmitter(ConfigItem emitter, StringBuilder sb) throws IOException {
         String template = getTemplate("opensearch-pipes-emitter.xml");
 
-        String userName = emitter.getAttributes().get("userName");
-        String password = emitter.getAttributes().get("password");
+        String userName = emitter.getAttributes().get(OPEN_SEARCH_USER);
+        String password = emitter.getAttributes().get(OPEN_SEARCH_PW);
         if (StringUtils.isBlank(userName) && StringUtils.isBlank(password)) {
             template = template.replace("{USER_NAME}", "");
             template = template.replace("{PASSWORD}", "");
@@ -171,15 +214,15 @@ public class TikaConfigWriter {
         }
 
         template = template.replace("{OPENSEARCH_URL}",
-                emitter.getAttributes().get("openSearchUrl"));
+                emitter.getAttributes().get(OPEN_SEARCH_URL));
         template = template.replace("{UPDATE_STRATEGY}",
-                emitter.getAttributes().get("updateStrategy"));
+                emitter.getAttributes().get(OPEN_SEARCH_UPDATE_STRATEGY));
         sb.append(template);
     }
 
     private void appendFSEmitter(ConfigItem fetcher, StringBuilder sb) throws IOException {
         String template = getTemplate("fs-pipes-emitter.xml");
-        template = template.replace("{BASE_PATH}", fetcher.getAttributes().get("basePath"));
+        template = template.replace("{BASE_PATH}", fetcher.getAttributes().get(BASE_PATH));
         sb.append(template).append("\n");
     }
 
@@ -204,7 +247,7 @@ public class TikaConfigWriter {
 
     private void appendFSFetcher(ConfigItem fetcher, StringBuilder sb) throws IOException {
         String template = getTemplate("fs-pipes-fetcher.xml");
-        template = template.replace("{BASE_PATH}", fetcher.getAttributes().get("basePath"));
+        template = template.replace("{BASE_PATH}", fetcher.getAttributes().get(BASE_PATH));
         sb.append(template).append("\n");
     }
 
@@ -229,32 +272,39 @@ public class TikaConfigWriter {
     private void appendFSPipesIterator(ConfigItem pipesIterator, StringBuilder sb)
             throws IOException {
         String template = getTemplate("fs-pipes-iterator.xml");
-        template = template.replace("{BASE_PATH}", pipesIterator.getAttributes().get("basePath"));
+        template = template.replace("{BASE_PATH}", pipesIterator.getAttributes().get(BASE_PATH));
         sb.append(template).append("\n");
     }
 
     private void appendMetadataFilter(BatchProcessConfig batchProcessConfig,
                                       StringBuilder tikaConfigBuilder) throws IOException {
 
-
         StringBuilder sb = new StringBuilder();
         String template = getTemplate("metadata-filters.xml");
-        Map<String, String> mappings = batchProcessConfig.getMetadataMapper().getAttributes();
-        if (batchProcessConfig.getMetadataMapper() != null &&
-                batchProcessConfig.getMetadataMapper().getAttributes().size() > 0) {
-            sb.append("<metadataFilter " +
-                    "class=\"org.apache.tika.metadata.filter.FieldNameMappingFilter\">");
-            sb.append("  <params>\n");
-            sb.append("    <excludeUnmapped>true</excludeUnmapped>\n");
-            sb.append("    <mappings>\n");
-
-            mappings.entrySet().stream().forEach(e -> sb.append(
-                    "      <mapping from=\"" + e.getKey() + "\" to=\"" + e.getValue() + "\"/>"));
-
-            sb.append("    </mappings>");
-            sb.append("  </params>");
-            sb.append("</metadataFilter>\n");
+        Optional<ConfigItem> configItem = batchProcessConfig.getEmitter();
+        if (configItem.isEmpty()) {
+            LOGGER.warn("emitter is empty?!");
+            return;
         }
+        ConfigItem emitter = configItem.get();
+        Optional<List<MetadataTuple>> metadataTuples = emitter.getMetadataTuples();
+        if (metadataTuples.isEmpty() || metadataTuples.get().size() == 0) {
+            return;
+        }
+
+        sb.append("<metadataFilter " +
+                "class=\"org.apache.tika.metadata.filter.FieldNameMappingFilter\">");
+        sb.append("  <params>\n");
+        sb.append("    <excludeUnmapped>true</excludeUnmapped>\n");
+        sb.append("    <mappings>\n");
+
+        metadataTuples.get().stream().forEach(e -> sb.append(
+                "      <mapping from=\"" + e.getTika() + "\" to=\"" + e.getOutput() + "\"/>"));
+
+        sb.append("    </mappings>");
+        sb.append("  </params>");
+        sb.append("</metadataFilter>\n");
+
         template = template.replace("{MAPPING_FILTER}", sb.toString());
         tikaConfigBuilder.append(template).append("\n");
     }

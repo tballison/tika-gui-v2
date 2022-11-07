@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.control.cell.TextFieldTableCell?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="360.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.emitters.CSVEmitterController">
+  <children>
+    <Accordion fx:id="csvAccordion" layoutX="1.0" layoutY="5.0" prefHeight="359.0" prefWidth="586.0">
+      <panes>
+        <TitledPane fx:id="files" animated="false" prefHeight="100.0" prefWidth="586.0" text="Output File">
+          <content>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="200.0">
+              <children>
+                <Label layoutX="61.0" layoutY="54.0" text="File Name" />
+                <Label layoutX="61.0" layoutY="93.0" text="Directory" />
+                <TextField fx:id="csvFileName" layoutX="191.0" layoutY="50.0" text="tika-extracts.csv" />
+                <Button layoutX="191.0" layoutY="89.0" mnemonicParsing="false" onAction="#selectCSVOutputDirectory" prefHeight="26.0" prefWidth="84.0" text="Choose" />
+                <Button fx:id="updateCSV" layoutX="244.0" layoutY="161.0" mnemonicParsing="false" onAction="#updateCSV" text="Update" />
+              </children>
+            </AnchorPane>
+          </content>
+        </TitledPane>
+        <TitledPane animated="false" prefHeight="296.0" prefWidth="433.0" text="Metadata">
+          <content>
+            <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+              <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+              </padding>
+              <TableView fx:id="tableView" editable="true" items="${controller.metadataRows}" prefHeight="200.0" prefWidth="580.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                <columns>
+                  <TableColumn fx:id="tikaMetadataColumn" prefWidth="253.0" text="Tika Metadata Key">
+                    <cellValueFactory>
+                      <PropertyValueFactory property="tika" />
+                    </cellValueFactory>
+                    <cellFactory>
+                      <TextFieldTableCell fx:factory="forTableColumn" />
+                    </cellFactory>
+                  </TableColumn>
+                  <TableColumn fx:id="outputMetadataColumn" prefWidth="219.0" text="Output Metadata Key">
+                    <cellValueFactory>
+                      <PropertyValueFactory property="output" />
+                    </cellValueFactory>
+                    <cellFactory>
+                      <TextFieldTableCell fx:factory="forTableColumn" />
+                    </cellFactory>
+                  </TableColumn>
+                  <TableColumn fx:id="propertyColumn" prefWidth="106.0" text="Max Length">
+                    <cellValueFactory>
+                      <PropertyValueFactory property="property" />
+                    </cellValueFactory>
+                    <cellFactory>
+                      <TextFieldTableCell fx:factory="forTableColumn" />
+                    </cellFactory>
+                  </TableColumn>
+                </columns>
+                <items>
+                  <FXCollections fx:id="backingData" fx:factory="observableArrayList">
+                  </FXCollections>
+                </items>
+              </TableView>
+              <HBox alignment="bottom_left" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                <TextField fx:id="tikaField" prefHeight="26.0" prefWidth="119.0" promptText="Tika Field" />
+                <TextField fx:id="outputField" prefHeight="26.0" prefWidth="133.0" promptText="Output Field" />
+                <TextField fx:id="propertyField" prefWidth="90" promptText="1000" />
+                <Button onAction="#addMetadataRow" text="Add Row" />
+              </HBox>
+              <HBox alignment="bottom_left" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="4">
+                <Button fx:id="loadMetadataCSV" onAction="#loadMetadataCSV" text="Load CSV" />
+                <Button fx:id="clearAll" onAction="#clearMetadata" text="Clear All" />
+              </HBox>
+              <columnConstraints>
+                <ColumnConstraints />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints maxHeight="36.0" minHeight="22.0" prefHeight="30.0" />
+                <RowConstraints maxHeight="30.0" minHeight="16.0" prefHeight="30.0" />
+                <RowConstraints maxHeight="0.0" minHeight="0.0" prefHeight="0.0" />
+              </rowConstraints>
+            </GridPane>
+          </content>
+        </TitledPane>
+        <TitledPane fx:id="advanced" animated="false" disable="true" prefHeight="100.0" prefWidth="586.0" text="Advanced Options">
+          <content>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="200.0">
+              <children>
+              </children>
+            </AnchorPane>
+          </content>
+        </TitledPane>
+      </panes>
+    </Accordion>
+  </children>
+</AnchorPane>

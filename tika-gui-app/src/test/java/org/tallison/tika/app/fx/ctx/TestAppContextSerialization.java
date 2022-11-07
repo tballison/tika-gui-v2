@@ -22,6 +22,7 @@ import java.io.StringWriter;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.junit.jupiter.api.Test;
 import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.tools.BatchProcess;
@@ -31,20 +32,21 @@ public class TestAppContextSerialization {
     @Test
     public void testBasic() throws Exception {
         AppContext appContext = new AppContext();
-        appContext.getBatchProcessConfig().setEmitter(
+        appContext.getBatchProcessConfig().get().setEmitter(
                 "emitter label",
                 Constants.FS_EMITTER_CLASS,
                 "basePath", "something");
         BatchProcess batchProcess = new BatchProcess();
         appContext.setBatchProcess(batchProcess);
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        //this is necessary for timestamps
+        objectMapper.registerModule(new Jdk8Module());
+
         StringWriter writer = new StringWriter();
         objectMapper.writeValue(writer, appContext);
-        System.out.println(writer.toString());
-        //this is important
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         AppContext deserialized = objectMapper.readValue(writer.toString(), AppContext.class);
-        assertEquals(-1l, deserialized.getBatchProcess().getRunningProcessId());
-        assertEquals(BatchProcess.STATUS.READY, deserialized.getBatchProcess().getStatus());
+        assertEquals(-1l, deserialized.getBatchProcess().get().getRunningProcessId());
+        assertEquals(BatchProcess.STATUS.READY, deserialized.getBatchProcess().get().getStatus());
     }
 }

@@ -16,8 +16,9 @@
  */
 package org.tallison.tika.app.fx.tools;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.tallison.tika.app.fx.Constants.JDBC_CONNECTION_STRING;
+
+import java.io.File;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -34,11 +35,7 @@ public class BatchProcessConfig {
     private Optional<ConfigItem> pipesIterator = Optional.empty();
     private Optional<ConfigItem> fetcher = Optional.empty();
     private Optional<ConfigItem> emitter = Optional.empty();
-    private ConfigItem metadataMapper = ConfigItem.build("Metadata mapper",
-            "org.apache.tika.metadata.filter.FieldNameMappingFilter");
 
-    private List<String> tikaMetadata = new ArrayList<>();
-    private List<String> outputMetadata = new ArrayList<>();
 
     @JsonIgnore
     private StringProperty fetcherLabel = new SimpleStringProperty("Unselected");
@@ -125,45 +122,33 @@ public class BatchProcessConfig {
         setEmitter(ConfigItem.build(args));
     }
 
-    public ConfigItem getMetadataMapper() {
-        return metadataMapper;
-    }
-
-    @JsonSetter
-    public void setMetadataMapper(ConfigItem metadataMapper) {
-        this.metadataMapper = metadataMapper;
-    }
-
-    public void addTikaMetadata(int row, String data) {
-        if (tikaMetadata.size() <= row) {
-            for (int i = tikaMetadata.size(); i <= row; i++) {
-                tikaMetadata.add("");
-            }
-        }
-        System.out.println("adding to tika " + row + " : " + data);
-        tikaMetadata.set(row, data);
-    }
-
-    public void addOutputMetadata(int row, String data) {
-        if (outputMetadata.size() <= row) {
-            for (int i = outputMetadata.size(); i <= row; i++) {
-                outputMetadata.add("");
-            }
-        }
-        System.out.println("adding to output " + row + " : " + data);
-        outputMetadata.set(row, data);
-    }
 
     public void appendPipesClasspath(StringBuilder sb) {
         //TODO -- build this out for fetchers, emitters and pipes iterators.
-        if (! getEmitter().isEmpty()) {
+        //TODO -- this is a disaster
+        if (!getEmitter().isEmpty()) {
             ConfigItem emitter = getEmitter().get();
             if (emitter.getClazz().equals(Constants.FS_EMITTER_CLASS)) {
                 sb.append(ProcessUtils.escapeCommandLine(
-                        AppContext.TIKA_LIB_PATH.resolve("tika-emitter-fs").toAbsolutePath() + "/*"));
+                        AppContext.TIKA_LIB_PATH.resolve("tika-emitter-fs").toAbsolutePath() +
+                                "/*"));
             } else if (emitter.getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
                 sb.append(ProcessUtils.escapeCommandLine(
-                        AppContext.TIKA_LIB_PATH.resolve("tika-emitter-opensearch").toAbsolutePath() + "/*"));
+                        AppContext.TIKA_LIB_PATH.resolve("tika-emitter-opensearch")
+                                .toAbsolutePath() + "/*"));
+            } else if (emitter.getClazz().equals(Constants.JDBC_EMITTER_CLASS)) {
+                sb.append(AppContext.TIKA_LIB_PATH.resolve("tika-emitter-jdbc").toAbsolutePath() + "/*");
+                sb.append(File.pathSeparator);
+                String connectString =
+                        getEmitter().get().getAttributes().get(JDBC_CONNECTION_STRING);
+                if (connectString.startsWith("jdbc:sqlite")) {
+                    sb.append(
+                            AppContext.TIKA_LIB_PATH.resolve("db/sqlite").toAbsolutePath() + "/*");
+                } else if (connectString.startsWith("jdbc:h2")) {
+                    sb.append(AppContext.TIKA_LIB_PATH.resolve("db/h2").toAbsolutePath() + "/*");
+                } else if (connectString.startsWith("jdbc:postgres")) {
+                    sb.append(AppContext.TIKA_LIB_PATH.resolve("db/postgresql").toAbsolutePath() + "/*");
+                }
             }
         }
     }

@@ -39,9 +39,9 @@ public class PackageBinaries {
     //and the apache repo for tika artifacts
 
     //Further, we should parameterize all dependencies.
-    //Further, we need to add tika-emitter-jdbc after 2.5.0 is released
+    //Further, we need to add tika-emitter-jdbc after 2.6.0 is released
     // as well as the elastic and solr emitters...at some point
-    private static final String TIKA_VERSION = "2.5.1-SNAPSHOT";
+    private static final String TIKA_VERSION = "2.6.1-SNAPSHOT";
     private static final Map<String, String> JARS_TO_PATH = new HashMap<>();
 
     private static final Path LOCAL_M2 = Paths.get(System.getProperty("user.home")).resolve(".m2" +
@@ -115,7 +115,7 @@ public class PackageBinaries {
                 "lib/tika-fetcher-s3");
         JARS_TO_PATH.put(
                 "org/postgresql/postgresql/42.5.0/postgresql-42.5.0.jar",
-                "lib/db/postrgresql");
+                "lib/db/postgresql");
 
 
     }

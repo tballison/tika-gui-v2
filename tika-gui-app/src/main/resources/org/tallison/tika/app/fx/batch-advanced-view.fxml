@@ -35,7 +35,7 @@
             <Label layoutX="41.0" layoutY="35.0" prefHeight="16.0" prefWidth="41.0" text="Parsers" />
             <Label layoutX="40.0" layoutY="197.0" text="Parse Timeout (seconds)" />
             <TextField fx:id="parseTimeoutSeconds" layoutX="191.0" layoutY="194.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="79.0" />
-            <Button layoutX="191.0" layoutY="290.0" mnemonicParsing="false" text="Show tika-config" />
+            <Button disable="true" layoutX="191.0" layoutY="290.0" mnemonicParsing="false" text="Show tika-config" AnchorPane.topAnchor="290.0" />
             <Label layoutX="40.0" layoutY="232.0" text="Max. Memory&#10;Per  Process (mb)" />
             <TextField fx:id="memoryPerProcess" layoutX="191.0" layoutY="236.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="79.0" />
             <Label layoutX="39.0" layoutY="157.0" text="Number of Processes" />
@@ -57,7 +57,6 @@
             <TextField fx:id="perFileEmitThresholdMb" layoutX="451.0" layoutY="153.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="79.0" />
             <Label layoutX="299.0" layoutY="197.0" text="Total Emit Threshold (mb)" />
             <TextField fx:id="totalEmitThresholdMb" layoutX="451.0" layoutY="193.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="79.0" />
-            <Button fx:id="saveAdvanced" layoutX="43.0" layoutY="290.0" mnemonicParsing="false" onAction="#saveAdvanced" text="Save" />
             <Label layoutX="300.0" layoutY="240.0" text="Emit Within (milliseconds)" />
             <TextField fx:id="emitWithinMs" layoutX="452.0" layoutY="236.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="79.0" />
          </children>

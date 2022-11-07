@@ -3,7 +3,7 @@
     <!-- if the incoming metadata object has a ContentLength entry and it is larger than this
          value, spool the file to disk; this is useful for some file formats that are more efficiently
          processed via a file instead of an InputStream -->
-    <spoolToDisk>1</spoolToDisk>
+    <spoolToDisk>0</spoolToDisk>
     <!-- the next four are parameters for the SecureContentHandler -->
     <!-- threshold used in zip bomb detection. This many characters must be written
          before the maximum compression ratio is calculated -->
