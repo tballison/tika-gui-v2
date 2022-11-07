@@ -37,7 +37,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <junit.version>5.8.2</junit.version>
-    <jackson.version>2.13.4</jackson.version>
+    <jackson.version>2.14.0</jackson.version>
     <log4j2.version>2.19.0</log4j2.version>
     <!-- plugin versions -->
     <checkstyle.plugin.version>3.2.0</checkstyle.plugin.version>
