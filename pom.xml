@@ -126,6 +126,11 @@
       <artifactId>apache-rat-plugin</artifactId>
       <version>${rat.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.googlecode.maven-download-plugin</groupId>
+      <artifactId>download-maven-plugin</artifactId>
+      <version>1.6.8</version>
+    </dependency>
   </dependencies>
   </dependencyManagement>
 
