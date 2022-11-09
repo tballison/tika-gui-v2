@@ -16,9 +16,6 @@
  */
 package org.tallison.tika.gui.tools;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.junit.jupiter.api.Test;
 
 public class SnapshotParserTest {
