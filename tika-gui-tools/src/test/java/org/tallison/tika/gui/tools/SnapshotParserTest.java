@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tallison.tika.app.fx;
+package org.tallison.tika.gui.tools;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.Test;
 
-public class Main {
+public class SnapshotParserTest {
 
-    private static Logger LOGGER = LogManager.getLogger(Main.class);
+    @Test
+    public void testBasic() throws Exception {
 
-    public static void main(String[] args) throws Exception {
-        String javaHome = System.getProperty("TIKA_GUI_JAVA_HOME");
-        LOGGER.info("java home: " + javaHome);
-        TikaApplication.main(args);
+        SnapshotParser p = new SnapshotParser();
+        String base = "https://repository.apache.org/content/groups/snapshots/";
+        SnapshotResult result = p.parse(base + "org/apache/tika/tika-core");
+        System.out.println(result);
     }
 }

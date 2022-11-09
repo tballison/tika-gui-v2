@@ -14,18 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tallison.tika.app.fx;
+package org.tallison.tika.gui.tools;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.Map;
 
-public class Main {
+public class SnapshotResult {
 
-    private static Logger LOGGER = LogManager.getLogger(Main.class);
+    private String version;
+    private String jarUrl;
+    private Map<String, String> digests;
 
-    public static void main(String[] args) throws Exception {
-        String javaHome = System.getProperty("TIKA_GUI_JAVA_HOME");
-        LOGGER.info("java home: " + javaHome);
-        TikaApplication.main(args);
+    public SnapshotResult(String version, String jarUrl, Map<String, String> digests) {
+        this.version = version;
+        this.jarUrl = jarUrl;
+        this.digests = digests;
+    }
+
+    public String getUrl() {
+        return jarUrl;
+    }
+
+    public Map<String, String> getDigests() {
+        return digests;
+    }
+
+    @Override
+    public String toString() {
+        return "SnapshotResult{" + "version='" + version + '\'' + ", jarUrl='" + jarUrl + '\'' +
+                ", digests=" + digests + '}';
     }
 }

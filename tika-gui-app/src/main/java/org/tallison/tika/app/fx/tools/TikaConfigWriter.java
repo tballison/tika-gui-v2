@@ -109,6 +109,8 @@ public class TikaConfigWriter {
     private void appendAsync(BatchProcessConfig bpc, StringBuilder sb)
             throws IOException {
         String async = getTemplate("async.xml");
+        async = async.replace("{JAVA_PATH}",
+                AppContext.getInstance().getJavaHome().resolve("java").toString());
         async = async.replace("{NUM_CLIENTS}",
                 Integer.toString(bpc.getNumProcesses()));
         async = async.replace("{XMX}", "-Xmx" +

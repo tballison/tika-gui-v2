@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,13 +49,13 @@ public class AppContext {
         OBJECT_MAPPER.registerModule(new Jdk8Module());
     }
 
-    public static Path TIKA_APP_HOME =
-            Paths.get(System.getProperty("user.home")).resolve(".tika-app-v2");
+    public static Path TIKA_GUI_JAVA_HOME = Paths.get(System.getProperty("TIKA_GUI_JAVA_HOME"));
+    public static Path TIKA_APP_HOME = Paths.get("");
     public static Path TIKA_LIB_PATH = TIKA_APP_HOME.resolve("lib");
     public static Path TIKA_CORE_BIN_PATH = TIKA_LIB_PATH.resolve("tika-core");
     public static Path TIKA_APP_BIN_PATH = TIKA_LIB_PATH.resolve("tika-app");
     public static Path TIKA_EXTRAS_BIN_PATH = TIKA_LIB_PATH.resolve("tika-extras");
-    public static Path APP_STATE_PATH = TIKA_APP_HOME.resolve("tika-app-v2-config.json");
+    public static Path APP_STATE_PATH = TIKA_APP_HOME.resolve("config/tika-app-v2-config.json");
     private static AppContext APP_CONTEXT = load();
     public static Path CONFIG_PATH = TIKA_APP_HOME.resolve("config");
     public static Path ASYNC_LOG4J2_PATH = CONFIG_PATH.resolve("log4j2-async.xml");
@@ -63,7 +64,7 @@ public class AppContext {
 
 
 
-    private String tikaVersion = "2.4.1";
+    private String tikaVersion = "2.6.0";
     private Optional<BatchProcessConfig> batchProcessConfig = Optional.of(new BatchProcessConfig());
     private Optional<BatchProcess> batchProcess = Optional.empty();
     private volatile boolean closed = false;
@@ -160,5 +161,10 @@ public class AppContext {
 
     public void setBatchProcess(BatchProcess batchProcess) {
         this.batchProcess = Optional.ofNullable(batchProcess);
+    }
+
+    @JsonIgnore
+    public Path getJavaHome() {
+        return TIKA_GUI_JAVA_HOME;
     }
 }

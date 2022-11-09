@@ -226,6 +226,9 @@ public class BatchProcess {
             //try {
 
             process = new ProcessBuilder(commandLine).inheritIO().start();
+            LOGGER.info("process " + process.isAlive());
+            LOGGER.info("pid" + process.pid());
+            LOGGER.info("info " + process.info());
             StreamGobbler inputStreamGobbler = new StreamGobbler(process.getInputStream(), 100000);
             StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), 100000);
             Thread isgThread = new Thread(inputStreamGobbler);
@@ -238,7 +241,11 @@ public class BatchProcess {
 
             runningProcessId = process.pid();
 
+            int i = 0;
             while (true) {
+                LOGGER.info("process {} {}", ++i, process.isAlive());
+                LOGGER.info("pid {}", process.pid());
+                LOGGER.info("info {}", process.info());
                 if (!process.isAlive()) {
                     CSVEmitterHelper.writeCSV(APP_CONTEXT);
                     return PROCESS_ID.BATCH_PROCESS.ordinal();
@@ -250,7 +257,10 @@ public class BatchProcess {
 
         private List<String> buildCommandLine() {
             List<String> commandLine = new ArrayList<>();
-            commandLine.add("java");
+
+            commandLine.add(
+                    ProcessUtils.escapeCommandLine(APP_CONTEXT.getJavaHome().resolve("java").toString()));
+            commandLine.add("-Dlog4j.configurationFile=config/log4j2-async-cli.xml");
             commandLine.add("-cp");
             String cp = buildClassPath();
             LOGGER.info("class path: {}", cp);
@@ -258,7 +268,7 @@ public class BatchProcess {
             commandLine.add(cp);
             commandLine.add("org.apache.tika.async.cli.TikaAsyncCLI");
             commandLine.add(ProcessUtils.escapeCommandLine(tikaConfig.toAbsolutePath().toString()));
-            LOGGER.info(commandLine);
+            LOGGER.info("built commandline: " + commandLine);
             return commandLine;
         }
 

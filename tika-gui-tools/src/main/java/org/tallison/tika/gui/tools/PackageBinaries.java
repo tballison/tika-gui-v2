@@ -39,8 +39,6 @@ public class PackageBinaries {
     //and the apache repo for tika artifacts
 
     //Further, we should parameterize all dependencies.
-    //Further, we need to add tika-emitter-jdbc after 2.6.0 is released
-    // as well as the elastic and solr emitters...at some point
     private static final String TIKA_VERSION = "2.6.1-SNAPSHOT";
     private static final Map<String, String> JARS_TO_PATH = new HashMap<>();
 
