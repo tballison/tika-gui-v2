@@ -46,15 +46,15 @@ public class DownloadPluginUpdater {
     private static Set<String> OS_ARCHITECTURE = Set.of(
             "linux x64",
             "mac aarch64",
-            "max x64",
-            "windows x64",
-            "windows x32"
+            "mac x64",
+            "windows x64"
+            //"windows x32"
     );
 
     private static Map<String, String> ADOPTIUM_TO_MAVEN = Map.of(
-            "linux", "unix",
-            "x64", "x86_64",
-            "x32", "x86");
+            "linux x64", "unix amd64",
+            "windows x64", "windows amd64",
+            "mac x64", "mac x64");
 
     private static String JRE_TEMPLATE = """
                 <profile>
@@ -184,14 +184,16 @@ public class DownloadPluginUpdater {
     }
 
     private static void write(String os, String architecture, String link, String checksum) {
-        os = ADOPTIUM_TO_MAVEN.getOrDefault(os, os);
-        architecture = ADOPTIUM_TO_MAVEN.getOrDefault(architecture, architecture);
+        String mapped = ADOPTIUM_TO_MAVEN.getOrDefault(os + " " + architecture, os + " " + architecture);
+        String[] bits = mapped.split(" ");
+        String mappedOs = bits[0];
+        String mappedArchitecture = bits[1];
 
-        String id = os + "-" + architecture;
+        String id = mappedOs + "-" + mappedArchitecture;
         String template = JRE_TEMPLATE;
         template = template.replace("{ID}", id);
-        template = template.replace("{FAMILY}", os);
-        template = template.replace("{ARCHITECTURE}", architecture);
+        template = template.replace("{FAMILY}", mappedOs);
+        template = template.replace("{ARCHITECTURE}", mappedArchitecture);
         template = template.replace("{URL}", link);
         template = template.replace("{SHA_256}", checksum);
         System.out.println(template);

@@ -100,7 +100,6 @@
         <!-- we don't want to install this anywhere -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-install-plugin</artifactId>
-        <version>3.0.1</version>
         <configuration>
           <skip>true</skip>
         </configuration>
@@ -126,8 +125,8 @@
             </executions>
           </plugin> -->
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>${maven.shade.version}</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -419,7 +418,6 @@
     </plugins>
   </build>
   <profiles>
-    <!-- to figure out a given system's family and arch: mvn enforcer:display-info -->
     <profile>
       <id>unix-amd64</id>
       <activation>
@@ -441,9 +439,7 @@
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>
-                    https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jre_x64_linux_hotspot_17.0.5_8.tar.gz
-                  </url>
+                  <url>https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jre_x64_linux_hotspot_17.0.5_8.tar.gz</url>
                   <unpack>true</unpack>
                   <outputDirectory>${project.build.directory}/jre</outputDirectory>
                   <sha256>11326464a14b63e6328d1d2088a23fb559c0e36b3f380e4c1f8dcbe160a8b95e</sha256>
@@ -475,46 +471,10 @@
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>
-                    https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jre_x64_windows_hotspot_17.0.5_8.zip
-                  </url>
+                  <url>https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jre_x64_windows_hotspot_17.0.5_8.zip</url>
                   <unpack>true</unpack>
                   <outputDirectory>${project.build.directory}/jre</outputDirectory>
                   <sha256>d25a2d44c1bd9c57d49c5e98de274cd40970ab057fe304b52eb459de4ee5d8a5</sha256>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>windows-x86</id>
-      <activation>
-        <os>
-          <family>windows</family>
-          <arch>x86</arch>
-        </os>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.googlecode.maven-download-plugin</groupId>
-            <artifactId>download-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>install-windows-x86</id>
-                <phase>prepare-package</phase>
-                <goals>
-                  <goal>wget</goal>
-                </goals>
-                <configuration>
-                  <url>
-                    https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jre_x86-32_windows_hotspot_17.0.5_8.zip
-                  </url>
-                  <unpack>true</unpack>
-                  <outputDirectory>${project.build.directory}/jre</outputDirectory>
-                  <sha256>1db2a4f14161524c43977b441f0b78a2a547bcb5fe4a182b03bf52650d64730a</sha256>
                 </configuration>
               </execution>
             </executions>
@@ -543,12 +503,42 @@
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>
-                    https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jre_aarch64_mac_hotspot_17.0.5_8.tar.gz
-                  </url>
+                  <url>https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jre_aarch64_mac_hotspot_17.0.5_8.tar.gz</url>
                   <unpack>true</unpack>
                   <outputDirectory>${project.build.directory}/jre</outputDirectory>
                   <sha256>d98b7f5ee6cb4a1c49288bd932008e3e37f9bb5d9a0eb9396ea236786e6ab570</sha256>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>mac-x64</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <arch>x64</arch>
+        </os>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.googlecode.maven-download-plugin</groupId>
+            <artifactId>download-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>install-mac-x64</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>wget</goal>
+                </goals>
+                <configuration>
+                  <url>https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jre_x64_mac_hotspot_17.0.5_8.tar.gz</url>
+                  <unpack>true</unpack>
+                  <outputDirectory>${project.build.directory}/jre</outputDirectory>
+                  <sha256>c4884b6cd8d43497ff46e4fd475ddde5ab91004db435f0c29a801b081662f7ee</sha256>
                 </configuration>
               </execution>
             </executions>

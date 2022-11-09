@@ -49,6 +49,9 @@ public class SnapshotParser {
         String timestamp = "";
         String buildNumber = "";
         String artifactId = "";
+
+        //TODO -- need to redo this the buildNumber may not be the same
+        //as the number on the latest jar...
         while (m.find()) {
             String entity = m.group(1);
             String val = m.group(2);
