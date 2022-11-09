@@ -310,6 +310,7 @@
           <excludes>
             <exclude>CHANGES.txt</exclude>
             <exclude>README.md</exclude>
+            <exclude>.gitattributes</exclude>
           </excludes>
         </configuration>
         <executions>
