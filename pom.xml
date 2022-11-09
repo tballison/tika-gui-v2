@@ -94,7 +94,6 @@
       <artifactId>jackson-datatype-jdk8</artifactId>
       <version>${jackson.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>

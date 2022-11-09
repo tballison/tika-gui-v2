@@ -29,4 +29,14 @@
   <artifactId>tika-gui-tools</artifactId>
   <name>Apache Tika gui tools</name>
 
+  <dependencies>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+  </dependencies>
 </project>

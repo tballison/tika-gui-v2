@@ -1,5 +1,6 @@
 <async>
   <params>
+    <javaPath>{JAVA_PATH}</javaPath>
     <maxForEmitBatchBytes>{PER_FILE_EMIT_THRESHOLD}</maxForEmitBatchBytes>
     <emitMaxEstimatedBytes>{TOTAL_EMIT_THRESHOLD}</emitMaxEstimatedBytes>
     <emitWithinMillis>{EMIT_WITHIN_MS}</emitWithinMillis>

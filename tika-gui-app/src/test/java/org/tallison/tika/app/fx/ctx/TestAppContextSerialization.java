@@ -23,11 +23,17 @@ import java.io.StringWriter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.tools.BatchProcess;
 
 public class TestAppContextSerialization {
+
+    @BeforeAll
+    public static void setUp() throws Exception {
+        System.setProperty("TIKA_GUI_JAVA_HOME", System.getProperty("java.home"));
+    }
 
     @Test
     public void testBasic() throws Exception {
