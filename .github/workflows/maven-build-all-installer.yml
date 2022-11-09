@@ -50,13 +50,13 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            #tag_name: ${{ github.ref }}
+        with:
+          #tag_name: ${{ github.ref }}
             #release_name: Release ${{ github.ref }}
-            tag_name: 'tag1'
-            release_name: 'release-tag1'
-            draft: true
-            prerelease: true
+          tag_name: ${{ github.sha }}
+          release_name: ${{ github.sha }}
+          draft: true
+          prerelease: true
       - name: Update Automatic Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
