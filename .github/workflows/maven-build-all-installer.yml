@@ -43,6 +43,8 @@ jobs:
           distribution: 'temurin'#may need to move to liberica
           #java-package: jdk+fx -- not available with temurin
           cache: 'maven'
+      - name: "display family/arch"
+        run: mvn enforcer:display-info
       - name: "Build with Maven"
         run: mvn -B clean install --file pom.xml
       - name: Create GitHub release
