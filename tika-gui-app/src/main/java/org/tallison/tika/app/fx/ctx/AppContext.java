@@ -35,6 +35,8 @@ import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.tools.BatchProcess;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 
+import org.apache.tika.utils.StringUtils;
+
 
 public class AppContext {
 
@@ -49,7 +51,14 @@ public class AppContext {
         OBJECT_MAPPER.registerModule(new Jdk8Module());
     }
 
-    public static Path TIKA_GUI_JAVA_HOME = Paths.get(System.getProperty("TIKA_GUI_JAVA_HOME"));
+    public static Path TIKA_GUI_JAVA_HOME;
+    static {
+        if (StringUtils.isBlank(System.getProperty("TIKA_GUI_JAVA_HOME"))) {
+            throw new RuntimeException("Please make sure to set this system " +
+                    "property: TIKA_GUI_JAVA_HOME");
+        }
+        TIKA_GUI_JAVA_HOME = Paths.get(System.getProperty("TIKA_GUI_JAVA_HOME"));
+    }
     public static Path TIKA_APP_HOME = Paths.get("");
     public static Path TIKA_LIB_PATH = TIKA_APP_HOME.resolve("lib");
     public static Path TIKA_CORE_BIN_PATH = TIKA_LIB_PATH.resolve("tika-core");

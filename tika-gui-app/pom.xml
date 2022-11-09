@@ -419,12 +419,13 @@
     </plugins>
   </build>
   <profiles>
+    <!-- to figure out a given system's family and arch: mvn enforcer:display-info -->
     <profile>
-      <id>unix-x86_64</id>
+      <id>unix-amd64</id>
       <activation>
         <os>
           <family>unix</family>
-          <arch>x86_64</arch>
+          <arch>amd64</arch>
         </os>
       </activation>
       <build>
@@ -434,7 +435,7 @@
             <artifactId>download-maven-plugin</artifactId>
             <executions>
               <execution>
-                <id>install-unix-x86_64</id>
+                <id>install-unix-amd64</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
@@ -454,11 +455,11 @@
       </build>
     </profile>
     <profile>
-      <id>windows-x86_64</id>
+      <id>windows-amd64</id>
       <activation>
         <os>
           <family>windows</family>
-          <arch>x86_64</arch>
+          <arch>amd64</arch>
         </os>
       </activation>
       <build>
@@ -468,7 +469,7 @@
             <artifactId>download-maven-plugin</artifactId>
             <executions>
               <execution>
-                <id>install-windows-x86_64</id>
+                <id>install-windows-amd64</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
