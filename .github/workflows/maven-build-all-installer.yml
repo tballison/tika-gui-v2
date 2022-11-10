@@ -50,6 +50,6 @@ jobs:
           automatic_release_tag: "${{ github.ref_name }}-${{ matrix.os }}"
           prerelease: true
           draft: true
-          title: ${{ github.ref_name }} ${{ matrix.os }} ${{ Development Build
+          title: ${{ github.ref_name }} ${{ matrix.os }} ${{ Development Build }}
           files: |
             ./tika-gui-app/target/*-bin.zip
