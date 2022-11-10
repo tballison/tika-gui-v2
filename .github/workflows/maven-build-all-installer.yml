@@ -20,20 +20,15 @@ name: Build All Installers
 on:
   push:
     branches: [ main ]
-  #  pull_request:
-  #    branches: [ main ]
-  #workflow_dispatch:
-  #  branches: [ main ]
-  #push:
-   # tags:
-    #  - 'v*' #push tags matching 'v*'
+    tags:
+      - 'v*' #push tags matching 'v*'
 
 jobs:
   build:
     strategy:
       matrix:
         #see options: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
-        os: [ubuntu-latest, windows-latest, macos-11, macos-12]
+        os: [ubuntu-latest, windows-latest, macos-12]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -44,30 +39,17 @@ jobs:
           distribution: 'temurin'#may need to move to liberica
           #java-package: jdk+fx -- not available with temurin
           cache: 'maven'
-      - name: "display family/arch"
+      - name: "Display family/arch"
         run: mvn enforcer:display-info
       - name: "Build with Maven"
         run: mvn -B clean install --file pom.xml
-      - name: Create GitHub release
-        id: create-new-release
-        uses: actions/create-release@v1
-        if: matrix.os == 'ubuntu-latest'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          #tag_name: ${{ github.ref }}
-            #release_name: Release ${{ github.ref }}
-          tag_name: ${{ github.sha }}
-          release_name: ${{ github.sha }}
-          draft: true
-          prerelease: true
       - name: Update Automatic Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: ${{ matrix.os }}
+          automatic_release_tag: "${{ github.ref_name }}-${{ matrix.os }}"
           prerelease: true
           draft: true
-          title: ${{ matrix.os }} Development Build
+          title: ${{ github.ref_name }} ${{ matrix.os }} Development Build
           files: |
             ./tika-gui-app/target/*-bin.zip

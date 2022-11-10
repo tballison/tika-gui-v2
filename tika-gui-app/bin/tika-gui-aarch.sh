@@ -13,13 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#this is barely a start. Initially targeting linux
+#this is barely a start. Initially targeting mac
 
-#TODO: update the script to find the executable, whether it
-# is under the jdk name or the aarch Home/ stuff.
-# Can we do anything better than chmod?
-
-JAVA_HOME="jre/jdk-17.0.5+8-jre"
+JAVA_HOME="jre/jdk-17.0.5+8-jre/Contents/Home/"
 JAVA_BIN="$JAVA_HOME/bin"
 
 JAVA="$JAVA_BIN/java"
