@@ -44,31 +44,33 @@ public class SnapshotParser {
         String moduleVersionUrl = moduleUrl + "/" + version + "/" + "maven-metadata.xml";
         String moduleVersionXML = IOUtils.toString(new URL(moduleVersionUrl),
                 StandardCharsets.UTF_8);
-        m = Pattern.compile("<(timestamp|buildNumber|artifactId)>(.*?)</\\1>")
+        m = Pattern.compile("(?si)<(artifactId)>(.*?)</\\1>")
                         .matcher(moduleVersionXML);
-        String timestamp = "";
-        String buildNumber = "";
+
         String artifactId = "";
 
-        //TODO -- need to redo this the buildNumber may not be the same
-        //as the number on the latest jar...
         while (m.find()) {
             String entity = m.group(1);
             String val = m.group(2);
-            if (entity.equals("timestamp")) {
-                timestamp = val;
-            } else if (entity.equals("buildNumber")) {
-                buildNumber = val;
-            } else if (entity.equals("artifactId")) {
+            if (entity.equals("artifactId")) {
                 artifactId = val;
             }
         }
         String nonSnapshotVersion = version.replace("-SNAPSHOT", "");
-        String dateTimeVersion = timestamp + "-" + buildNumber;
-        String jarUrl = moduleUrl + "/" + version + "/" + artifactId + "-" + nonSnapshotVersion +
-                "-" + dateTimeVersion + ".jar";
+
         String indexHtml = IOUtils.toString(new URL(moduleUrl + "/" + version + "/"),
                 StandardCharsets.UTF_8);
+        String jarUrl = "";
+        //moduleUrl + "/" + version + "/" + artifactId + "-" + nonSnapshotVersion + "-" +
+        // timestampAndBuildNumber + ".jar";
+        m = Pattern.compile("href=\"([^\"]+)").matcher(indexHtml);
+        //find the latest
+        while (m.find()) {
+            String u = m.group(1);
+            if (u.endsWith(".jar")) {
+                jarUrl = u;
+            }
+        }
 
         m = Pattern.compile("href=\"([^\"]+)").matcher(indexHtml);
         Map<String, String> digests = new HashMap<>();

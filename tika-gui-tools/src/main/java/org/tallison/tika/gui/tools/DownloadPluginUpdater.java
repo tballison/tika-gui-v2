@@ -54,7 +54,7 @@ public class DownloadPluginUpdater {
     private static Map<String, String> ADOPTIUM_TO_MAVEN = Map.of(
             "linux x64", "unix amd64",
             "windows x64", "windows amd64",
-            "mac x64", "mac x64");
+            "mac x64", "mac x86_64");
 
     private static String JRE_TEMPLATE = """
                 <profile>
@@ -162,6 +162,7 @@ public class DownloadPluginUpdater {
             ObjectMapper mapper = new ObjectMapper();
             root = mapper.readTree(is);
         }
+        System.out.println("<profiles>");
         for (JsonNode item : root) {
             JsonNode binary = item.get("binary");
             if (! binary.get("image_type").asText().equals("jre")) {
@@ -181,6 +182,7 @@ public class DownloadPluginUpdater {
             Long sz = pkg.get("size").asLong();
             write(os, architecture, link, checksum);
         }
+        System.out.println("</profiles>");
     }
 
     private static void write(String os, String architecture, String link, String checksum) {
