@@ -24,7 +24,9 @@ Download the .zip file in the releases section for your operating system.
  * `./tika-gui.sh`
 
 # Program Maturity
-This is just the beginning.  Everything is still in a state of flux and is subject to change.
+This is just the beginning.  Everything is still in a state of flux and is subject to change. 
+
+***HELP WANTED!!!***
 
 # Initial Design Thoughts
 This breaks substantially from Tika's current user interface.
@@ -34,7 +36,15 @@ local file shares, S3 and other resources and then emitting the parsed output
 to local file shares, S3, OpenSearch, Apache Solr, jdbc, etc.
 
 This requires Java 17 and will not run Tika "in process", but rather 
-it will rely on forking Tika.
+it will rely on forking Tika. 
+
+My intention is to start with Java 17 and keep Java 17 for a good long while.  I'm currently
+bundling non-JavaFX jres with each platform bundle.  We might move to java distros that include
+java fx so that we don't have to include the jars and native bits via the javafx dependencies
+ourselves.
+
+There's quite a bit of work to streamline the releases so that we don't have 16 copies of
+jackson-databind, for example...
 
 Ideally, there will be some user interface to visualize information from
 a run of Tika via tika-eval.
