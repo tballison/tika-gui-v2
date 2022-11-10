@@ -19,7 +19,8 @@ name: Build All Installers
 #this is overly simplified and does not create working apps nor signed dmgs, etc
 on:
   push:
-    branches: [ main ]
+    branches:
+      - 'main'
     tags:
       - 'v*' #push tags matching 'v*'
 
@@ -45,6 +46,7 @@ jobs:
         run: mvn -B clean install --file pom.xml
       - name: Update Automatic Release
         uses: marvinpinto/action-automatic-releases@latest
+        # see https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "${{ github.ref_name }}-${{ matrix.os }}"
