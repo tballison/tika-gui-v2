@@ -16,7 +16,7 @@
 #this is barely a start. Initially targeting linux
 
 #TODO: update the script to find the executable, whether it
-# is under the jdk name or the aarch Home/ stuff.
+# is under the jdk name or the aarch Contents/Home/ stuff.
 # Can we do anything better than chmod?
 
 JAVA_HOME="jre/jdk-17.0.5+8-jre"

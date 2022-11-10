@@ -165,6 +165,7 @@
             <exclude>**/templates/config/*.xml</exclude>
             <exclude>README.md</exclude>
             <exclude>notes/**</exclude>
+            <exclude>bin/tika-gui.bat</exclude>
           </excludes>
         </configuration>
       </plugin>
