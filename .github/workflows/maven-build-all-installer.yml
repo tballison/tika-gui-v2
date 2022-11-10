@@ -19,10 +19,8 @@ name: Build All Installers
 #this is overly simplified and does not create working apps nor signed dmgs, etc
 on:
   push:
-    branches:
-      - 'main'
-  tags:
-    - 'v*' #push tags matching 'v*'
+    tags:
+      - 'v*' #push tags matching 'v*'
 
 jobs:
   build:
