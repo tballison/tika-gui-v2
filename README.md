@@ -7,6 +7,25 @@ Unofficial next gen user interface for Apache Tika
 This is an initial draft of the next generation user interface application for Apache Tika.
 This is not part of the Apache Tika project.
 
+# Getting Started
+Download the .zip file in the releases section for your operating system.
+
+## Windows
+ * Unzip then run `tika-gui.bat`
+
+## Mac
+ * Unzip then `chmod u+x tika-gui-mac.sh`
+ * `./tika-gui-mac.sh`
+*NOTE* I've been able to run the mac distro on a mac aarch64.  There's a warning about javafx stuff, but it seems to work
+
+
+## Linux
+ * Unzip then `chmod u+x tika-gui.sh`
+ * `./tika-gui.sh`
+
+# Program Maturity
+This is just the beginning.  Everything is still in a state of flux and is subject to change.
+
 # Initial Design Thoughts
 This breaks substantially from Tika's current user interface.
 
