@@ -287,7 +287,9 @@ public class BatchProcess {
         }
 
         void cancel() {
-            process.destroyForcibly();
+            if (process != null) {
+                process.destroyForcibly();
+            }
         }
     }
 
