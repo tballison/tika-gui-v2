@@ -24,11 +24,7 @@ on:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        #see options: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 17
@@ -47,9 +43,9 @@ jobs:
         # see https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "${{ github.ref_name }}-${{ matrix.os }}"
+          #automatic_release_tag: "${{ github.ref_name }}-${{ matrix.os }}"
           prerelease: true
           draft: true
-          title: ${{ github.ref_name }} ${{ matrix.os }} Development Build
+          title: ${{ github.ref_name }} Development Build
           files: |
             ./tika-gui-app/target/*-bin.zip
