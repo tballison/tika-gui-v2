@@ -47,3 +47,14 @@ jackson-databind, for example...
 
 Ideally, there will be some user interface to visualize information from
 a run of Tika via tika-eval.
+
+# Release Notes
+At some point, we should use jreleaser.  We aren't yet doing that.
+
+To generate the download sections of the pom, run DownloadPluginUpdater and ZuluDownloader.
+
+The release is currently triggered by pushing a tag starting with 'v'.
+
+We should figure out how to sign artifacts and offer sha256s.  Again, see jreleaser above.
+
+Further, short of going the full jreleaser route, we should start using: appassembler-maven-plugin.
