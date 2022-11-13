@@ -169,31 +169,11 @@
           </excludes>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.4.2</version>
-        <configuration>
-          <tarLongFileMode>posix</tarLongFileMode>
-          <descriptors>
-            <descriptor>assembly.xml</descriptor>
-          </descriptors>
-        </configuration>
-        <executions>
-          <execution>
-            <id>make-assembly</id> <!-- this is used for inheritance merges -->
-            <phase>package</phase> <!-- bind to the packaging phase -->
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
   <profiles>
     <profile>
-      <id>release</id>
+      <id>app-release</id>
       <build>
         <plugins>
           <plugin>
@@ -485,6 +465,29 @@
                   <outputDirectory>${project.build.directory}/jres/macosx_aarch64</outputDirectory>
                   <sha256>a27a64c553af1ecb4b2e878574ad98a765c3cb16972f12e9208cefc8cbe861b3</sha256>
                 </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.4.2</version>
+            <configuration>
+              <tarLongFileMode>posix</tarLongFileMode>
+              <descriptors>
+                <descriptor>assemblies/assembly-win_x64.xml</descriptor>
+                <descriptor>assemblies/assembly-linux_x64.xml</descriptor>
+                <descriptor>assemblies/assembly-macosx_x64.xml</descriptor>
+                <descriptor>assemblies/assembly-macosx_aarch64.xml</descriptor>
+              </descriptors>
+            </configuration>
+            <executions>
+              <execution>
+                <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                <phase>package</phase> <!-- bind to the packaging phase -->
+                <goals>
+                  <goal>single</goal>
+                </goals>
               </execution>
             </executions>
           </plugin>

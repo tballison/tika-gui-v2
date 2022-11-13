@@ -19,10 +19,8 @@
 # is under the jdk name or the aarch Contents/Home/ stuff.
 # Can we do anything better than chmod?
 
-JAVA_HOME="jre/jdk-17.0.5+8-jre"
+JAVA_HOME="jre"
 JAVA_BIN="$JAVA_HOME/bin"
 
 JAVA="$JAVA_BIN/java"
-chmod u+x $JAVA && \
-chmod u+x $JAVA_HOME/lib/jspawnhelper && \
 $JAVA -DTIKA_GUI_JAVA_HOME=$JAVA_BIN -jar lib/tika-gui-app.jar

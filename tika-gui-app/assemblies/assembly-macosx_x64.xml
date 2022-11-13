@@ -17,7 +17,7 @@
 <assembly xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
           xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 https://maven.apache.org/xsd/assembly-2.0.0.xsd">
-  <id>bin</id>
+  <id>macosx_x64-bin</id>
   <baseDirectory>${project.build.finalName}-bin</baseDirectory>
   <formats>
     <format>zip</format>
@@ -31,8 +31,19 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>${project.basedir}/target/jre</directory>
+      <directory>${project.basedir}/target/jres/macosx_x64/zulu17.38.21-ca-fx-jre17.0.5-macosx_x64</directory>
       <outputDirectory>jre</outputDirectory>
+      <excludes>
+        <exclude>lib/jspawnhelper</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/target/jres/macosx_x64/zulu17.38.21-ca-fx-jre17.0.5-macosx_x64</directory>
+      <outputDirectory>jre</outputDirectory>
+      <includes>
+        <include>lib/jspawnhelper</include>
+      </includes>
+      <fileMode>0755</fileMode>
     </fileSet>
     <fileSet>
       <directory>${project.basedir}/config</directory>
@@ -42,12 +53,14 @@
       <directory>${project.basedir}/target/lib</directory>
       <outputDirectory>lib</outputDirectory>
     </fileSet>
-    <fileSet>
-      <directory>${project.basedir}/bin</directory>
-      <outputDirectory></outputDirectory>
-    </fileSet>
   </fileSets>
   <files>
+    <file>
+      <source>${project.basedir}/bin/tika-gui.sh</source>
+      <outputDirectory></outputDirectory>
+      <destName>tika-gui.sh</destName>
+      <fileMode>0755</fileMode>
+    </file>
     <file>
       <source>${project.build.directory}/tika-gui-app-${project.version}.jar</source>
       <outputDirectory>lib</outputDirectory>

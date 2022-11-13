@@ -1,1 +1,1 @@
-start jre/jdk-17.0.5+8-jre/bin/java -DTIKA_GUI_JAVA_HOME="jre\jdk-17.0.5+8-jre\bin" -jar lib\tika-gui-app.jar
+start jre/bin/java -DTIKA_GUI_JAVA_HOME="jre\bin" -jar lib\tika-gui-app.jar

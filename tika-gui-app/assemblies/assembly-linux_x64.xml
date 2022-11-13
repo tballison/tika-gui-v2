@@ -1,0 +1,76 @@
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<assembly xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 https://maven.apache.org/xsd/assembly-2.0.0.xsd">
+  <id>linux_x64-bin</id>
+  <baseDirectory>${project.build.finalName}-bin</baseDirectory>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <fileSets>
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <outputDirectory></outputDirectory>
+      <includes>
+        <include>README*</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/target/jres/linux_x64/zulu17.38.21-ca-fx-jre17.0.5-linux_x64</directory>
+      <outputDirectory>jre</outputDirectory>
+      <excludes>
+        <exclude>bin/java</exclude>
+        <exclude>lib/jspawnhelper</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/target/jres/linux_x64/zulu17.38.21-ca-fx-jre17.0.5-linux_x64</directory>
+      <outputDirectory>jre</outputDirectory>
+      <includes>
+        <include>bin/java</include>
+        <include>lib/jspawnhelper</include>
+      </includes>
+      <fileMode>0755</fileMode>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/config</directory>
+      <outputDirectory>config</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/target/lib</directory>
+      <outputDirectory>lib</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/bin</directory>
+      <outputDirectory></outputDirectory>
+    </fileSet>
+  </fileSets>
+  <files>
+    <file>
+      <source>${project.basedir}/bin/tika-gui.sh</source>
+      <outputDirectory></outputDirectory>
+      <destName>tika-gui.sh</destName>
+      <fileMode>0755</fileMode>
+    </file>
+    <file>
+      <source>${project.build.directory}/tika-gui-app-${project.version}.jar</source>
+      <outputDirectory>lib</outputDirectory>
+      <destName>tika-gui-app.jar</destName>
+    </file>
+  </files>
+</assembly>
