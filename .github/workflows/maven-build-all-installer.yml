@@ -27,16 +27,16 @@ jobs:
     strategy:
       matrix:
         #see options: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
-        os: [ubuntu-latest, windows-latest, macos-12]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
-          java-version: 17
-          distribution: 'temurin'#may need to move to liberica
-          #java-package: jdk+fx -- not available with temurin
+          java-version: 17.0.5
+          distribution: 'zulu'#may need to move to liberica
+          java-package: jdk+fx
           cache: 'maven'
       - name: "Display family/arch"
         run: mvn enforcer:display-info

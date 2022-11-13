@@ -65,7 +65,7 @@
       <artifactId>jackson-datatype-jdk8</artifactId>
     </dependency>
 
-    <dependency>
+<!--    <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
     </dependency>
@@ -76,7 +76,7 @@
     <dependency>
       <groupId>org.controlsfx</groupId>
       <artifactId>controlsfx</artifactId>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
@@ -431,7 +431,7 @@
       </plugin>
     </plugins>
   </build>
-  <profiles>
+<!--  <profiles>
     <profile>
       <id>unix-amd64</id>
       <activation>
@@ -568,5 +568,5 @@
         </plugins>
       </build>
     </profile>
-  </profiles>
+  </profiles> -->
 </project>
