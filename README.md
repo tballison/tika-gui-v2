@@ -14,14 +14,16 @@ Download the .zip file in the releases section for your operating system.
  * Unzip then run `tika-gui.bat`
 
 ## Mac
- * Unzip then `chmod u+x tika-gui-mac.sh`
- * `./tika-gui-mac.sh`
+ * Unzip then run `./tika-gui-mac.sh`
+
 *NOTE* I've been able to run the mac distro on a mac aarch64.  There's a warning about javafx stuff, but it seems to work
 
 
 ## Linux
- * Unzip then `chmod u+x tika-gui.sh`
- * `./tika-gui.sh`
+ * Unzip then `./tika-gui.sh`
+
+# Requirements
+This project requires a Java 17 jdk/jre with java-fx built in. We use Zulu jdk-fx and the releases include bundled Zulu jre-fx.  See for example: [www.azul.com](https://www.azul.com/downloads/?version=java-17-lts&package=jdk-fx).
 
 # Program Maturity
 This is just the beginning.  Everything is still in a state of flux and is subject to change. 
@@ -35,13 +37,10 @@ This will make use of the tika-pipes modules to enable fetching files from
 local file shares, S3 and other resources and then emitting the parsed output
 to local file shares, S3, OpenSearch, Apache Solr, jdbc, etc.
 
-This requires Java 17 and will not run Tika "in process", but rather 
+This requires Java 17 (with built-in java-fx) and will not run Tika "in process", but rather 
 it will rely on forking Tika. 
 
-My intention is to start with Java 17 and keep Java 17 for a good long while.  I'm currently
-bundling non-JavaFX jres with each platform bundle.  We might move to java distros that include
-java fx so that we don't have to include the jars and native bits via the javafx dependencies
-ourselves.
+My intention is to start with Java 17 and keep Java 17 for a good long while. 
 
 There's quite a bit of work to streamline the releases so that we don't have 16 copies of
 jackson-databind, for example...
