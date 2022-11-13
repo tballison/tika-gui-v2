@@ -23,7 +23,7 @@ Download the .zip file in the releases section for your operating system.
  * Unzip then `./tika-gui.sh`
 
 # Requirements
-This project requires a Java 17 jdk/jre with java-fx built in! We use Azule's Zulu jdk-fx for development, and we bundle Zulu jre-fx with the release artifacts.  To download: [www.azul.com](https://www.azul.com/downloads/?version=java-17-lts&package=jdk-fx#download-openjdk).
+This project requires a Java 17 jdk/jre with java-fx built in! We use Azul's Zulu jdk-fx for development, and we bundle Zulu jre-fx with the release artifacts.  To download: [www.azul.com](https://www.azul.com/downloads/?version=java-17-lts&package=jdk-fx#download-openjdk).
 
 # Program Maturity
 This is just the beginning.  Everything is still in a state of flux and is subject to change. 
