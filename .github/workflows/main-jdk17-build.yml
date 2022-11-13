@@ -24,15 +24,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: [ '17' ]
 
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
-          java-version: ${{ matrix.java }}
+          java-version: 17.0.5
+          distribution: 'zulu'#may need to move to liberica
+          java-package: jdk+fx
+          cache: 'maven'
+      - name: "Display family/arch"
+        run: mvn enforcer:display-info
       - name: Build with Maven
         run: mvn clean package
