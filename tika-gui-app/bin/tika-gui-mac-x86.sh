@@ -16,7 +16,7 @@
 
 if [ ! -d "jre/zulu17.38.21-ca-fx-jre17.0.5-macosx_x64" ]
 then
-  echo "unpacking zip"
+  echo "Unpacking zipped jre."
   ditto -xk jre/zulu17.38.21-ca-fx-jre17.0.5-macosx_x64.zip jre
   mv jre/zulu17.38.21-ca-fx-jre17.0.5-macosx_x64/* jre
 fi
