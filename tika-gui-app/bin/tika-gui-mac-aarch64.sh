@@ -13,6 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+if [ ! -d "jre/zulu17.38.21-ca-fx-jre17.0.5-macosx_aarch64" ]
+then
+  echo "Unpacking zipped jre."
+  ditto -xk jre/zulu17.38.21-ca-fx-jre17.0.5-macosx_aarch64.zip jre
+  mv jre/zulu17.38.21-ca-fx-jre17.0.5-macosx_aarch64/* jre
+fi
+
 #this is barely a start. Initially targeting linux
 
 #TODO: update the script to find the executable, whether it

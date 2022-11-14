@@ -448,7 +448,7 @@
                 </goals>
                 <configuration>
                   <url>https://cdn.azul.com/zulu/bin/zulu17.38.21-ca-fx-jre17.0.5-macosx_x64.zip</url>
-                  <unpack>true</unpack>
+                  <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/jres/macosx_x64</outputDirectory>
                   <sha256>7483050a347894c13a6538dc42a1bfaad75939784c92f1e67433ca9a16929547</sha256>
                 </configuration>
@@ -461,7 +461,7 @@
                 </goals>
                 <configuration>
                   <url>https://cdn.azul.com/zulu/bin/zulu17.38.21-ca-fx-jre17.0.5-macosx_aarch64.zip</url>
-                  <unpack>true</unpack>
+                  <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/jres/macosx_aarch64</outputDirectory>
                   <sha256>a27a64c553af1ecb4b2e878574ad98a765c3cb16972f12e9208cefc8cbe861b3</sha256>
                 </configuration>

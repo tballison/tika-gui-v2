@@ -31,23 +31,6 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>${project.basedir}/target/jres/macosx_aarch64/zulu17.38.21-ca-fx-jre17.0.5-macosx_aarch64</directory>
-      <outputDirectory>jre</outputDirectory>
-      <excludes>
-        <exclude>zulu-17.jre/Contents/Home/lib/jspawnhelper</exclude>
-        <exclude>zulu-17.jre/Contents/Home/bin/java</exclude>
-      </excludes>
-    </fileSet>
-    <fileSet>
-      <directory>${project.basedir}/target/jres/macosx_aarch64/zulu17.38.21-ca-fx-jre17.0.5-macosx_aarch64</directory>
-      <outputDirectory>jre</outputDirectory>
-      <includes>
-        <include>zulu-17.jre/Contents/Home/lib/jspawnhelper</include>
-        <include>zulu-17.jre/Contents/Home/bin/java</include>
-      </includes>
-      <fileMode>0755</fileMode>
-    </fileSet>
-    <fileSet>
       <directory>${project.basedir}/config</directory>
       <outputDirectory>config</outputDirectory>
     </fileSet>
@@ -58,7 +41,11 @@
   </fileSets>
   <files>
     <file>
-      <source>${project.basedir}/bin/tika-gui-mac.sh</source>
+      <source>${project.basedir}/target/jres/macosx_aarch64/zulu17.38.21-ca-fx-jre17.0.5-macosx_aarch64.zip</source>
+      <outputDirectory>jre</outputDirectory>
+    </file>
+    <file>
+      <source>${project.basedir}/bin/tika-gui-mac-aarch64.sh</source>
       <outputDirectory></outputDirectory>
       <destName>tika-gui.sh</destName>
       <fileMode>0755</fileMode>
