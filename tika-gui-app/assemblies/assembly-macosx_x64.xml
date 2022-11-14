@@ -30,18 +30,23 @@
         <include>README*</include>
       </includes>
     </fileSet>
+    <!-- the assembly plugin converts relative symlinks in the unzipped directory into absolute
+        symlinks (bin, conf, legal, lib).  For now, we should just move the literal files into the zip file and deal
+         with the consequences in the .sh file-->
     <fileSet>
-      <directory>${project.basedir}/target/jres/macosx_x64/zulu17.38.21-ca-fx-jre17.0.5-macosx_x64</directory>
-      <outputDirectory>jre</outputDirectory>
+      <directory>${project.basedir}/target/jres/macosx_x64/zulu17.38.21-ca-fx-jre17.0.5-macosx_x64/zulu-17.jre</directory>
+      <outputDirectory>jre/zulu-17.jre</outputDirectory>
       <excludes>
-        <exclude>lib/jspawnhelper</exclude>
+        <exclude>Contents/Home/lib/jspawnhelper</exclude>
+        <exclude>Contents/Home/bin/java</exclude>
       </excludes>
     </fileSet>
     <fileSet>
-      <directory>${project.basedir}/target/jres/macosx_x64/zulu17.38.21-ca-fx-jre17.0.5-macosx_x64</directory>
-      <outputDirectory>jre</outputDirectory>
+      <directory>${project.basedir}/target/jres/macosx_x64/zulu17.38.21-ca-fx-jre17.0.5-macosx_x64/zulu-17.jre</directory>
+      <outputDirectory>jre/zulu-17.jre</outputDirectory>
       <includes>
-        <include>lib/jspawnhelper</include>
+        <include>Contents/Home/lib/jspawnhelper</include>
+        <include>Contents/Home/bin/java</include>
       </includes>
       <fileMode>0755</fileMode>
     </fileSet>
@@ -56,7 +61,7 @@
   </fileSets>
   <files>
     <file>
-      <source>${project.basedir}/bin/tika-gui.sh</source>
+      <source>${project.basedir}/bin/tika-gui-mac.sh</source>
       <outputDirectory></outputDirectory>
       <destName>tika-gui.sh</destName>
       <fileMode>0755</fileMode>
