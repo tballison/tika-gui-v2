@@ -53,11 +53,14 @@ public class AppContext {
 
     public static Path TIKA_GUI_JAVA_HOME;
     static {
-        if (StringUtils.isBlank(System.getProperty("TIKA_GUI_JAVA_HOME"))) {
-            throw new RuntimeException("Please make sure to set this system " +
-                    "property: TIKA_GUI_JAVA_HOME");
+        if (! StringUtils.isBlank(System.getProperty("TIKA_GUI_JAVA_HOME"))) {
+            LOGGER.debug("setting TIKA_GUI_JAVA_HOME {}", System.getProperty("TIKA_GUI_JAVA_HOME"));
+            TIKA_GUI_JAVA_HOME = Paths.get(System.getProperty("TIKA_GUI_JAVA_HOME"));
+        } else if (! StringUtils.isBlank(System.getProperty("java.home"))) {
+            TIKA_GUI_JAVA_HOME = Paths.get(System.getProperty("java.home"));
+            LOGGER.debug("setting TIKA_GUI_JAVA_HOME {} from java.home",
+                    System.getProperty("java.home"));
         }
-        TIKA_GUI_JAVA_HOME = Paths.get(System.getProperty("TIKA_GUI_JAVA_HOME"));
     }
     public static Path TIKA_APP_HOME = Paths.get("");
     public static Path TIKA_LIB_PATH = TIKA_APP_HOME.resolve("lib");

@@ -1,2 +1,33 @@
 
 dialog w stacktrace: https://code.makery.ch/blog/javafx-dialogs-official/
+
+
+https://www.azul.com/downloads/?version=java-17-lts&architecture=x86-64-bit&package=jre-fx
+
+appassembler-maven-plugin
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>appassembler-maven-plugin</artifactId>
+        <version>2.1.0</version>
+        <configuration>
+          <assembleDirectory>${project.build.directory}/binary</assembleDirectory>
+          <repositoryLayout>flat</repositoryLayout>
+          <repositoryName>lib</repositoryName>
+          <programs>
+            <program>
+              <mainClass>${app.main.class}</mainClass>
+              <id>app</id>
+            </program>
+          </programs>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-distribution</id>
+            <phase>package</phase>
+            <goals>
+              <goal>assemble</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
