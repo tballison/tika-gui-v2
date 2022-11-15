@@ -35,15 +35,15 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <Button layoutX="400.0" layoutY="101.0" mnemonicParsing="false" onAction="#configureInput" text="Configure" />
-                        <Button layoutX="400.0" layoutY="161.0" mnemonicParsing="false" onAction="#configureOutput" text="Configure" />
+                        <Button fx:id="configureInput" layoutX="400.0" layoutY="101.0" mnemonicParsing="false" onAction="#configureInput" text="Configure" />
+                        <Button fx:id="configureOutput" layoutX="400.0" layoutY="161.0" mnemonicParsing="false" onAction="#configureOutput" text="Configure" />
                         <Button fx:id="runButton" disable="true" layoutX="107.0" layoutY="275.0" mnemonicParsing="false" onAction="#runTika" prefHeight="33.0" prefWidth="72.0" text="Run" />
                         <Label layoutX="74.0" layoutY="105.0" text="Input" />
                         <Label layoutX="74.0" layoutY="165.0" text="Output" />
                         <Label fx:id="inputLabel" layoutX="204.0" layoutY="105.0" onMouseClicked="#showFetcher" text="Label" />
                         <Label fx:id="outputLabel" layoutX="204.0" layoutY="165.0" onMouseClicked="#showEmitter" text="Label" />
-                        <Button fx:id="advanced" layoutX="399.0" layoutY="220.0" mnemonicParsing="false" onAction="#configureAdvanced" text="Advanced" />
-                        <ProgressIndicator fx:id="batchProgress" layoutX="409.0" layoutY="272.0" onMouseClicked="#openDetailedStatus" progress="0.0" />
+                        <Button fx:id="configureAdvanced" layoutX="399.0" layoutY="220.0" mnemonicParsing="false" onAction="#configureAdvanced" text="Advanced" />
+                        <ProgressIndicator fx:id="batchProgressIndicator" layoutX="409.0" layoutY="272.0" onMouseClicked="#openDetailedStatus" progress="0.0" />
                         <Button fx:id="cancelButton" disable="true" layoutX="213.0" layoutY="274.0" mnemonicParsing="false" onAction="#cancelBatch" prefHeight="33.0" prefWidth="72.0" text="Cancel" />
                         <Button fx:id="statusButton" disable="true" layoutX="319.0" layoutY="274.0" mnemonicParsing="false" onAction="#checkStatus" prefHeight="33.0" prefWidth="72.0" text="Status" />
                      </children>

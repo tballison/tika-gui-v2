@@ -16,8 +16,6 @@
  */
 package org.tallison.tika.app.fx.ctx;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.io.StringWriter;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -52,7 +50,5 @@ public class TestAppContextSerialization {
         StringWriter writer = new StringWriter();
         objectMapper.writeValue(writer, appContext);
         AppContext deserialized = objectMapper.readValue(writer.toString(), AppContext.class);
-        assertEquals(-1l, deserialized.getBatchProcess().get().getRunningProcessId());
-        assertEquals(BatchProcess.STATUS.READY, deserialized.getBatchProcess().get().getStatus());
     }
 }

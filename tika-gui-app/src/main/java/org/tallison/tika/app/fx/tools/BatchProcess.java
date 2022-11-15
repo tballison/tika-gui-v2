@@ -22,7 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -33,30 +32,30 @@ import java.util.concurrent.Executors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import javafx.beans.property.SimpleFloatProperty;
-import javafx.beans.value.ObservableValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.csv.CSVEmitterHelper;
 import org.tallison.tika.app.fx.ctx.AppContext;
+import org.tallison.tika.app.fx.status.MutableStatus;
+import org.tallison.tika.app.fx.status.StatusUpdater;
 
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.pipes.PipesResult;
 import org.apache.tika.pipes.async.AsyncStatus;
 import org.apache.tika.utils.ProcessUtils;
 import org.apache.tika.utils.StreamGobbler;
+import org.apache.tika.utils.StringUtils;
 
 public class BatchProcess {
 
     private static Logger LOGGER = LogManager.getLogger(BatchProcess.class);
 
-    private static AppContext APP_CONTEXT = AppContext.getInstance();
-    private volatile STATUS status = STATUS.READY;
+    private final MutableStatus mutableStatus;
     private long runningProcessId = -1;
     private Path configFile;
     private BatchRunner batchRunner = null;
 
-    private SimpleFloatProperty progressProperty = new SimpleFloatProperty(0.0f);
+    private Optional<Exception> jvmStartException = Optional.empty();
+
     private ObjectMapper objectMapper = JsonMapper.builder()
             .addModule(new JavaTimeModule())
             .build();
@@ -68,18 +67,18 @@ public class BatchProcess {
     private ExecutorCompletionService<Integer> executorCompletionService =
             new ExecutorCompletionService<>(daemonExecutorService);
     public BatchProcess() {
+        this(new MutableStatus(STATUS.READY));
     }
-    public BatchProcess(STATUS status, long runningProcessId) {
+    public BatchProcess(MutableStatus mutableStatus) {
+        this.mutableStatus = mutableStatus;
     }
 
-    public synchronized void start(BatchProcessConfig batchProcessConfig)
+    public synchronized void start(BatchProcessConfig batchProcessConfig, StatusUpdater statusUpdater)
             throws TikaException, IOException {
-
-        status = STATUS.RUNNING;
-
+        deletePreviousRuns();
         TikaConfigWriter tikaConfigWriter = new TikaConfigWriter();
 
-        CSVEmitterHelper.setUp(APP_CONTEXT);
+        CSVEmitterHelper.setUp(AppContext.getInstance());
 
         try {
             configFile = tikaConfigWriter.writeConfig(batchProcessConfig);
@@ -89,20 +88,20 @@ public class BatchProcess {
         }
 
         batchRunner = new BatchRunner(configFile, batchProcessConfig);
-        StatusChecker statusChecker = new StatusChecker();
-        executorCompletionService.submit(statusChecker);
+
+        executorCompletionService.submit(statusUpdater);
         executorCompletionService.submit(batchRunner);
     }
 
     private void deletePreviousRuns() {
         try {
-            if (Files.isRegularFile(APP_CONTEXT.BATCH_STATUS_PATH)) {
-                Files.delete(APP_CONTEXT.BATCH_STATUS_PATH);
+            if (Files.isRegularFile(AppContext.getInstance().BATCH_STATUS_PATH)) {
+                Files.delete(AppContext.getInstance().BATCH_STATUS_PATH);
             }
         } catch (IOException e) {
             LOGGER.warn("couldn't delete batch status file");
         }
-
+/*
         //TODO -- or should we just configure the logger to over write?!
         for (File f : AppContext.LOGS_PATH.toFile().listFiles()) {
             if (f.getName().endsWith(".log")) {
@@ -113,11 +112,11 @@ public class BatchProcess {
                 }
             }
         }
-
+ */
     }
 
     public synchronized void cancel() {
-        status = STATUS.CANCELED;
+        mutableStatus.set(STATUS.CANCELED);
         if (batchRunner != null) {
             batchRunner.cancel();
         }
@@ -137,10 +136,13 @@ public class BatchProcess {
             }
         }
         daemonExecutorService.shutdownNow();
-        CSVEmitterHelper.cleanTmpResources(APP_CONTEXT);
+        //CSVEmitterHelper.cleanTmpResources(APP_CONTEXT);
     }
 
-    public Optional<AsyncStatus> checkStatus() {
+    public Optional<AsyncStatus> checkAsyncStatus() {
+        if (! Files.isRegularFile(AppContext.BATCH_STATUS_PATH)) {
+            return Optional.empty();
+        }
         try {
             return Optional.of(objectMapper.readValue(AppContext.BATCH_STATUS_PATH.toFile(),
                     AsyncStatus.class));
@@ -194,16 +196,18 @@ public class BatchProcess {
         return runningProcessId;
     }
 
-    public STATUS getStatus() {
-        return status;
+    public MutableStatus getMutableStatus() {
+        return mutableStatus;
     }
 
-    public ObservableValue<? extends Number> progressProperty() {
-        return progressProperty;
+    public Optional<Exception> getJvmStartException() {
+        return jvmStartException;
     }
+
+
 
     public enum STATUS {
-        READY, RUNNING, COMPLETE, CANCELED;
+        READY, FAILED_START, ERROR, RUNNING, COMPLETE, CANCELED;
     }
 
     private enum PROCESS_ID {
@@ -223,12 +227,22 @@ public class BatchProcess {
         @Override
         public Integer call() throws Exception {
             List<String> commandLine = buildCommandLine();
-            //try {
-
-            process = new ProcessBuilder(commandLine).inheritIO().start();
-            LOGGER.info("process " + process.isAlive());
-            LOGGER.info("pid" + process.pid());
-            LOGGER.info("info " + process.info());
+            try {
+                process = new ProcessBuilder(commandLine)
+                        //.inheritIO() //TODO -- for dev purposes only
+                        .start();
+                mutableStatus.set(STATUS.RUNNING);
+            } catch (Exception e) {
+                jvmStartException = Optional.of(e);
+                mutableStatus.set(STATUS.FAILED_START);
+                LOGGER.warn("failed to start", e);
+                throw e;
+            }
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("process {}", process.isAlive());
+                LOGGER.debug("pid {}", process.pid());
+                LOGGER.debug("info {}", process.info());
+            }
             StreamGobbler inputStreamGobbler = new StreamGobbler(process.getInputStream(), 100000);
             StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), 100000);
             Thread isgThread = new Thread(inputStreamGobbler);
@@ -243,11 +257,22 @@ public class BatchProcess {
 
             int i = 0;
             while (true) {
-                LOGGER.info("process {} {}", ++i, process.isAlive());
-                LOGGER.info("pid {}", process.pid());
-                LOGGER.info("info {}", process.info());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("process {} {}", ++i, process.isAlive());
+                    LOGGER.debug("pid {}", process.pid());
+                    LOGGER.debug("info {}", process.info());
+                }
                 if (!process.isAlive()) {
-                    CSVEmitterHelper.writeCSV(APP_CONTEXT);
+                    if (process.exitValue() != 0) {
+                        mutableStatus.set(STATUS.ERROR);
+                        LOGGER.error("exit value {}", process.exitValue());
+                        esgThread.join(10000);
+                        isgThread.join(10000);
+                        String error = StringUtils.joinWith("\n", errorGobbler.getLines());
+                        String out = StringUtils.joinWith("\n", inputStreamGobbler.getLines());
+                        LOGGER.warn("stdout {}\nstderr {}", out, error);
+                    }
+                    CSVEmitterHelper.writeCSV(AppContext.getInstance());
                     return PROCESS_ID.BATCH_PROCESS.ordinal();
                 } else {
                     Thread.sleep(500);
@@ -259,7 +284,7 @@ public class BatchProcess {
             List<String> commandLine = new ArrayList<>();
 
             commandLine.add(
-                    ProcessUtils.escapeCommandLine(APP_CONTEXT.getJavaHome().resolve("java").toString()));
+                    ProcessUtils.escapeCommandLine(AppContext.getInstance().getJavaHome().resolve("java").toString()));
             commandLine.add("-Dlog4j.configurationFile=config/log4j2-async-cli.xml");
             commandLine.add("-cp");
             String cp = buildClassPath();
@@ -289,46 +314,6 @@ public class BatchProcess {
         void cancel() {
             if (process != null) {
                 process.destroyForcibly();
-            }
-        }
-    }
-
-    private class StatusChecker implements Callable<Integer> {
-        @Override
-        public Integer call() throws Exception {
-            while (true) {
-                if (Files.isRegularFile(AppContext.BATCH_STATUS_PATH)) {
-                    AsyncStatus asyncStatus = null;
-                    try {
-                        asyncStatus = objectMapper.readValue(AppContext.BATCH_STATUS_PATH.toFile(),
-                                AsyncStatus.class);
-                    } catch (IOException e) {
-                        LOGGER.warn("bad json ", e);
-                        Thread.sleep(1000);
-                        continue;
-                    }
-                    if (asyncStatus != null) {
-                        long processed = 0;
-                        for (Map.Entry<PipesResult.STATUS, Long> e : asyncStatus.getStatusCounts().entrySet()) {
-                            processed += e.getValue();
-                        }
-                        LOGGER.debug("processed {}", asyncStatus);
-                        long total = asyncStatus.getTotalCountResult().getTotalCount();
-                        if (processed > total) {
-                            total = processed;
-                        }
-                        if (asyncStatus.getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
-                            progressProperty.set(1.0f);
-                            return 1;
-                        } else if (total > 0) {
-                            float percentage = ((float) processed / (float) total);
-                            LOGGER.debug("setting {} :: {} / {}", percentage,
-                                    processed, total);
-                            progressProperty.set(percentage);
-                        }
-                    }
-                }
-                Thread.sleep(1000);
             }
         }
     }

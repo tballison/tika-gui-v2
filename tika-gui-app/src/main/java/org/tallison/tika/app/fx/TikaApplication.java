@@ -65,7 +65,7 @@ public class TikaApplication extends Application {
         AtomicBoolean close = new AtomicBoolean(true);
         if (APP_CONTEXT.getBatchProcess().isPresent()) {
             BatchProcess batchProcess = APP_CONTEXT.getBatchProcess().get();
-            if (batchProcess.getStatus() == BatchProcess.STATUS.RUNNING) {
+            if (batchProcess.getMutableStatus().get() == BatchProcess.STATUS.RUNNING) {
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle("A batch process is still running");
                 alert.setContentText("Cancel the process and quit?");

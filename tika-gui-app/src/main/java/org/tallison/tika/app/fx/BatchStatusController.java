@@ -57,6 +57,22 @@ public class BatchStatusController implements Initializable {
         Arrays.stream(PipesResult.STATUS.values()).forEach(
                 s -> PIPES_STATUS_LOOKUP.put(s.name(), s));
     }
+
+    private static String UNPROCESSED_COLOR = "0066cc";
+
+    private static Map<PipesResult.STATUS, String> COLORS = Map.of(
+            PipesResult.STATUS.PARSE_SUCCESS, "009900",
+            PipesResult.STATUS.PARSE_SUCCESS_WITH_EXCEPTION, "ffff00",
+            PipesResult.STATUS.EMIT_SUCCESS, "009900",
+            PipesResult.STATUS.TIMEOUT, "ff9900",
+            PipesResult.STATUS.UNSPECIFIED_CRASH, "ff0000",
+            PipesResult.STATUS.OOM, "ff8000",
+            PipesResult.STATUS.CLIENT_UNAVAILABLE_WITHIN_MS, "",
+            PipesResult.STATUS.INTERRUPTED_EXCEPTION, "",
+            PipesResult.STATUS.EMPTY_OUTPUT, "ffe6cc",
+            PipesResult.STATUS.PARSE_EXCEPTION_EMIT, ""
+            //TODO -- fill out rest?
+            );
     @FXML
     PieChart statusPieChart;
 
@@ -95,6 +111,7 @@ public class BatchStatusController implements Initializable {
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
         pieSliceCaption.setTextFill(Color.DARKORANGE);
         pieSliceCaption.setStyle("-fx-font: 24 arial;");
+
         statusTable.getSortOrder().add(countColumn);
         countColumn.setSortType(TableColumn.SortType.DESCENDING);
         countColumn.setCellFactory(
@@ -102,10 +119,19 @@ public class BatchStatusController implements Initializable {
         updaterThread = new Thread(new Updater());
         updaterThread.setDaemon(true);
         updaterThread.start();
+        statusPieChart.setLegendVisible(false);
     }
 
     public void stop() {
+        updateStatusTable();
         updaterThread.interrupt();
+    }
+
+    private void updateStatusTable() {
+        //remove 0 entries
+        statusCounts.removeIf( e -> e.getCount() < 0.1);
+        statusTable.sort();
+        statusTable.refresh();
     }
 
     private class Updater implements Runnable {
@@ -118,26 +144,21 @@ public class BatchStatusController implements Initializable {
                 Optional<BatchProcess> batchProcess = appContext.getBatchProcess();
 
                 if (batchProcess.isPresent()) {
-                    final Optional<AsyncStatus> status = batchProcess.get().checkStatus();
+                    final Optional<AsyncStatus> status = batchProcess.get().checkAsyncStatus();
 
                     if (! status.isEmpty()) {
                         Platform.runLater(() -> {
                             updatePieChart(status.get());
                             updateTotalToProcess(status.get());
+                            updateStatusTable();
                         });
-                        BatchProcess.STATUS batchProcessStatus = batchProcess.get().getStatus();
-                        if (batchProcessStatus == BatchProcess.STATUS.CANCELED) {
-                            overallStatus.setText("CANCELED");
-                            return;
-                        }
-
-                        if (status.get().getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
-                            overallStatus.setText("COMPLETED");
-                            return;
-                        }
                     }
-                    statusTable.sort();
-                    statusTable.refresh();
+                    BatchProcess.STATUS batchProcessStatus =
+                            batchProcess.get().getMutableStatus().get();
+                    overallStatus.setText(batchProcessStatus.name());
+                    if (batchProcessStatus != BatchProcess.STATUS.RUNNING) {
+                        return;
+                    }
                 }
                 try {
                     Thread.sleep(1000);
@@ -145,8 +166,8 @@ public class BatchStatusController implements Initializable {
                     return;
                 }
             }
-
         }
+
 
         private void updateTotalToProcess(AsyncStatus status) {
             TotalCountResult r = status.getTotalCountResult();
@@ -195,6 +216,15 @@ public class BatchStatusController implements Initializable {
         private void addData(String name, double value) {
             PieChart.Data data = new PieChart.Data(name, value);
             pieChartData.add(data);
+            if (name.equals("UNPROCESSED")) {
+                data.getNode().setStyle("-fx-pie-color: #" + UNPROCESSED_COLOR + ";");
+            } else {
+                PipesResult.STATUS status = lookup(name);
+                String color = COLORS.getOrDefault(status, "");
+                if (color.length() > 0) {
+                    data.getNode().setStyle("-fx-pie-color: #" + color + ";");
+                }
+            }
 
             data.getNode().addEventHandler(MouseEvent.MOUSE_PRESSED,
                     new EventHandler<MouseEvent>() {
@@ -204,6 +234,7 @@ public class BatchStatusController implements Initializable {
                             pieSliceCaption.setText(String.valueOf(data.getPieValue()) + "%");
                         }
                     });
+
             StatusCount statusCount = new StatusCount(name, value);
             statusCount.countProperty().bind(data.pieValueProperty());
             statusCounts.add(statusCount);

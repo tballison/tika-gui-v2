@@ -68,7 +68,7 @@ public class AppContext {
     public static Path TIKA_APP_BIN_PATH = TIKA_LIB_PATH.resolve("tika-app");
     public static Path TIKA_EXTRAS_BIN_PATH = TIKA_LIB_PATH.resolve("tika-extras");
     public static Path APP_STATE_PATH = TIKA_APP_HOME.resolve("config/tika-app-v2-config.json");
-    private static AppContext APP_CONTEXT = load();
+    private static volatile AppContext APP_CONTEXT;
     public static Path CONFIG_PATH = TIKA_APP_HOME.resolve("config");
     public static Path ASYNC_LOG4J2_PATH = CONFIG_PATH.resolve("log4j2-async.xml");
     public static Path LOGS_PATH = TIKA_APP_HOME.resolve("logs");
@@ -78,6 +78,8 @@ public class AppContext {
 
     private String tikaVersion = "2.6.0";
     private Optional<BatchProcessConfig> batchProcessConfig = Optional.of(new BatchProcessConfig());
+
+    @JsonIgnore
     private Optional<BatchProcess> batchProcess = Optional.empty();
     private volatile boolean closed = false;
     private final boolean allowBatchToRunOnExit = false;
@@ -96,8 +98,13 @@ public class AppContext {
         return new AppContext();
     }
 
-    public static AppContext getInstance() {
-        return APP_CONTEXT;
+    public static synchronized AppContext getInstance() {
+        if (APP_CONTEXT == null) {
+            APP_CONTEXT = load();
+            return APP_CONTEXT;
+        } else {
+            return APP_CONTEXT;
+        }
     }
 
     private static AppContext load(Path configPath) throws IOException {
@@ -131,7 +138,7 @@ public class AppContext {
             if (!Files.isDirectory(APP_STATE_PATH.getParent())) {
                 Files.createDirectories(APP_STATE_PATH.getParent());
             }
-            LOGGER.info("writing state to " + APP_STATE_PATH);
+            LOGGER.debug("writing state to " + APP_STATE_PATH);
             OBJECT_MAPPER.writeValue(APP_STATE_PATH.toFile(), this);
         } catch (IOException e) {
             LOGGER.warn("can't save state!", e);

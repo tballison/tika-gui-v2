@@ -39,6 +39,8 @@ import javafx.stage.WindowEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
+import org.tallison.tika.app.fx.status.MutableStatus;
+import org.tallison.tika.app.fx.status.StatusUpdater;
 import org.tallison.tika.app.fx.tools.BatchProcess;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 import org.tallison.tika.app.fx.tools.ConfigItem;
@@ -61,6 +63,15 @@ public class TikaController extends ControllerBase {
     @FXML
     private Button statusButton;
 
+    @FXML
+    private Button configureInput;
+
+    @FXML
+    private Button configureOutput;
+
+    @FXML
+    private Button configureAdvanced;
+
 
     @FXML
     private Label inputLabel;
@@ -69,7 +80,7 @@ public class TikaController extends ControllerBase {
     private Label outputLabel;
 
     @FXML
-    private ProgressIndicator batchProgress;
+    private ProgressIndicator batchProgressIndicator;
 
     @FXML
     public void initialize() {
@@ -80,10 +91,11 @@ public class TikaController extends ControllerBase {
         inputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().get().getFetcherLabel());
         outputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().get().getEmitterLabel());
         //batchProgress.setVisible(false);
-        if (APP_CONTEXT.getBatchProcess().isPresent()) {
-            batchProgress.progressProperty().bind(APP_CONTEXT.getBatchProcess().get().progressProperty());
-        }
-        updateButtons();
+        //if (APP_CONTEXT.getBatchProcess().isPresent()) {
+          //  batchProgressIndicator.progressProperty().bind(APP_CONTEXT.getBatchProcess().get()
+        //  .progressProperty());
+        //}
+        updateButtons(BatchProcess.STATUS.READY);
     }
 
 
@@ -99,6 +111,9 @@ public class TikaController extends ControllerBase {
 
     }
 
+    public ProgressIndicator getBatchProgressIndicator() {
+        return batchProgressIndicator;
+    }
 
     public void resetState(ActionEvent actionEvent) {
         APP_CONTEXT.reset();
@@ -127,7 +142,7 @@ public class TikaController extends ControllerBase {
         stage.setTitle("Select Input");
         stage.setScene(scene);
         stage.showAndWait();
-        updateButtons();
+        updateButtons(BatchProcess.STATUS.READY);
     }
 
     @FXML
@@ -144,7 +159,7 @@ public class TikaController extends ControllerBase {
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent we) {
                 advancedBatchController.saveState();
-                updateButtons();
+                updateButtons(BatchProcess.STATUS.READY);
             }
         });
         stage.show();
@@ -173,45 +188,32 @@ public class TikaController extends ControllerBase {
         stage.setTitle("Select Output");
         stage.setScene(scene);
         stage.showAndWait();
-        updateButtons();
+        updateButtons(BatchProcess.STATUS.READY);
     }
 
-    private void updateButtons() {
-        if (APP_CONTEXT.getBatchProcess().isPresent()) {
-            BatchProcess pb = APP_CONTEXT.getBatchProcess().get();
-            System.out.println("BATCH status " + pb.getStatus());
-            if (pb.getStatus() == BatchProcess.STATUS.RUNNING) {
-                runButton.setDisable(true);
-                cancelButton.setDisable(false);
-                statusButton.setDisable(false);
-            } else if (pb.getStatus() == BatchProcess.STATUS.CANCELED) {
-                if (fullyConfigured()) {
-                    runButton.setDisable(false);
-                    cancelButton.setDisable(true);
-                    statusButton.setDisable(false);
-                } else {
-                    runButton.setDisable(true);
-                    cancelButton.setDisable(true);
-                    statusButton.setDisable(false);
-                }
-            } else if (pb.getStatus() == BatchProcess.STATUS.COMPLETE) {
-                runButton.setDisable(false);
-                cancelButton.setDisable(true);
-                statusButton.setDisable(false);
-            }
-            return;
-        }
-        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
-            return;
-        }
-        BatchProcessConfig config = APP_CONTEXT.getBatchProcessConfig().get();
-        if (config.getEmitter().isPresent() &&
-                config.getPipesIterator().isPresent() &&
-                config.getEmitter().isPresent()
-        ) {
-            runButton.setDisable(false);
-            cancelButton.setDisable(true);
+    public void updateButtons(BatchProcess.STATUS status) {
+
+        if (status == BatchProcess.STATUS.READY) {
             statusButton.setDisable(true);
+        }
+        if (status == BatchProcess.STATUS.RUNNING) {
+            runButton.setDisable(true);
+            cancelButton.setDisable(false);
+            statusButton.setDisable(false);
+            configureInput.setDisable(true);
+            configureOutput.setDisable(true);
+            configureAdvanced.setDisable(true);
+            return;
+        }
+        configureInput.setDisable(false);
+        configureOutput.setDisable(false);
+        configureAdvanced.setDisable(false);
+        cancelButton.setDisable(true);
+
+        if (fullyConfigured()) {
+            runButton.setDisable(false);
+        } else {
+            runButton.setDisable(true);
         }
     }
 
@@ -225,7 +227,7 @@ public class TikaController extends ControllerBase {
     public void runTika(ActionEvent actionEvent) throws Exception {
         Optional<BatchProcess> oldProcess = APP_CONTEXT.getBatchProcess();
         if (! oldProcess.isEmpty()) {
-            if (oldProcess.get().getStatus() == BatchProcess.STATUS.RUNNING) {
+            if (oldProcess.get().getMutableStatus().get() == BatchProcess.STATUS.RUNNING) {
                 alert("Tika App", "Still running?!", "Older process is still running");
                 actionEvent.consume();
                 return;
@@ -237,12 +239,34 @@ public class TikaController extends ControllerBase {
         //TODO -- all sorts of checks
         //Is there already a batch process.
         //Do we have a fetcher and an emitter already set, etc.
-        BatchProcess batchProcess = new BatchProcess();
-        batchProgress.progressProperty().bind(batchProcess.progressProperty());
+        MutableStatus mutableStatus = new MutableStatus(BatchProcess.STATUS.READY);
+        BatchProcess batchProcess = new BatchProcess(mutableStatus);
         APP_CONTEXT.setBatchProcess(batchProcess);
-        batchProcess.start(APP_CONTEXT.getBatchProcessConfig().get());
+        StatusUpdater statusUpdater = new StatusUpdater(mutableStatus, this);
+        batchProcess.start(APP_CONTEXT.getBatchProcessConfig().get(), statusUpdater);
+        long maxWait = 30000;
+        long start = System.currentTimeMillis();
+        while (batchProcess.getMutableStatus().get() != BatchProcess.STATUS.RUNNING) {
+            if (batchProcess.getMutableStatus().get() == BatchProcess.STATUS.FAILED_START) {
+                if (batchProcess.getJvmStartException().isPresent()) {
+                    alertStackTrace("Problem starting tika", "Can't start Tika",
+                            "If you see 'No such file or directory' for 'java'," +
+                                    "check that java is there and has the right permissions",
+                            batchProcess.getJvmStartException().get());
+                } else {
+                    alert("Can't start Tika", "Can't start Tika", "Don't know why?!");
+                }
+                break;
+            }
+            Thread.sleep(100);
+            long elapsed = System.currentTimeMillis() - start;
+            if (elapsed > maxWait) {
+                LOGGER.warn("waited {}, and process still has not started?!");
+                break;
+            }
+        }
         APP_CONTEXT.saveState();
-        updateButtons();
+        updateButtons(batchProcess.getMutableStatus().get());
     }
 
     public void showFetcher(MouseEvent mouseEvent) {
@@ -289,7 +313,7 @@ public class TikaController extends ControllerBase {
         if (APP_CONTEXT.getBatchProcess().isPresent()) {
             APP_CONTEXT.getBatchProcess().get().cancel();
         }
-        updateButtons();
+        updateButtons(BatchProcess.STATUS.CANCELED);
     }
 
     public void checkStatus(ActionEvent actionEvent) throws IOException {
@@ -310,7 +334,6 @@ public class TikaController extends ControllerBase {
                 batchStatusController.stop();
             }
         });
-        stage.setOnCloseRequest(windowEvent -> updateButtons());
         stage.show();
     }
 }
