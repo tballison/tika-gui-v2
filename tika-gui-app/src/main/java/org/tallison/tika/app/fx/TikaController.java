@@ -45,8 +45,6 @@ import org.tallison.tika.app.fx.tools.BatchProcess;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 import org.tallison.tika.app.fx.tools.ConfigItem;
 
-import org.apache.tika.utils.StringUtils;
-
 public class TikaController extends ControllerBase {
 
     static AppContext APP_CONTEXT = AppContext.getInstance();

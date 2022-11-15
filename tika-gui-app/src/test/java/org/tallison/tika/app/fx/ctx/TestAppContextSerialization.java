@@ -38,6 +38,7 @@ public class TestAppContextSerialization {
         AppContext appContext = new AppContext();
         appContext.getBatchProcessConfig().get().setEmitter(
                 "emitter label",
+                "emitter full label",
                 Constants.FS_EMITTER_CLASS,
                 "basePath", "something");
         BatchProcess batchProcess = new BatchProcess();
