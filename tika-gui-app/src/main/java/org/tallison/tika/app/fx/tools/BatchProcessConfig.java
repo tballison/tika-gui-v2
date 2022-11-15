@@ -82,7 +82,7 @@ public class BatchProcessConfig {
     public void setFetcher(ConfigItem fetcher) {
         this.fetcher = Optional.ofNullable(fetcher);
         if (this.fetcher.isPresent()) {
-            this.fetcherLabel.setValue(this.fetcher.get().getLabel());
+            this.fetcherLabel.setValue(this.fetcher.get().getShortLabel());
         }
     }
 
@@ -114,7 +114,7 @@ public class BatchProcessConfig {
     public void setEmitter(ConfigItem emitter) {
         this.emitter = Optional.ofNullable(emitter);
         if (this.emitter.isPresent()) {
-            setEmitterLabel(this.emitter.get().getLabel());
+            setEmitterLabel(this.emitter.get().getShortLabel());
         }
     }
 

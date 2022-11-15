@@ -89,10 +89,11 @@ public class TikaController extends ControllerBase {
             return;
         }
         inputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().get().getFetcherLabel());
-        outputLabel.textProperty().bind(APP_CONTEXT.getBatchProcessConfig().get().getEmitterLabel());
+        outputLabel.textProperty()
+                .bind(APP_CONTEXT.getBatchProcessConfig().get().getEmitterLabel());
         //batchProgress.setVisible(false);
         //if (APP_CONTEXT.getBatchProcess().isPresent()) {
-          //  batchProgressIndicator.progressProperty().bind(APP_CONTEXT.getBatchProcess().get()
+        //  batchProgressIndicator.progressProperty().bind(APP_CONTEXT.getBatchProcess().get()
         //  .progressProperty());
         //}
         updateButtons(BatchProcess.STATUS.READY);
@@ -219,14 +220,14 @@ public class TikaController extends ControllerBase {
 
     private boolean fullyConfigured() {
         BatchProcessConfig config = APP_CONTEXT.getBatchProcessConfig().get();
-        return config.getEmitter().isPresent() &&
-                config.getPipesIterator().isPresent() &&
+        return config.getEmitter().isPresent() && config.getPipesIterator().isPresent() &&
                 config.getEmitter().isPresent();
     }
+
     @FXML
     public void runTika(ActionEvent actionEvent) throws Exception {
         Optional<BatchProcess> oldProcess = APP_CONTEXT.getBatchProcess();
-        if (! oldProcess.isEmpty()) {
+        if (!oldProcess.isEmpty()) {
             if (oldProcess.get().getMutableStatus().get() == BatchProcess.STATUS.RUNNING) {
                 alert("Tika App", "Still running?!", "Older process is still running");
                 actionEvent.consume();
@@ -272,17 +273,14 @@ public class TikaController extends ControllerBase {
     public void showFetcher(MouseEvent mouseEvent) {
         Optional<ConfigItem> configItem = APP_CONTEXT.getBatchProcessConfig().get().getFetcher();
         if (configItem.isPresent()) {
-            String path = configItem.get().getAttributes().get("basePath");
-            if (!StringUtils.isBlank(path)) {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Fetcher");
-                alert.setHeaderText(configItem.get().getLabel());
-                alert.setResizable(true);
-                alert.setContentText("Path: " + path);
-                alert.getDialogPane().setMinWidth(500);
-                alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-                alert.showAndWait();
-            }
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Fetcher");
+            alert.setHeaderText(configItem.get().getShortLabel());
+            alert.setResizable(true);
+            alert.setContentText(configItem.get().getFullLabel());
+            alert.getDialogPane().setMinWidth(500);
+            alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+            alert.showAndWait();
         }
         mouseEvent.consume();
     }
@@ -290,17 +288,15 @@ public class TikaController extends ControllerBase {
     public void showEmitter(MouseEvent mouseEvent) {
         Optional<ConfigItem> configItem = APP_CONTEXT.getBatchProcessConfig().get().getEmitter();
         if (configItem.isPresent()) {
-            String path = configItem.get().getAttributes().get("basePath");
-            if (!StringUtils.isBlank(path)) {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Fetcher");
-                alert.setHeaderText(configItem.get().getLabel());
-                alert.setResizable(true);
-                alert.setContentText("Path: " + path);
-                alert.getDialogPane().setMinWidth(500);
-                alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-                alert.showAndWait();
-            }
+            String fullLabel = configItem.get().getAttributes().get("basePath");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Emitter");
+            alert.setHeaderText(configItem.get().getShortLabel());
+            alert.setResizable(true);
+            alert.setContentText(configItem.get().getFullLabel());
+            alert.getDialogPane().setMinWidth(500);
+            alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+            alert.showAndWait();
         }
         mouseEvent.consume();
     }

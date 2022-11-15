@@ -25,7 +25,9 @@ import org.tallison.tika.app.fx.metadata.MetadataTuple;
 
 public class ConfigItem {
 
-    private String label;
+    private String shortLabel;
+
+    private String fullLabel;
     private String clazz;
     private Map<String, String> attributes;
 
@@ -38,16 +40,34 @@ public class ConfigItem {
 
     public static ConfigItem build(String... args) {
         Map<String, String> params = new HashMap<>();
-        for (int i = 2; i < args.length; i++) {
+        for (int i = 3; i < args.length; i++) {
             params.put(args[i], args[++i]);
         }
-        return new ConfigItem(args[0], args[1], params);
+        return new ConfigItem(args[0], args[1], args[2], params);
     }
 
-    public ConfigItem(String label, String clazz, Map<String, String> attributes) {
-        this.label = label;
+    public ConfigItem(String shortLabel, String fullLabel, String clazz,
+                      Map<String, String> attributes) {
+        this.shortLabel = shortLabel;
+        this.fullLabel = fullLabel;
         this.clazz = clazz;
         this.attributes = attributes;
+    }
+
+    public String getShortLabel() {
+        return shortLabel;
+    }
+
+    public void setShortLabel(String shortLabel) {
+        this.shortLabel = shortLabel;
+    }
+
+    public String getFullLabel() {
+        return fullLabel;
+    }
+
+    public void setFullLabel(String fullLabel) {
+        this.fullLabel = fullLabel;
     }
 
     public String getClazz() {
@@ -62,29 +82,22 @@ public class ConfigItem {
         return attributes;
     }
 
-    public void setAttributes(Map<String, String> attrs) {
-        this.attributes = attrs;
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
     }
 
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
+    public Optional<List<MetadataTuple>> getMetadataTuples() {
+        return metadataTuples;
     }
 
     public void setMetadataTuples(List<MetadataTuple> metadataTuples) {
         this.metadataTuples = Optional.ofNullable(metadataTuples);
     }
 
-    public Optional<List<MetadataTuple>> getMetadataTuples() {
-        return this.metadataTuples;
-    }
-
     @Override
     public String toString() {
-        return "ConfigItem{" + "label='" + label + '\'' + ", clazz='" + clazz + '\'' +
-                ", attributes=" + attributes + ", metadataTuples=" + metadataTuples + '}';
+        return "ConfigItem{" + "shortLabel='" + shortLabel + '\'' + ", fullLabel='" + fullLabel +
+                '\'' + ", clazz='" + clazz + '\'' + ", attributes=" + attributes +
+                ", metadataTuples=" + metadataTuples + '}';
     }
 }

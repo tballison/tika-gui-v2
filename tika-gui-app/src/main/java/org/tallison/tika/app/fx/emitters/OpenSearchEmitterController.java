@@ -112,7 +112,8 @@ public class OpenSearchEmitterController extends ControllerBase implements Initi
             actionEvent.consume();
             return;
         }
-        String label = "OpenSearch: " + ellipsize(index, 30);
+        String shortLabel = "OpenSearch: " + ellipsize(index, 30);
+        String fullLabel = "OpenSearch: " + url;
         String userName = openSearchUserName.getText();
         String password = openSearchPassword.getText();
         if (StringUtils.isEmpty(userName) && !StringUtils.isEmpty(password)) {
@@ -129,7 +130,8 @@ public class OpenSearchEmitterController extends ControllerBase implements Initi
 
 
         //TODO -- check anything else?
-        batchProcessConfig.get().setEmitter(label, Constants.OPEN_SEARCH_EMITTER_CLASS,
+        batchProcessConfig.get().setEmitter(shortLabel, fullLabel,
+                Constants.OPEN_SEARCH_EMITTER_CLASS,
                 Constants.OPEN_SEARCH_URL, url,
                 Constants.OPEN_SEARCH_USER, userName,
                 Constants.OPEN_SEARCH_PW, password,

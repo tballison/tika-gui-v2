@@ -127,7 +127,8 @@ public class CSVEmitterController extends AbstractEmitterController implements I
 
     @Override
     public void saveState() {
-        String label = StringUtils.EMPTY;
+        String shortLabel = StringUtils.EMPTY;
+        String fullLabel = StringUtils.EMPTY;
         String csvOutputFileString = StringUtils.EMPTY;
         String directoryString = StringUtils.EMPTY;
 
@@ -137,7 +138,8 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         if (csvFileName != null) {
             String fString = csvFileName.getText();
             if (!StringUtils.isBlank(fString)) {
-                label = "CSV file: " + ellipsize(fString, 30);
+                shortLabel = "CSV file: " + ellipsize(fString, 30);
+                fullLabel = "CSV file: " + fString;
                 csvOutputFileString = fString;
             }
         }
@@ -146,7 +148,8 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         String csvMetadataPathString = csvMetadataPath.isPresent() ?
                 csvMetadataPath.get().toAbsolutePath().toString() : StringUtils.EMPTY;
 
-        ConfigItem emitter = ConfigItem.build(label, Constants.CSV_EMITTER_CLASS,
+        ConfigItem emitter = ConfigItem.build(shortLabel, fullLabel,
+                Constants.CSV_EMITTER_CLASS,
                 Constants.BASE_PATH, directoryString,
                 Constants.CSV_FILE_NAME, csvOutputFileString,
                 Constants.CSV_METADATA_PATH, csvMetadataPathString);

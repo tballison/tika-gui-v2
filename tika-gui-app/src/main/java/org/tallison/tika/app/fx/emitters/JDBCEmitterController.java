@@ -120,7 +120,8 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
 
     @Override
     public void saveState() {
-        String label = StringUtils.EMPTY;
+        String shortLabel = StringUtils.EMPTY;
+        String fullLabel = StringUtils.EMPTY;
         String jdbcConnectionString = StringUtils.EMPTY;
         String tableNameString = StringUtils.EMPTY;
 
@@ -130,10 +131,12 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
 
         if (! StringUtils.isBlank(tableName.getText())) {
             tableNameString = tableName.getText();
-            label = "JDBC: " + ellipsize(tableNameString, 30);
+            shortLabel = "JDBC: " + ellipsize(tableNameString, 30);
+            fullLabel = "JDBC: " + tableNameString;
         }
 
-        ConfigItem emitter = ConfigItem.build(label, Constants.JDBC_EMITTER_CLASS,
+        ConfigItem emitter = ConfigItem.build(shortLabel, fullLabel,
+                Constants.JDBC_EMITTER_CLASS,
                 Constants.JDBC_CONNECTION_STRING, jdbcConnectionString,
                 Constants.JDBC_TABLE_NAME, tableNameString,
                 Constants.JDBC_INSERT_SQL, insertSql);

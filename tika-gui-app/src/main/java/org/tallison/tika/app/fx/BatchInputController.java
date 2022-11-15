@@ -68,11 +68,14 @@ public class BatchInputController extends ControllerBase {
         if (directory == null) {
             return;
         }
-        String label = "FileSystem: " + ellipsize(directory.getName(), 30);
+        String shortLabel = "FileSystem: " + ellipsize(directory.getName(), 30);
+        String fullLabel = "FileSystem: " + directory.getAbsolutePath();
 
-        batchProcessConfig.setFetcher(label, Constants.FS_FETCHER_CLASS, "basePath",
+        batchProcessConfig.setFetcher(shortLabel, fullLabel,
+                Constants.FS_FETCHER_CLASS, "basePath",
                 directory.toPath().toAbsolutePath().toString());
-        batchProcessConfig.setPipesIterator(label, FileSystemPipesIterator.class.getName(),
+        batchProcessConfig.setPipesIterator(shortLabel, fullLabel,
+                FileSystemPipesIterator.class.getName(),
                 "basePath", directory.toPath().toAbsolutePath().toString());
         batchProcessConfig.setInputSelectedTab(0);
         APP_CONTEXT.saveState();

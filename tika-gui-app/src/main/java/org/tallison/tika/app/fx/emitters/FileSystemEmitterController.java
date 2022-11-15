@@ -74,8 +74,10 @@ public class FileSystemEmitterController extends ControllerBase {
         if (directory == null) {
             return;
         }
-        String label = "FileSystem: " + ellipsize(directory.getName(), 30);
-        batchProcessConfig.setEmitter(label, Constants.FS_EMITTER_CLASS, Constants.BASE_PATH,
+        String shortLabel = "FileSystem: " + ellipsize(directory.getName(), 30);
+        String fullLabel = "FileSystem: " + directory.getAbsolutePath();
+        batchProcessConfig.setEmitter(shortLabel, fullLabel, Constants.FS_EMITTER_CLASS,
+                Constants.BASE_PATH,
                 directory.toPath().toAbsolutePath().toString());
 
         //TODO -- do better than hard coding indices
