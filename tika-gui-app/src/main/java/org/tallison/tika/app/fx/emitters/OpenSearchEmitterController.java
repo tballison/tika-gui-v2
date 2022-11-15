@@ -33,14 +33,14 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
-import org.tallison.tika.app.fx.MyControllerBase;
+import org.tallison.tika.app.fx.ControllerBase;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
 
-public class OpenSearchEmitterController extends MyControllerBase implements Initializable {
+public class OpenSearchEmitterController extends ControllerBase implements Initializable {
     private static AppContext APP_CONTEXT = AppContext.getInstance();
     private static Logger LOGGER = LogManager.getLogger(OpenSearchEmitterController.class);
 
@@ -112,7 +112,7 @@ public class OpenSearchEmitterController extends MyControllerBase implements Ini
             actionEvent.consume();
             return;
         }
-        String label = "OpenSearch: " + index;
+        String label = "OpenSearch: " + ellipsize(index, 30);
         String userName = openSearchUserName.getText();
         String password = openSearchPassword.getText();
         if (StringUtils.isEmpty(userName) && !StringUtils.isEmpty(password)) {

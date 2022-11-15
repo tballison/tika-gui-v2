@@ -72,4 +72,12 @@ public class ControllerBase {
 
         alert.showAndWait();
     }
+
+    public static String ellipsize(String s, int length) {
+        if (s.length() < length) {
+            return s;
+        }
+        s = s.substring(0, length) + "...";
+        return s;
+    }
 }

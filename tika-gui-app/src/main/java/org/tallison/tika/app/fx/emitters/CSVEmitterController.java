@@ -137,7 +137,7 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         if (csvFileName != null) {
             String fString = csvFileName.getText();
             if (!StringUtils.isBlank(fString)) {
-                label = "CSV file: " + fString;
+                label = "CSV file: " + ellipsize(fString, 30);
                 csvOutputFileString = fString;
             }
         }

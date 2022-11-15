@@ -29,13 +29,14 @@ import javafx.stage.Window;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
+import org.tallison.tika.app.fx.ControllerBase;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
 
-public class FileSystemEmitterController {
+public class FileSystemEmitterController extends ControllerBase {
     private static AppContext APP_CONTEXT = AppContext.getInstance();
     private static Logger LOGGER = LogManager.getLogger(FileSystemEmitterController.class);
 
@@ -73,7 +74,7 @@ public class FileSystemEmitterController {
         if (directory == null) {
             return;
         }
-        String label = "FileSystem: " + directory.getName();
+        String label = "FileSystem: " + ellipsize(directory.getName(), 30);
         batchProcessConfig.setEmitter(label, Constants.FS_EMITTER_CLASS, Constants.BASE_PATH,
                 directory.toPath().toAbsolutePath().toString());
 

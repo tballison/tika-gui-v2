@@ -130,7 +130,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
 
         if (! StringUtils.isBlank(tableName.getText())) {
             tableNameString = tableName.getText();
-            label = "JDBC: " + tableNameString;
+            label = "JDBC: " + ellipsize(tableNameString, 30);
         }
 
         ConfigItem emitter = ConfigItem.build(label, Constants.JDBC_EMITTER_CLASS,

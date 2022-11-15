@@ -35,7 +35,7 @@ import org.tallison.tika.app.fx.tools.ConfigItem;
 import org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator;
 import org.apache.tika.utils.StringUtils;
 
-public class BatchInputController {
+public class BatchInputController extends ControllerBase {
 
     private static AppContext APP_CONTEXT = AppContext.getInstance();
     private static Logger LOGGER = LogManager.getLogger(BatchInputController.class);
@@ -68,7 +68,8 @@ public class BatchInputController {
         if (directory == null) {
             return;
         }
-        String label = "FileSystem: " + directory.getName();
+        String label = "FileSystem: " + ellipsize(directory.getName(), 30);
+
         batchProcessConfig.setFetcher(label, Constants.FS_FETCHER_CLASS, "basePath",
                 directory.toPath().toAbsolutePath().toString());
         batchProcessConfig.setPipesIterator(label, FileSystemPipesIterator.class.getName(),
@@ -77,5 +78,6 @@ public class BatchInputController {
         APP_CONTEXT.saveState();
         ((Stage) fsInputButton.getScene().getWindow()).close();
     }
+
 
 }

@@ -27,7 +27,7 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="465.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.TikaController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="465.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.TikaController">
    <children>
       <TabPane layoutX="-3.0" layoutY="-1.0" prefHeight="471.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE">
         <tabs>
@@ -40,8 +40,8 @@
                         <Button fx:id="runButton" disable="true" layoutX="107.0" layoutY="275.0" mnemonicParsing="false" onAction="#runTika" prefHeight="33.0" prefWidth="72.0" text="Run" />
                         <Label layoutX="74.0" layoutY="105.0" text="Input" />
                         <Label layoutX="74.0" layoutY="165.0" text="Output" />
-                        <Label fx:id="inputLabel" layoutX="204.0" layoutY="105.0" onMouseClicked="#showFetcher" text="Label" />
-                        <Label fx:id="outputLabel" layoutX="204.0" layoutY="165.0" onMouseClicked="#showEmitter" text="Label" />
+                        <Label fx:id="inputLabel" layoutX="143.0" layoutY="106.0" onMouseClicked="#showFetcher" prefHeight="17.0" prefWidth="232.0" text="Label" textAlignment="CENTER" />
+                        <Label fx:id="outputLabel" layoutX="143.0" layoutY="166.0" onMouseClicked="#showEmitter" prefHeight="17.0" prefWidth="232.0" text="Label" textAlignment="CENTER" />
                         <Button fx:id="configureAdvanced" layoutX="399.0" layoutY="220.0" mnemonicParsing="false" onAction="#configureAdvanced" text="Advanced" />
                         <ProgressIndicator fx:id="batchProgressIndicator" layoutX="409.0" layoutY="272.0" onMouseClicked="#openDetailedStatus" progress="0.0" />
                         <Button fx:id="cancelButton" disable="true" layoutX="213.0" layoutY="274.0" mnemonicParsing="false" onAction="#cancelBatch" prefHeight="33.0" prefWidth="72.0" text="Cancel" />
