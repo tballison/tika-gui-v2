@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.tallison.tika.gui.tools;
+package org.tallison.tika.gui.tools.deprecated;
 
 import java.io.IOException;
 import java.io.InputStream;

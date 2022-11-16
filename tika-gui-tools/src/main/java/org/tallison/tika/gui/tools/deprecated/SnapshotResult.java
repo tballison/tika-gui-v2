@@ -14,24 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tallison.tika.gui.tools;
+package org.tallison.tika.gui.tools.deprecated;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.Map;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+public class SnapshotResult {
 
-import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Test;
+    private String version;
+    private String jarUrl;
+    private Map<String, String> digests;
 
-public class ZuluDownloaderTest {
+    public SnapshotResult(String version, String jarUrl, Map<String, String> digests) {
+        this.version = version;
+        this.jarUrl = jarUrl;
+        this.digests = digests;
+    }
 
-    @Test
-    public void testBasic() throws Exception {
-        String html = IOUtils.toString(ZuluDownloaderTest.class.getResourceAsStream("/zulu.html"),
-                StandardCharsets.UTF_8);
-        List<ZuluDownloader.DownloadTuple> tuples = ZuluDownloader.parse(html);
-        System.out.println(tuples);
-        assertEquals(4, tuples.size());
+    public String getUrl() {
+        return jarUrl;
+    }
+
+    public Map<String, String> getDigests() {
+        return digests;
+    }
+
+    @Override
+    public String toString() {
+        return "SnapshotResult{" + "version='" + version + '\'' + ", jarUrl='" + jarUrl + '\'' +
+                ", digests=" + digests + '}';
     }
 }

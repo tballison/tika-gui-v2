@@ -14,18 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tallison.tika.gui.tools;
+package org.tallison.tika.gui.tools.deprecated;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
-public class SnapshotParserTest {
+public class ZuluDownloaderTest {
 
     @Test
     public void testBasic() throws Exception {
-
-        SnapshotParser p = new SnapshotParser();
-        String base = "https://repository.apache.org/content/groups/snapshots/";
-        SnapshotResult result = p.parse(base + "org/apache/tika/tika-core");
-        System.out.println(result);
+        String html = IOUtils.toString(ZuluDownloaderTest.class.getResourceAsStream("/zulu.html"),
+                StandardCharsets.UTF_8);
+        List<ZuluDownloader.DownloadTuple> tuples = ZuluDownloader.parse(html);
+        assertEquals(4, tuples.size());
     }
 }

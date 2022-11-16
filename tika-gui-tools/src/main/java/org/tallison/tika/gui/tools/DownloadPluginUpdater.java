@@ -23,14 +23,17 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.tallison.tika.gui.tools.deprecated.SnapshotParser;
+import org.tallison.tika.gui.tools.deprecated.SnapshotResult;
 
 /**
  * this should have been a batch script.
@@ -43,52 +46,17 @@ public class DownloadPluginUpdater {
 
     private static final String APACHE_SNAPSHOTS_BASE =
             "https://repository.apache.org/content/groups/snapshots/";
-    private static Set<String> OS_ARCHITECTURE = Set.of(
-            "linux x64",
-            "mac aarch64",
-            "mac x64",
-            "windows x64"
-            //"windows x32"
+
+    private static final String FOOJAY_ZULU_URL =
+            "https://api.foojay.io/disco/v3.0/packages?package_type=jre&latest=available&version" +
+                    "=17&javafx_bundled=true&distro=zulu";
+
+    private static final Set<String> OS_ARCH_PKG_ZULU = Set.of(
+            "macosx_aarch64.zip",
+            "macosx_x64.zip",
+            "win_x64.zip",
+            "linux_x64.tar.gz"
     );
-
-    private static Map<String, String> ADOPTIUM_TO_MAVEN = Map.of(
-            "linux x64", "unix amd64",
-            "windows x64", "windows amd64",
-            "mac x64", "mac x86_64");
-
-    private static String JRE_TEMPLATE = """
-                <profile>
-                  <id>{ID}</id>
-                  <activation>
-                    <os>
-                      <family>{FAMILY}</family>
-                      <arch>{ARCHITECTURE}</arch>
-                    </os>
-                  </activation>
-                  <build>
-                    <plugins>
-                      <plugin>
-                        <groupId>com.googlecode.maven-download-plugin</groupId>
-                        <artifactId>download-maven-plugin</artifactId>
-                        <executions>
-                          <execution>
-                            <id>install-{FAMILY}-{ARCHITECTURE}</id>
-                            <phase>prepare-package</phase>
-                            <goals>
-                              <goal>wget</goal>
-                            </goals>
-                            <configuration>
-                              <url>{URL}</url>
-                              <unpack>true</unpack>
-                              <outputDirectory>${project.build.directory}/jre</outputDirectory>
-                              <sha256>{SHA_256}</sha256>
-                            </configuration>
-                          </execution>
-                        </executions>
-                      </plugin>
-                    </plugins>
-                  </build>
-                </profile>""";
 
     private static final String DEPENDENCIES_TEMPLATE_START = """
                       <plugin>
@@ -110,19 +78,37 @@ public class DownloadPluginUpdater {
                         "        <md5>{MD5}</md5>\n" +
                         "      </configuration>\n" +
                         "    </execution>";
+
+    private static final String JRE_CONFIGURATION =
+            "\n    <execution>\n" +
+                    "      <id>{ID}</id>\n" +
+                    "      <phase>prepare-package</phase>\n" +
+                    "      <goals>\n" +
+                    "        <goal>wget</goal>\n" +
+                    "      </goals>\n" +
+                    "      <configuration>\n" +
+                    "        <url>{URL}</url>\n" +
+                    "        <unpack>false</unpack>\n" +
+                    "        <outputDirectory>${project.build.directory}/jres/{SUB_DIR}</outputDirectory>\n" +
+                    "        <sha256>{SHA256}</sha256>\n" +
+                    "      </configuration>\n" +
+                    "    </execution>";
     private static final String DEPENDENCIES_END = "\n    </executions>\n  </plugin>";
 
 
     public static void main(String[] args) throws Exception {
-        getJRES();
-        getDependencies("/snapshot-dependencies.properties");
+        StringBuilder sb = new StringBuilder();
+        sb.append(DEPENDENCIES_TEMPLATE_START);
+        getDependencies("/snapshot-dependencies.properties", sb);
+        getZulu(sb);
+        sb.append(DEPENDENCIES_END);
+        System.out.println(sb);
     }
 
-    private static void getDependencies(String dependenciesProps) throws Exception {
+    private static void getDependencies(String dependenciesProps, StringBuilder sb) throws Exception {
         Properties properties = new Properties();
         properties.load(DownloadPluginUpdater.class.getResourceAsStream(
                 dependenciesProps));
-        StringBuilder sb = new StringBuilder();
         sb.append(DEPENDENCIES_TEMPLATE_START);
         for (Object path : properties.keySet()) {
             Object subdir = properties.get(path);
@@ -138,7 +124,6 @@ public class DownloadPluginUpdater {
             }
             String id = FilenameUtils.getName(url).replace(".jar", "");
 
-            System.out.println(md5 + " " + subdir + " " + url);
             String t = DEPENDENCIES_CONFIGURATION;
             t = t.replace("{ID}", id);
             t = t.replace("{MD5}", md5);
@@ -146,59 +131,71 @@ public class DownloadPluginUpdater {
             t = t.replace("{SUB_DIR}", (String)subdir);
             sb.append(t);
         }
-        sb.append(DEPENDENCIES_END);
-        System.out.println(sb.toString());
-
     }
 
     private static String getMD5(String url) throws URISyntaxException, IOException {
         return IOUtils.toString(new URI(url + ".md5"), StandardCharsets.UTF_8);
     }
 
-    private static void getJRES() throws Exception {
+    private static void getZulu(StringBuilder sb) throws Exception {
         JsonNode root = null;
         try (InputStream is =
-                     new URL("https://api.adoptium.net/v3/assets/latest/17/hotspot").openStream()) {
+                     new URL(FOOJAY_ZULU_URL).openStream()) {
             ObjectMapper mapper = new ObjectMapper();
             root = mapper.readTree(is);
         }
-        System.out.println("<profiles>");
-        for (JsonNode item : root) {
-            JsonNode binary = item.get("binary");
-            if (! binary.get("image_type").asText().equals("jre")) {
-                continue;
+
+        Matcher pkgMatcher =
+                Pattern.compile("\\A.*?-(([^-]+)(?:\\....|\\.tar.gz))\\Z").matcher(
+                        "");
+        for (JsonNode result : root.get("result")) {
+            String filename = result.get("filename").asText();
+            String osArchPgk = "";
+            String osArch = "";
+            if (pkgMatcher.reset(filename).find()) {
+                osArchPgk = pkgMatcher.group(1);
+                osArch = pkgMatcher.group(2);
             }
-            if (! binary.has("package")) {
-                continue;
+            UrlShaPair p = getUrlShaPair(result.get("links").get("pkg_info_uri").asText());
+            System.err.println("available jre: " + osArchPgk + " : " + p);
+            if (OS_ARCH_PKG_ZULU.contains(osArchPgk)) {
+                String t = JRE_CONFIGURATION;
+                t = t.replace("{ID}", osArch);
+                t = t.replace("{SHA256}", p.sha256);
+                t = t.replace("{URL}", p.url);
+                t = t.replace("{SUB_DIR}", osArch);
+                sb.append(t);
             }
-            String os = binary.get("os").asText();
-            String architecture = binary.get("architecture").asText();
-            if (! OS_ARCHITECTURE.contains(os + " " + architecture)) {
-                continue;
-            }
-            JsonNode pkg = binary.get("package");
-            String link = pkg.get("link").asText();
-            String checksum = pkg.get("checksum").asText();
-            Long sz = pkg.get("size").asLong();
-            write(os, architecture, link, checksum);
         }
-        System.out.println("</profiles>");
     }
 
-    private static void write(String os, String architecture, String link, String checksum) {
-        String mapped = ADOPTIUM_TO_MAVEN.getOrDefault(os + " " + architecture, os + " " + architecture);
-        String[] bits = mapped.split(" ");
-        String mappedOs = bits[0];
-        String mappedArchitecture = bits[1];
-
-        String id = mappedOs + "-" + mappedArchitecture;
-        String template = JRE_TEMPLATE;
-        template = template.replace("{ID}", id);
-        template = template.replace("{FAMILY}", mappedOs);
-        template = template.replace("{ARCHITECTURE}", mappedArchitecture);
-        template = template.replace("{URL}", link);
-        template = template.replace("{SHA_256}", checksum);
-        System.out.println(template);
+    private static UrlShaPair getUrlShaPair(String pkgUrl) throws Exception {
+        JsonNode root = null;
+        try (InputStream is =
+                     new URL(pkgUrl).openStream()) {
+            ObjectMapper mapper = new ObjectMapper();
+            root = mapper.readTree(is);
+        }
+        for (JsonNode result : root.get("result")) {
+            String url = result.get("direct_download_uri").asText();
+            String sha = result.get("checksum").asText();
+            return new UrlShaPair(url, sha);
+        }
+        return null;
     }
 
+    private static class UrlShaPair {
+        private final String url;
+        private final String sha256;
+
+        public UrlShaPair(String url, String sha256) {
+            this.url = url;
+            this.sha256 = sha256;
+        }
+
+        @Override
+        public String toString() {
+            return "UrlShaPair{" + "url='" + url + '\'' + ", sha256='" + sha256 + '\'' + '}';
+        }
+    }
 }

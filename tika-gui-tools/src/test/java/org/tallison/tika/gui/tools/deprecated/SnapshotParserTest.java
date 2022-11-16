@@ -14,33 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tallison.tika.gui.tools;
+package org.tallison.tika.gui.tools.deprecated;
 
-import java.util.Map;
+import org.junit.jupiter.api.Test;
+import org.tallison.tika.gui.tools.deprecated.SnapshotParser;
+import org.tallison.tika.gui.tools.deprecated.SnapshotResult;
 
-public class SnapshotResult {
+public class SnapshotParserTest {
 
-    private String version;
-    private String jarUrl;
-    private Map<String, String> digests;
+    @Test
+    public void testBasic() throws Exception {
 
-    public SnapshotResult(String version, String jarUrl, Map<String, String> digests) {
-        this.version = version;
-        this.jarUrl = jarUrl;
-        this.digests = digests;
-    }
-
-    public String getUrl() {
-        return jarUrl;
-    }
-
-    public Map<String, String> getDigests() {
-        return digests;
-    }
-
-    @Override
-    public String toString() {
-        return "SnapshotResult{" + "version='" + version + '\'' + ", jarUrl='" + jarUrl + '\'' +
-                ", digests=" + digests + '}';
+        SnapshotParser p = new SnapshotParser();
+        String base = "https://repository.apache.org/content/groups/snapshots/";
+        SnapshotResult result = p.parse(base + "org/apache/tika/tika-core");
+        System.out.println(result);
     }
 }
