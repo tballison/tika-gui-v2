@@ -39,7 +39,6 @@ import javafx.stage.WindowEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
-import org.tallison.tika.app.fx.status.MutableStatus;
 import org.tallison.tika.app.fx.status.StatusUpdater;
 import org.tallison.tika.app.fx.tools.BatchProcess;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
@@ -238,20 +237,19 @@ public class TikaController extends ControllerBase {
         //TODO -- all sorts of checks
         //Is there already a batch process.
         //Do we have a fetcher and an emitter already set, etc.
-        MutableStatus mutableStatus = new MutableStatus(BatchProcess.STATUS.READY);
-        BatchProcess batchProcess = new BatchProcess(mutableStatus);
+        BatchProcess batchProcess = new BatchProcess();
         APP_CONTEXT.setBatchProcess(batchProcess);
-        StatusUpdater statusUpdater = new StatusUpdater(mutableStatus, this);
+        StatusUpdater statusUpdater = new StatusUpdater(batchProcess, this);
         batchProcess.start(APP_CONTEXT.getBatchProcessConfig().get(), statusUpdater);
         long maxWait = 30000;
         long start = System.currentTimeMillis();
         while (batchProcess.getMutableStatus().get() != BatchProcess.STATUS.RUNNING) {
-            if (batchProcess.getMutableStatus().get() == BatchProcess.STATUS.FAILED_START) {
-                if (batchProcess.getJvmStartException().isPresent()) {
+            if (batchProcess.getMutableStatus().get() == BatchProcess.STATUS.ERROR) {
+                if (batchProcess.getJvmException().isPresent()) {
                     alertStackTrace("Problem starting tika", "Can't start Tika",
                             "If you see 'No such file or directory' for 'java'," +
                                     "check that java is there and has the right permissions",
-                            batchProcess.getJvmStartException().get());
+                            batchProcess.getJvmException().get());
                 } else {
                     alert("Can't start Tika", "Can't start Tika", "Don't know why?!");
                 }

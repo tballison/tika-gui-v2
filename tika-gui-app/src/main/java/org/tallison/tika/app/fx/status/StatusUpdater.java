@@ -16,20 +16,16 @@
  */
 package org.tallison.tika.app.fx.status;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.scene.control.ProgressIndicator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tallison.tika.app.fx.ControllerBase;
 import org.tallison.tika.app.fx.TikaController;
-import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.tools.BatchProcess;
 
 import org.apache.tika.pipes.PipesResult;
@@ -37,16 +33,13 @@ import org.apache.tika.pipes.async.AsyncStatus;
 
 public class StatusUpdater implements Callable<Integer> {
     private static Logger LOGGER = LogManager.getLogger(StatusUpdater.class);
-    private ObjectMapper objectMapper = JsonMapper.builder()
-            .addModule(new JavaTimeModule())
-            .build();
-
     private SimpleFloatProperty progressValue = new SimpleFloatProperty(0.0f);
     private final ProgressIndicator progressIndicator;
     private final TikaController tikaController;
-    private final MutableStatus mutableStatus;
-    public StatusUpdater(MutableStatus mutableStatus, TikaController tikaController) {
-        this.mutableStatus = mutableStatus;
+    private final BatchProcess batchProcess;
+
+    public StatusUpdater(BatchProcess batchProcess, TikaController tikaController) {
+        this.batchProcess = batchProcess;
         this.tikaController = tikaController;
         this.progressIndicator = tikaController.getBatchProgressIndicator();
         this.progressIndicator.progressProperty().bind(progressValue);
@@ -59,38 +52,50 @@ public class StatusUpdater implements Callable<Integer> {
         progressValue.set(0.0f);
 
         while (true) {
-            if (Files.isRegularFile(AppContext.BATCH_STATUS_PATH)) {
-                AsyncStatus asyncStatus = null;
-                try {
-                    asyncStatus = objectMapper.readValue(AppContext.BATCH_STATUS_PATH.toFile(),
-                            AsyncStatus.class);
-                } catch (IOException e) {
-                    LOGGER.warn("bad json ", e);
-                    Thread.sleep(1000);
-                    continue;
+            Optional<AsyncStatus> asyncStatusOptional = batchProcess.checkAsyncStatus();
+            System.out.println(asyncStatusOptional);
+            if (asyncStatusOptional.isPresent()) {
+                AsyncStatus asyncStatus = asyncStatusOptional.get();
+                long processed = 0;
+                for (Map.Entry<PipesResult.STATUS, Long> e : asyncStatus.getStatusCounts()
+                        .entrySet()) {
+                    processed += e.getValue();
                 }
-                if (asyncStatus != null) {
-                    long processed = 0;
-                    for (Map.Entry<PipesResult.STATUS, Long> e : asyncStatus.getStatusCounts().entrySet()) {
-                        processed += e.getValue();
-                    }
-                    LOGGER.debug("processed {}", asyncStatus);
-                    long total = asyncStatus.getTotalCountResult().getTotalCount();
-                    if (processed > total) {
-                        total = processed;
-                    }
-                    if (asyncStatus.getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
-                        progressValue.set(1.0f);
-                        mutableStatus.set(BatchProcess.STATUS.COMPLETE);
-                        tikaController.updateButtons(BatchProcess.STATUS.COMPLETE);
-                        return 1;
-                    } else if (total > 0) {
-                        float percentage = ((float) processed / (float) total);
-                        LOGGER.debug("setting {} :: {} / {}", percentage,
-                                processed, total);
-                        progressValue.set(percentage);
-                    }
+                LOGGER.debug("processed {}", asyncStatus);
+                long total = asyncStatus.getTotalCountResult().getTotalCount();
+                if (processed > total) {
+                    total = processed;
                 }
+                if (asyncStatus.getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
+                    progressValue.set(1.0f);
+                    tikaController.updateButtons(BatchProcess.STATUS.COMPLETE);
+                    return 1;
+                } else if (total > 0) {
+                    float percentage = ((float) processed / (float) total);
+                    LOGGER.debug("setting {} :: {} / {}", percentage, processed, total);
+                    progressValue.set(percentage);
+                }
+            }
+            batchProcess.checkBatchRunnerStatus();
+            System.out.println("status: " + batchProcess.getMutableStatus());
+
+            BatchProcess.STATUS status = batchProcess.getMutableStatus().get();
+            if (status == BatchProcess.STATUS.ERROR) {
+                Optional<Exception> exception = batchProcess.getJvmException();
+                if (exception.isPresent()) {
+                    ControllerBase.alertStackTrace("Batch process failed",
+                            "Batch process failed", "Serious problem",
+                            exception.get());
+                } else {
+                    ControllerBase.alert("Batch process failed", "Batch process failed",
+                            "Batch process failed with no thrown exception. " +
+                                    "Check logs. I'm sorry.");
+                }
+                return 1;
+            }
+            if (status != BatchProcess.STATUS.READY && status != BatchProcess.STATUS.RUNNING) {
+                LOGGER.debug("status updater sees status {}", status);
+                return 1;
             }
             Thread.sleep(1000);
         }

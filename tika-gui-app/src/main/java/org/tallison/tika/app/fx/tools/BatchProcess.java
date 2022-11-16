@@ -25,9 +25,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -47,14 +49,22 @@ import org.apache.tika.utils.StringUtils;
 
 public class BatchProcess {
 
+    public enum STATUS {
+        READY, ERROR, RUNNING, COMPLETE, CANCELED;
+    }
+
+    private enum PROCESS_ID {
+        BATCH_PROCESS
+    }
+
     private static Logger LOGGER = LogManager.getLogger(BatchProcess.class);
 
-    private final MutableStatus mutableStatus;
+    private final MutableStatus mutableStatus = new MutableStatus(STATUS.READY);
     private long runningProcessId = -1;
     private Path configFile;
     private BatchRunner batchRunner = null;
 
-    private Optional<Exception> jvmStartException = Optional.empty();
+    private Optional<Exception> jvmException = Optional.empty();
 
     private ObjectMapper objectMapper = JsonMapper.builder()
             .addModule(new JavaTimeModule())
@@ -66,12 +76,6 @@ public class BatchProcess {
     });
     private ExecutorCompletionService<Integer> executorCompletionService =
             new ExecutorCompletionService<>(daemonExecutorService);
-    public BatchProcess() {
-        this(new MutableStatus(STATUS.READY));
-    }
-    public BatchProcess(MutableStatus mutableStatus) {
-        this.mutableStatus = mutableStatus;
-    }
 
     public synchronized void start(BatchProcessConfig batchProcessConfig, StatusUpdater statusUpdater)
             throws TikaException, IOException {
@@ -144,37 +148,32 @@ public class BatchProcess {
             return Optional.empty();
         }
         try {
-            return Optional.of(objectMapper.readValue(AppContext.BATCH_STATUS_PATH.toFile(),
-                    AsyncStatus.class));
+            AsyncStatus asyncStatus = objectMapper.readValue(AppContext.BATCH_STATUS_PATH.toFile(),
+                    AsyncStatus.class);
+            if (asyncStatus.getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
+                mutableStatus.set(BatchProcess.STATUS.COMPLETE);
+            }
+            return Optional.of(asyncStatus);
         } catch (IOException e) {
             LOGGER.warn("couldn't read status file", e);
             return Optional.empty();
         }
-        //TODO -- fix this
-        //we need to check that the pid matches and that the status
-        //of that process is in alignment with what the AsyncProcessor is reporting
-        /*
-        if (status == STATUS.COMPLETE) {
-            return status;
-        }
-        if (batchRunner != null && batchRunner.process != null) {
-            if (batchRunner.process.isAlive()) {
-                status = STATUS.RUNNING;
-                return STATUS.RUNNING;
-            } else {
-                status = STATUS.COMPLETE;
-                return STATUS.COMPLETE;
+    }
+
+    public void checkBatchRunnerStatus() {
+        try {
+            Future<Integer> future = executorCompletionService.poll();
+            System.out.println("executor service shutdown: " + daemonExecutorService.isShutdown());
+            if (future != null) {
+                Integer i = future.get();
+                System.out.println("completed: " + i);
             }
+        } catch (InterruptedException e) {
+            LOGGER.warn("interrupted?!");
+        } catch (ExecutionException e) {
+            mutableStatus.set(STATUS.ERROR);
+            jvmException = Optional.of(e);
         }
-        if (runningProcessId > -1l) {
-            ProcessHandle handle = ProcessHandle.of(runningProcessId).get();
-            if (handle != null) {
-                if (handle.isAlive()) {
-                    return STATUS.RUNNING;
-                }
-            }
-        }
-        return status;*/
     }
 
     public void close() {
@@ -200,18 +199,8 @@ public class BatchProcess {
         return mutableStatus;
     }
 
-    public Optional<Exception> getJvmStartException() {
-        return jvmStartException;
-    }
-
-
-
-    public enum STATUS {
-        READY, FAILED_START, ERROR, RUNNING, COMPLETE, CANCELED;
-    }
-
-    private enum PROCESS_ID {
-        BATCH_PROCESS
+    public Optional<Exception> getJvmException() {
+        return jvmException;
     }
 
     private class BatchRunner implements Callable<Integer> {
@@ -227,17 +216,10 @@ public class BatchProcess {
         @Override
         public Integer call() throws Exception {
             List<String> commandLine = buildCommandLine();
-            try {
-                process = new ProcessBuilder(commandLine)
+            process = new ProcessBuilder(commandLine)
                         //.inheritIO() //TODO -- for dev purposes only
                         .start();
-                mutableStatus.set(STATUS.RUNNING);
-            } catch (Exception e) {
-                jvmStartException = Optional.of(e);
-                mutableStatus.set(STATUS.FAILED_START);
-                LOGGER.warn("failed to start", e);
-                throw e;
-            }
+            mutableStatus.set(STATUS.RUNNING);
             if (LOGGER.isTraceEnabled()) {
                 LOGGER.trace("process {}", process.isAlive());
                 LOGGER.trace("pid {}", process.pid());
@@ -270,7 +252,8 @@ public class BatchProcess {
                         isgThread.join(10000);
                         String error = StringUtils.joinWith("\n", errorGobbler.getLines());
                         String out = StringUtils.joinWith("\n", inputStreamGobbler.getLines());
-                        LOGGER.warn("stdout {}\nstderr {}", out, error);
+                        LOGGER.warn("process ended with a surprising exit value" +
+                                "({})\nstdout: {}\nstderr: {}", process.exitValue(), out, error);
                     }
                     CSVEmitterHelper.writeCSV(AppContext.getInstance());
                     return PROCESS_ID.BATCH_PROCESS.ordinal();

@@ -27,7 +27,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 
 public class ControllerBase {
-    public void alert(String title, String header, String content) {
+    public static void alert(String title, String header, String content) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(title);
         alert.setHeaderText(header);
@@ -38,7 +38,7 @@ public class ControllerBase {
         alert.showAndWait();
     }
 
-    public void alertStackTrace(String title, String header, String content, Throwable t) {
+    public static void alertStackTrace(String title, String header, String content, Throwable t) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(header);

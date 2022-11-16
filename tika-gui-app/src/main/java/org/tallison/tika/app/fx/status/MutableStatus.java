@@ -33,4 +33,9 @@ public class MutableStatus {
     public BatchProcess.STATUS get() {
         return status;
     }
+
+    @Override
+    public String toString() {
+        return "MutableStatus{" + "status=" + status + '}';
+    }
 }
