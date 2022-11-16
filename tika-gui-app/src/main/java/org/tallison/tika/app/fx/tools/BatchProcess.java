@@ -65,7 +65,7 @@ public class BatchProcess {
     private BatchRunner batchRunner = null;
 
     private Optional<Exception> jvmException = Optional.empty();
-
+    private Optional<String> jvmErrorMsg = Optional.empty();
     private ObjectMapper objectMapper = JsonMapper.builder()
             .addModule(new JavaTimeModule())
             .build();
@@ -203,6 +203,10 @@ public class BatchProcess {
         return jvmException;
     }
 
+    public Optional<String> getJvmErrorMsg() {
+        return jvmErrorMsg;
+    }
+
     private class BatchRunner implements Callable<Integer> {
         private final Path tikaConfig;
         private final BatchProcessConfig batchProcessConfig;
@@ -252,8 +256,14 @@ public class BatchProcess {
                         isgThread.join(10000);
                         String error = StringUtils.joinWith("\n", errorGobbler.getLines());
                         String out = StringUtils.joinWith("\n", inputStreamGobbler.getLines());
+                        String msg = "process ended with a surprising exit value (" +
+                                process.exitValue() + ")\nstdout: " + out + "\nstderr: " + error;
                         LOGGER.warn("process ended with a surprising exit value" +
                                 "({})\nstdout: {}\nstderr: {}", process.exitValue(), out, error);
+                        jvmErrorMsg = Optional.of(msg);
+                        mutableStatus.set(STATUS.ERROR);
+                    } else {
+                        mutableStatus.set(STATUS.COMPLETE);
                     }
                     CSVEmitterHelper.writeCSV(AppContext.getInstance());
                     return PROCESS_ID.BATCH_PROCESS.ordinal();

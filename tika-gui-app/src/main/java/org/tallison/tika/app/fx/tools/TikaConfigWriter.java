@@ -124,9 +124,9 @@ public class TikaConfigWriter {
         async = async.replace("{EMIT_WITHIN_MS}",
                 Long.toString(bpc.getEmitWithinMs()));
         async = async.replace("{TOTAL_EMIT_THRESHOLD}",
-                Long.toString((long)bpc.getTotalEmitThesholdMb() * 1024l * 1024l));
+                Long.toString((long)bpc.getTotalEmitThesholdMb() ));
         async = async.replace("{PER_FILE_EMIT_THRESHOLD}",
-                Long.toString((long)bpc.getPerFileEmitThresholdMb() * 1024l * 1024l));
+                Long.toString((long)bpc.getPerFileEmitThresholdMb()));
 
         async = async.replace("{CLASS_PATH}", buildClassPath(bpc));
         sb.append(async).append("\n");

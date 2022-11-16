@@ -66,13 +66,9 @@ public class StatusUpdater implements Callable<Integer> {
                 if (processed > total) {
                     total = processed;
                 }
-                if (asyncStatus.getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
-                    progressValue.set(1.0f);
-                    tikaController.updateButtons(BatchProcess.STATUS.COMPLETE);
-                    return 1;
-                } else if (total > 0) {
+                if (total > 0) {
                     float percentage = ((float) processed / (float) total);
-                    LOGGER.debug("setting {} :: {} / {}", percentage, processed, total);
+                    LOGGER.trace("setting {} :: {} / {}", percentage, processed, total);
                     progressValue.set(percentage);
                 }
             }
@@ -82,15 +78,24 @@ public class StatusUpdater implements Callable<Integer> {
             BatchProcess.STATUS status = batchProcess.getMutableStatus().get();
             if (status == BatchProcess.STATUS.ERROR) {
                 Optional<Exception> exception = batchProcess.getJvmException();
+                Optional<String> jvmError = batchProcess.getJvmErrorMsg();
                 if (exception.isPresent()) {
                     ControllerBase.alertStackTrace("Batch process failed",
                             "Batch process failed", "Serious problem",
                             exception.get());
+                } else if (jvmError.isPresent()) {
+                    ControllerBase.alert("Batch process failed", "Batch process failed",
+                            jvmError.get());
                 } else {
                     ControllerBase.alert("Batch process failed", "Batch process failed",
                             "Batch process failed with no thrown exception. " +
                                     "Check logs. I'm sorry.");
                 }
+                return 1;
+            }
+            if (asyncStatusOptional.isPresent() && asyncStatusOptional.get().getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
+                progressValue.set(1.0f);
+                tikaController.updateButtons(BatchProcess.STATUS.COMPLETE);
                 return 1;
             }
             if (status != BatchProcess.STATUS.READY && status != BatchProcess.STATUS.RUNNING) {
