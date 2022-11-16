@@ -238,10 +238,10 @@ public class BatchProcess {
                 LOGGER.warn("failed to start", e);
                 throw e;
             }
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("process {}", process.isAlive());
-                LOGGER.debug("pid {}", process.pid());
-                LOGGER.debug("info {}", process.info());
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("process {}", process.isAlive());
+                LOGGER.trace("pid {}", process.pid());
+                LOGGER.trace("info {}", process.info());
             }
             StreamGobbler inputStreamGobbler = new StreamGobbler(process.getInputStream(), 100000);
             StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), 100000);
@@ -257,10 +257,10 @@ public class BatchProcess {
 
             int i = 0;
             while (true) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("process {} {}", ++i, process.isAlive());
-                    LOGGER.debug("pid {}", process.pid());
-                    LOGGER.debug("info {}", process.info());
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("process {} {}", ++i, process.isAlive());
+                    LOGGER.trace("pid {}", process.pid());
+                    LOGGER.trace("info {}", process.info());
                 }
                 if (!process.isAlive()) {
                     if (process.exitValue() != 0) {
