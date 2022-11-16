@@ -23,8 +23,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -169,5 +171,41 @@ public abstract class AbstractEmitterController extends ControllerBase {
                     metadataRow.getOutput(), metadataRow.getProperty()));
         }
         emitter.setMetadataTuples(metadataTuples);
+    }
+
+    /**
+     * This checks for empty keys and duplicate output keys
+     * @return
+     */
+    protected boolean validateMetadataRows() {
+
+        //Set<String> tika = new HashSet<>();
+        //duplicate tika keys are ok?
+        Set<String> output = new HashSet<>();
+        int i = 0;
+        for (MetadataRow row : metadataRows) {
+            String t = row.getTika();
+            if (StringUtils.isBlank(t)) {
+                alert("Blank Tika key", "Blank Tika key",
+                        "There's an empty Tika key in row " + i +
+                        ". The output value is: " + row.getOutput());
+                return false;
+            }
+            String o = row.getOutput();
+            if (StringUtils.isBlank(t)) {
+                alert("Blank output key", "Blank output key",
+                        "There's an empty output key in row " + i +
+                                ". The Tika value is: " + row.getTika());
+                return false;
+            } else {
+                if (output.contains(o)) {
+                    alert("Duplicate output key", "Duplicate output key",
+                            "There's a duplicate output key '" + o + "'");
+                    return false;
+                }
+            }
+            i++;
+        }
+        return true;
     }
 }

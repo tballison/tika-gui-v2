@@ -50,6 +50,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
     private enum VALIDITY {
         NO_CONNECTION_STRING,
         METADATA_NOT_CONFIGURED,
+        METADATA_ANOMALY,
         FAILED_TO_CONNECT,
         VALID,
         COLUMN_MISMATCH,
@@ -159,6 +160,8 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
     public void updateJDBC(ActionEvent actionEvent) {
         VALIDITY validity = validate();
         switch (validity) {
+            case METADATA_ANOMALY:
+                break;
             case VALID:
                 if (StringUtils.isBlank(insertSql)) {
                     insertSql = createInsertString();
@@ -271,6 +274,10 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         if (getMetadataRows().size() == 0) {
             return VALIDITY.METADATA_NOT_CONFIGURED;
         }
+        boolean validMetadata = validateMetadata();
+        if (! validMetadata) {
+            return VALIDITY.METADATA_ANOMALY;
+        }
 
         String connectionString = jdbcConnection.getText();
         if (StringUtils.isBlank(connectionString)) {
@@ -312,6 +319,10 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             LOGGER.warn("failed to validate", e);
             return VALIDITY.SQL_EXCEPTION;
         }
+    }
+
+    private boolean validateMetadata() {
+        return validateMetadataRows();
     }
 
     private boolean validateColumns(ResultSetMetaData metaData) throws SQLException {
