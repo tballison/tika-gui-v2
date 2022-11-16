@@ -83,7 +83,6 @@ public class SnapshotParser {
                     String digestString = IOUtils.toString(new URL(url), StandardCharsets.UTF_8);
                     digests.put(digest, digestString);
                 }
-                System.out.println("urls " + url);
             }
         }
         return new SnapshotResult(version, jarUrl, digests);

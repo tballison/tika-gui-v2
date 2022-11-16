@@ -116,7 +116,6 @@ public class ZuluDownloader {
                         Matcher os = OS_ARCH_PKG.matcher(u);
                         if (os.find()) {
                             String osArchPkg = os.group(1);
-                            System.out.println("\"" + osArchPkg + "\",");// + " :: " + sha + " " +
                             if (OS_ARCH_PKG_SET.contains(osArchPkg)) {
                                 downloadTuples.add(new DownloadTuple(osArchPkg, sha, u));
                             }
