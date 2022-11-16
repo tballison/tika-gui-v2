@@ -1,4 +1,7 @@
 <metadataFilters>
+  <!-- this sets a "location" field as a concatenation of latitude,longitude
+       when those exist -->
+  <metadataFilter class="org.apache.tika.metadata.filter.GeoPointMetadataFilter"/>
   <!-- depending on the file format, some dates do not have a timezone. This
          filter arbitrarily assumes dates have a UTC timezone and will format all
          dates as yyyy-MM-dd'T'HH:mm:ss'Z' whether or not they actually have a timezone.
