@@ -163,9 +163,9 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             case METADATA_ANOMALY:
                 break;
             case VALID:
-                if (StringUtils.isBlank(insertSql)) {
-                    insertSql = createInsertString();
-                }
+                //recreate it every time
+                insertSql = createInsertString();
+                LOGGER.debug("insert sql: " + insertSql);
                 saveState();
                 ((Stage)updateJDBC.getScene().getWindow()).close();
                 return;
