@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.tallison.tika.gui.tools.deprecated;
+package org.tallison.tika.gui.tools;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +26,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.io.FileUtils;
 
 /**
  * this should have been a batch script.
@@ -120,6 +122,7 @@ public class PackageBinaries {
 
     public static void main(String[] args) throws Exception {
         Path target = Paths.get(args[0]);
+        FileUtils.deleteDirectory(target.toFile());
 
         for (Map.Entry<String, String> e : JARS_TO_PATH.entrySet()) {
             try {
