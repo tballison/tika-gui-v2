@@ -93,7 +93,8 @@ public class StatusUpdater implements Callable<Integer> {
                 }
                 return 1;
             }
-            if (asyncStatusOptional.isPresent() && asyncStatusOptional.get().getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
+            if (asyncStatusOptional.isPresent() &&
+                    asyncStatusOptional.get().getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
                 progressValue.set(1.0f);
                 tikaController.updateButtons(BatchProcess.STATUS.COMPLETE);
                 return 1;
