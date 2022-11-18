@@ -475,7 +475,7 @@
                 </goals>
                 <configuration>
                   <url>https://cdn.azul.com/zulu/bin/zulu17.38.21-ca-fx-jre17.0.5-win_x64.zip</url>
-                  <unpack>false</unpack>
+                  <unpack>true</unpack>
                   <outputDirectory>${project.build.directory}/jres/win_x64</outputDirectory>
                   <sha256>0b911d9774223d4f3fe6699ea3902747caa434094d4cf2a8c96bbfb6f16045ff</sha256>
                 </configuration>
@@ -488,7 +488,7 @@
                 </goals>
                 <configuration>
                   <url>https://cdn.azul.com/zulu/bin/zulu17.38.21-ca-fx-jre17.0.5-linux_x64.tar.gz</url>
-                  <unpack>false</unpack>
+                  <unpack>true</unpack>
                   <outputDirectory>${project.build.directory}/jres/linux_x64</outputDirectory>
                   <sha256>50c9a14c44823db4e789e1ac7b2253f0194f9177e11c9fe6648089be3d611c97</sha256>
                 </configuration>

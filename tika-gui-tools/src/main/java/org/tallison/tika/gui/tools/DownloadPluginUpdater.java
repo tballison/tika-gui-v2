@@ -165,6 +165,9 @@ public class DownloadPluginUpdater {
                 t = t.replace("{SHA256}", p.sha256);
                 t = t.replace("{URL}", p.url);
                 t = t.replace("{SUB_DIR}", osArch);
+                if (osArch.equals("linux_x64") || osArch.equals("win_x64")) {
+                    t = t.replace("<unpack>false</unpack>", "<unpack>true</unpack>");
+                }
                 sb.append(t);
             }
         }
