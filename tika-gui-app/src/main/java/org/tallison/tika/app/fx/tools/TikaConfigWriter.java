@@ -308,6 +308,9 @@ public class TikaConfigWriter {
         ConfigItem emitter = configItem.get();
         Optional<List<MetadataTuple>> metadataTuples = emitter.getMetadataTuples();
         if (metadataTuples.isEmpty() || metadataTuples.get().size() == 0) {
+            //add templated metadata filters
+            template = template.replace("{MAPPING_FILTER}", "");
+            tikaConfigBuilder.append(template).append("\n");
             return;
         }
 

@@ -35,8 +35,9 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="360.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.emitters.CSVEmitterController">
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="360.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.emitters.CSVEmitterController">
   <children>
     <Accordion fx:id="csvAccordion" layoutX="1.0" layoutY="5.0" prefHeight="359.0" prefWidth="586.0">
       <panes>
@@ -46,9 +47,14 @@
               <children>
                 <Label layoutX="61.0" layoutY="54.0" text="File Name" />
                 <Label layoutX="61.0" layoutY="93.0" text="Directory" />
-                <TextField fx:id="csvFileName" layoutX="191.0" layoutY="50.0" text="tika-extracts.csv" />
-                <Button layoutX="191.0" layoutY="89.0" mnemonicParsing="false" onAction="#selectCSVOutputDirectory" prefHeight="26.0" prefWidth="84.0" text="Choose" />
-                <Button fx:id="updateCSV" layoutX="244.0" layoutY="161.0" mnemonicParsing="false" onAction="#updateCSV" text="Update" />
+                <TextField fx:id="csvFileName" layoutX="142.0" layoutY="50.0" prefHeight="26.0" prefWidth="209.0" text="tika-extracts.csv" />
+                <Button layoutX="460.0" layoutY="89.0" mnemonicParsing="false" onAction="#selectCSVOutputDirectory" prefHeight="26.0" prefWidth="84.0" text="Choose" />
+                <Button fx:id="updateCSV" layoutX="377.0" layoutY="159.0" mnemonicParsing="false" onAction="#updateCSV" text="Validate" />
+                        <TextField fx:id="csvDirectory" editable="false" layoutX="145.0" layoutY="89.0" prefHeight="26.0" prefWidth="294.0" />
+                <!-- https://kordamp.org/ikonli/cheat-sheet-antdesignicons.html -->
+                <FontIcon fx:id="readyIcon" iconColor="green" iconLiteral="anto-check-circle" iconSize="30" layoutX="461.0" layoutY="185.0" text="" visible="false" wrappingWidth="17.0" />
+                <FontIcon fx:id="notReadyIcon" iconColor="red" iconLiteral="anto-question-circle" iconSize="30" layoutX="461.0" layoutY="185.0" visible="true" />
+
               </children>
             </AnchorPane>
           </content>
@@ -61,7 +67,7 @@
               </padding>
               <TableView fx:id="tableView" editable="true" items="${controller.metadataRows}" prefHeight="200.0" prefWidth="580.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
                 <columns>
-                  <TableColumn fx:id="tikaMetadataColumn" prefWidth="253.0" text="Tika Metadata Key">
+                  <TableColumn fx:id="tikaMetadataColumn" prefWidth="275.0" text="Tika Metadata Key">
                     <cellValueFactory>
                       <PropertyValueFactory property="tika" />
                     </cellValueFactory>
@@ -69,7 +75,7 @@
                       <TextFieldTableCell fx:factory="forTableColumn" />
                     </cellFactory>
                   </TableColumn>
-                  <TableColumn fx:id="outputMetadataColumn" prefWidth="219.0" text="Output Metadata Key">
+                  <TableColumn fx:id="outputMetadataColumn" prefWidth="280.0" text="Output Metadata Key">
                     <cellValueFactory>
                       <PropertyValueFactory property="output" />
                     </cellValueFactory>
@@ -77,14 +83,14 @@
                       <TextFieldTableCell fx:factory="forTableColumn" />
                     </cellFactory>
                   </TableColumn>
-                  <TableColumn fx:id="propertyColumn" prefWidth="106.0" text="Max Length">
+<!--                  <TableColumn fx:id="propertyColumn" prefWidth="106.0" text="Max Length">
                     <cellValueFactory>
                       <PropertyValueFactory property="property" />
                     </cellValueFactory>
                     <cellFactory>
                       <TextFieldTableCell fx:factory="forTableColumn" />
                     </cellFactory>
-                  </TableColumn>
+                  </TableColumn>-->
                 </columns>
                 <items>
                   <FXCollections fx:id="backingData" fx:factory="observableArrayList">

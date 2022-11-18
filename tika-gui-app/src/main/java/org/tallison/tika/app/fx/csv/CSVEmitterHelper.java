@@ -61,7 +61,7 @@ public class CSVEmitterHelper {
         emitter.getAttributes().put(Constants.CSV_JDBC_CONNECTION_STRING, connectionString);
     }
 
-    public static void createTable(ConfigItem emitter) {
+    public static void createTable(ConfigItem emitter) throws SQLException {
         String tableName = Constants.CSV_DB_TABLE_NAME;
         String sql = "drop table if exists " + tableName;
         StringBuilder createTable = new StringBuilder();
@@ -79,10 +79,7 @@ public class CSVEmitterHelper {
                 st.execute(sql);
                 st.execute(createTable.toString());
             }
-        } catch (SQLException e) {
-            LOGGER.warn("couldn't create table", e);
         }
-
     }
 
     public static void writeCSV(AppContext appContext) {

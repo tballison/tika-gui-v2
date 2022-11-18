@@ -19,27 +19,33 @@ package org.tallison.tika.app.fx.emitters;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
+import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.Accordion;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.kordamp.ikonli.javafx.FontIcon;
 import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.csv.CSVEmitterHelper;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
@@ -52,7 +58,10 @@ import org.apache.tika.utils.StringUtils;
 public class CSVEmitterController extends AbstractEmitterController implements Initializable {
 
     private final static int TAB_INDEX = 1;
-    private static Logger LOGGER = LogManager.getLogger(OpenSearchEmitterController.class);
+
+    private static String ALERT_TITLE = "JDBC Emitter";
+
+    private static Logger LOGGER = LogManager.getLogger(CSVEmitterController.class);
 
     @FXML
     private TextField csvFileName;
@@ -60,6 +69,17 @@ public class CSVEmitterController extends AbstractEmitterController implements I
     @FXML
     private Button updateCSV;
 
+    @FXML
+    private Accordion csvAccordion;
+
+    @FXML
+    private FontIcon readyIcon;
+
+    @FXML
+    private FontIcon notReadyIcon;
+
+    @FXML
+    private TextField csvDirectory;
 
 
     private Optional<File> csvWorkingDirectory = Optional.empty();
@@ -90,6 +110,7 @@ public class CSVEmitterController extends AbstractEmitterController implements I
             File directory = new File(emitter.getAttributes().get(Constants.BASE_PATH));
             if (directory.isDirectory()) {
                 this.csvWorkingDirectory = Optional.of(directory);
+                this.csvDirectory.setText(directory.getName());
             }
         }
         if (emitter.getAttributes().containsKey(Constants.CSV_FILE_NAME)) {
@@ -97,6 +118,9 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         }
 
         safelySetCsvMetadataPath(emitter.getAttributes().get(Constants.CSV_METADATA_PATH));
+
+        //Not clear why expanded=true is not working in fxml
+        csvAccordion.setExpandedPane(csvAccordion.getPanes().get(0));
 
     }
 
@@ -130,6 +154,7 @@ public class CSVEmitterController extends AbstractEmitterController implements I
             return;
         }
         this.csvWorkingDirectory = Optional.of(directory);
+        this.csvDirectory.setText(directory.getName());
     }
 
 
@@ -179,13 +204,6 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         batchProcessConfig.setEmitter(emitter);
         //TODO -- do better than hard coding indices
         batchProcessConfig.setOutputSelectedTab(TAB_INDEX);
-        try {
-            CSVEmitterHelper.setUp(emitter);
-        } catch (IOException e) {
-            LOGGER.error("can't create tmp directory");
-            return;
-        }
-        CSVEmitterHelper.createTable(emitter);
         APP_CONTEXT.saveState();
     }
 
@@ -214,6 +232,89 @@ public class CSVEmitterController extends AbstractEmitterController implements I
 
     public void updateCSV(ActionEvent actionEvent) {
         saveState();
+
+        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
+            return;
+        }
+        if (APP_CONTEXT.getBatchProcessConfig().get().getEmitter().isEmpty()) {
+            return;
+        }
+        ConfigItem emitter = APP_CONTEXT.getBatchProcessConfig().get().getEmitter().get();
+        Map<String, String> attributes = emitter.getAttributes();
+        try {
+            CSVEmitterHelper.setUp(emitter);
+        } catch (IOException e) {
+            LOGGER.error("can't create tmp directory");
+            return;
+        }
+        String csvDir = attributes.get(Constants.BASE_PATH);
+        if (StringUtils.isBlank(csvDir)) {
+            return;
+        }
+        Path basePath = Paths.get(csvDir);
+        if (!Files.isDirectory(basePath)) {
+            try {
+                Files.createDirectories(basePath);
+            } catch (IOException e) {
+                alertStackTrace("Can't create directory", "Can't create directory for csv",
+                        "Can't create " + basePath.toAbsolutePath(), e);
+                actionEvent.consume();
+                return;
+            }
+        }
+        String csvFileName = attributes.get(Constants.CSV_FILE_NAME);
+        if (StringUtils.isBlank(csvFileName)) {
+            LOGGER.debug("empty csv file name");
+            return;
+        }
+        Path csvFile = basePath.resolve(csvFileName);
+        boolean success = true;
+        if (Files.isRegularFile(csvFile)) {
+            success = deleteCSVFileDialog(csvFile);
+        }
+        if (! success) {
+            LOGGER.warn("didn't delete csv file");
+            actionEvent.consume();
+            return;
+        }
+
+        try {
+            CSVEmitterHelper.createTable(emitter);
+        } catch (SQLException e) {
+            alertStackTrace("Couldn't create tmp table", "Couldn't create tmp table",
+                    "Couldn't create tmp table", e);
+            actionEvent.consume();
+            return;
+        }
+        LOGGER.debug("success, all good; close window");
+        readyIcon.setVisible(true);
+        notReadyIcon.setVisible(false);
+
         ((Stage)updateCSV.getScene().getWindow()).close();
+    }
+
+    private boolean deleteCSVFileDialog(Path csvFile) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(ALERT_TITLE);
+        alert.setContentText("CSV file (" + csvFile.getFileName() + ") exists. Delete it?");
+        ButtonType dropButton = new ButtonType("Delete CSV file", ButtonBar.ButtonData.YES);
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        alert.getButtonTypes().setAll(dropButton, cancelButton);
+        final AtomicBoolean success = new AtomicBoolean(false);
+        alert.showAndWait().ifPresent(type -> {
+            if (type.getText().startsWith("Delete")) {
+                try {
+                    Files.delete(csvFile);
+                    success.set(true);
+                } catch (IOException e) {
+                    alert(ALERT_TITLE, "Couldn't delete csv file", "Couldn't delete file: " +
+                            csvFile.toAbsolutePath());
+                }
+            } else if (type.getText().startsWith("Cancel")) {
+                return;
+            }
+        });
+        return success.get();
     }
 }
