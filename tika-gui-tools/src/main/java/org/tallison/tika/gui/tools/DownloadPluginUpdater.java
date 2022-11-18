@@ -129,6 +129,7 @@ public class DownloadPluginUpdater {
             t = t.replace("{MD5}", md5);
             t = t.replace("{URL}", url);
             t = t.replace("{SUB_DIR}", (String)subdir);
+            System.out.println(id + " " + md5 + " : " + url);
             sb.append(t);
         }
     }
