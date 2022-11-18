@@ -17,7 +17,9 @@
 package org.tallison.tika.app.fx.tools;
 
 import static org.tallison.tika.app.fx.Constants.BASE_PATH;
+import static org.tallison.tika.app.fx.Constants.CSV_EMITTER_CLASS;
 import static org.tallison.tika.app.fx.Constants.JDBC_CONNECTION_STRING;
+import static org.tallison.tika.app.fx.Constants.JDBC_EMITTER_CLASS;
 import static org.tallison.tika.app.fx.Constants.JDBC_INSERT_SQL;
 import static org.tallison.tika.app.fx.Constants.NO_DIGEST;
 import static org.tallison.tika.app.fx.Constants.OPEN_SEARCH_PW;
@@ -48,10 +50,10 @@ import org.apache.tika.utils.StringUtils;
 /**
  * This is an embarrassment of hardcoding.  Need to figure out better
  * solution...
- *
+ * <p>
  * This also requires knowledge of all fetchers/emitters in one class. This is, erm,
  * less than entirely ideal.
- *
+ * <p>
  * This is also does not escape xml characters.  So, bad, very, very bad.
  */
 public class TikaConfigWriter {
@@ -106,30 +108,40 @@ public class TikaConfigWriter {
         sb.append(async).append("\n");
     }
 
-    private void appendAsync(BatchProcessConfig bpc, StringBuilder sb)
-            throws IOException {
+    private void appendAsync(BatchProcessConfig bpc, StringBuilder sb) throws IOException {
         String async = getTemplate("async.xml");
         async = async.replace("{JAVA_PATH}",
                 AppContext.getInstance().getJavaHome().resolve("java").toString());
-        async = async.replace("{NUM_CLIENTS}",
-                Integer.toString(bpc.getNumProcesses()));
-        async = async.replace("{XMX}", "-Xmx" +
-                bpc.getMaxMemMb() + "m");
+        async = async.replace("{NUM_CLIENTS}", Integer.toString(bpc.getNumProcesses()));
+        async = async.replace("{XMX}", "-Xmx" + bpc.getMaxMemMb() + "m");
         async = async.replace("{ASYNC_LOG}",
                 AppContext.ASYNC_LOG4J2_PATH.toAbsolutePath().toString());
-        async = async.replace("{TIMEOUT_MS}",
-                Long.toString(bpc.getParseTimeoutSeconds() * 1000));
+        async = async.replace("{TIMEOUT_MS}", Long.toString(bpc.getParseTimeoutSeconds() * 1000));
         async = async.replace("{STATUS_FILE}",
                 AppContext.BATCH_STATUS_PATH.toAbsolutePath().toString());
-        async = async.replace("{EMIT_WITHIN_MS}",
-                Long.toString(bpc.getEmitWithinMs()));
+        async = async.replace("{EMIT_WITHIN_MS}", Long.toString(bpc.getEmitWithinMs()));
         async = async.replace("{TOTAL_EMIT_THRESHOLD}",
-                Long.toString((long)bpc.getTotalEmitThesholdMb() ));
+                Long.toString((long) bpc.getTotalEmitThesholdMb()));
         async = async.replace("{PER_FILE_EMIT_THRESHOLD}",
-                Long.toString((long)bpc.getPerFileEmitThresholdMb()));
+                Long.toString((long) bpc.getPerFileEmitThresholdMb()));
 
         async = async.replace("{CLASS_PATH}", buildClassPath(bpc));
+        async = addReporters(bpc, async);
         sb.append(async).append("\n");
+    }
+
+    private String addReporters(BatchProcessConfig bpc, String async) throws IOException {
+        //TODO -- add opensearch
+        if (bpc.getEmitter().isEmpty() ||
+                (!bpc.getEmitter().get().getClazz().equals(JDBC_EMITTER_CLASS) &&
+                        !bpc.getEmitter().get().getClazz().equals(CSV_EMITTER_CLASS))) {
+            return async.replace("{JDBC_PIPES_REPORTER}", "");
+        }
+        String jdbcPipesReporter = getTemplate("jdbc-pipes-reporter.xml");
+        ConfigItem emitter = bpc.getEmitter().get();
+        String connectionString = emitter.getAttributes().get(JDBC_CONNECTION_STRING);
+        jdbcPipesReporter = jdbcPipesReporter.replace("{CONNECTION_STRING}", connectionString);
+        return async.replace("{JDBC_PIPES_REPORTER}", jdbcPipesReporter);
     }
 
     private String buildClassPath(BatchProcessConfig batchProcessConfig) {
@@ -209,14 +221,12 @@ public class TikaConfigWriter {
             template = template.replace("{USER_NAME}", "");
             template = template.replace("{PASSWORD}", "");
         } else {
-            template = template.replace("{USER_NAME}",
-                    "<userName>" + userName + "</userName>");
-            template = template.replace("{PASSWORD}",
-                    "<password>" + password + "</password>");
+            template = template.replace("{USER_NAME}", "<userName>" + userName + "</userName>");
+            template = template.replace("{PASSWORD}", "<password>" + password + "</password>");
         }
 
-        template = template.replace("{OPENSEARCH_URL}",
-                emitter.getAttributes().get(OPEN_SEARCH_URL));
+        template =
+                template.replace("{OPENSEARCH_URL}", emitter.getAttributes().get(OPEN_SEARCH_URL));
         template = template.replace("{UPDATE_STRATEGY}",
                 emitter.getAttributes().get(OPEN_SEARCH_UPDATE_STRATEGY));
         sb.append(template);
@@ -242,8 +252,7 @@ public class TikaConfigWriter {
                 appendFSFetcher(fetcher, sb);
                 break;
             default:
-                throw new RuntimeException("I regret I don't yet support " +
-                        fetcher.getClazz());
+                throw new RuntimeException("I regret I don't yet support " + fetcher.getClazz());
         }
     }
 
@@ -266,8 +275,8 @@ public class TikaConfigWriter {
                 appendFSPipesIterator(pipesIterator, sb);
                 break;
             default:
-                throw new RuntimeException("I regret I don't yet support " +
-                       pipesIterator.getClazz());
+                throw new RuntimeException(
+                        "I regret I don't yet support " + pipesIterator.getClazz());
         }
     }
 
@@ -301,7 +310,7 @@ public class TikaConfigWriter {
         sb.append("    <mappings>\n");
 
         metadataTuples.get().stream().forEach(e -> sb.append(
-                "      <mapping from=\"" + e.getTika() + "\" to=\"" + e.getOutput() + "\"/>"));
+                "      <mapping from=\"" + e.getTika() + "\" to=\"" + e.getOutput() + "\"/>\n"));
 
         sb.append("    </mappings>");
         sb.append("  </params>");

@@ -192,7 +192,7 @@ public abstract class AbstractEmitterController extends ControllerBase {
                 return false;
             }
             String o = row.getOutput();
-            if (StringUtils.isBlank(t)) {
+            if (StringUtils.isBlank(o)) {
                 alert("Blank output key", "Blank output key",
                         "There's an empty output key in row " + i +
                                 ". The Tika value is: " + row.getTika());
@@ -204,6 +204,7 @@ public abstract class AbstractEmitterController extends ControllerBase {
                     return false;
                 }
             }
+            output.add(o);
             i++;
         }
         return true;

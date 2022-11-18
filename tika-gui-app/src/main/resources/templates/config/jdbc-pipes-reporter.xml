@@ -1,0 +1,24 @@
+<pipesReporter class="org.apache.tika.pipes.reporters.jdbc.JDBCPipesReporter">
+  <params>
+    <connection>{CONNECTION_STRING}</connection>
+    <!-- for now, just include everything
+    <includes>
+      <include>FETCHER_INITIALIZATION_EXCEPTION</include>
+      <include>FETCH_EXCEPTION</include>
+      <include>EMPTY_OUTPUT</include>
+      <include>PARSE_EXCEPTION_NO_EMIT</include>
+      <include>PARSE_EXCEPTION_EMIT</include>
+      <include>PARSE_SUCCESS</include>
+      <include>PARSE_SUCCESS_WITH_EXCEPTION</include>
+      <include>OOM</include>
+      <include>TIMEOUT</include>
+      <include>UNSPECIFIED_CRASH</include>
+      <include>NO_EMITTER_FOUND</include>
+      <include>EMIT_SUCCESS</include>
+      <include>EMIT_SUCCESS_PARSE_EXCEPTION</include>
+      <include>EMIT_EXCEPTION</include>
+      <include>INTERRUPTED_EXCEPTION</include>
+      <include>NO_FETCHER_FOUND</include>
+    </includes> -->
+  </params>
+</pipesReporter>

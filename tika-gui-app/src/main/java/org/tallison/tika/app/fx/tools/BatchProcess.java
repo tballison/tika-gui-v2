@@ -221,7 +221,7 @@ public class BatchProcess {
         public Integer call() throws Exception {
             List<String> commandLine = buildCommandLine();
             process = new ProcessBuilder(commandLine)
-                        //.inheritIO() //TODO -- for dev purposes only
+                        .inheritIO() //TODO -- for dev purposes only
                         .start();
             mutableStatus.set(STATUS.RUNNING);
             if (LOGGER.isTraceEnabled()) {

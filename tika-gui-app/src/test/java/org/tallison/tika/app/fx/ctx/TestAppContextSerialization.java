@@ -22,9 +22,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.tools.BatchProcess;
+
+import org.apache.tika.pipes.PipesResult;
 
 public class TestAppContextSerialization {
 
@@ -51,5 +54,15 @@ public class TestAppContextSerialization {
         StringWriter writer = new StringWriter();
         objectMapper.writeValue(writer, appContext);
         AppContext deserialized = objectMapper.readValue(writer.toString(), AppContext.class);
+    }
+
+    @Test
+    @Disabled
+    public void one() throws Exception {
+        //this prints the available status codes for the tika-config.xml
+        //pipes reporter template
+        for (PipesResult.STATUS status : PipesResult.STATUS.values()) {
+            System.out.println("<include>" + status.name() + "</include>");
+        }
     }
 }

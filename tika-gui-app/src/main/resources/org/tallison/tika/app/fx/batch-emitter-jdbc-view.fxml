@@ -35,20 +35,24 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="360.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.emitters.JDBCEmitterController">
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="360.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.emitters.JDBCEmitterController">
   <children>
-    <Accordion fx:id="csvAccordion" layoutX="1.0" layoutY="5.0" prefHeight="359.0" prefWidth="586.0">
+    <Accordion fx:id="jdbcAccordion" layoutX="1.0" layoutY="5.0" prefHeight="359.0" prefWidth="586.0">
       <panes>
-        <TitledPane fx:id="files" animated="false" prefHeight="100.0" prefWidth="586.0" text="JDBC Connection">
+        <TitledPane fx:id="files" expanded="true" animated="false" prefHeight="100.0" prefWidth="586.0" text="JDBC Connection">
           <content>
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="200.0">
               <children>
-                <Label layoutX="61.0" layoutY="54.0" text="JDBC Connection String" />
-                <TextField fx:id="jdbcConnection" layoutX="210.0" layoutY="50.0" prefHeight="26.0" prefWidth="279.0" promptText="jdbc:sqlite:/data/sqlite/db/tika-extracts.db" />
-                <Button fx:id="updateJDBC" layoutX="321.0" layoutY="159.0" mnemonicParsing="false" onAction="#updateJDBC" text="Update" />
-                <Label layoutX="61.0" layoutY="99.0" text="Table Name" />
-                <TextField fx:id="tableName" layoutX="210.0" layoutY="95.0" prefHeight="26.0" prefWidth="279.0" text="tika_extracts" />
+                <Label layoutX="28.0" layoutY="55.0" text="JDBC Connection String" />
+                <TextField fx:id="jdbcConnection" layoutX="182.0" layoutY="51.0" prefHeight="26.0" prefWidth="322.0" promptText="jdbc:sqlite:/data/sqlite/db/tika-extracts.db" />
+                <Button fx:id="validateJDBC" layoutX="381.0" layoutY="159.0" mnemonicParsing="false" onAction="#validateJDBC" text="Validate" />
+                <Label layoutX="28.0" layoutY="100.0" text="Table Name" />
+                <TextField fx:id="tableName" layoutX="182.0" layoutY="96.0" prefHeight="26.0" prefWidth="159.0" text="tika_extracts" />
+                <!-- https://kordamp.org/ikonli/cheat-sheet-antdesignicons.html -->
+                <FontIcon fx:id="readyIcon" iconColor="green" iconLiteral="anto-check-circle" iconSize="30" layoutX="461.0" layoutY="185.0" text="" visible="false" wrappingWidth="17.0" />
+                <FontIcon fx:id="notReadyIcon" iconColor="red" iconLiteral="anto-question-circle" iconSize="30" layoutX="461.0" layoutY="185.0" visible="true" />
               </children>
             </AnchorPane>
           </content>

@@ -14,12 +14,18 @@
     </forkedJvmArgs>
     <timeoutMillis>{TIMEOUT_MS}</timeoutMillis>
   </params>
-  <pipesReporter class="org.apache.tika.pipes.reporters.fs.FileSystemStatusReporter">
-    <!-- TODO make this a composite reporter and add emitter specific reporters
-    -->
+  <pipesReporter class="org.apache.tika.pipes.CompositePipesReporter">
     <params>
-      <statusFile>{STATUS_FILE}</statusFile>
-      <reportUpdateMillis>1000</reportUpdateMillis>
+      <pipesReporters class="org.apache.tika.pipes.PipesReporter">
+        <pipesReporter class="org.apache.tika.pipes.reporters.fs.FileSystemStatusReporter">
+          <!-- TODO make this a composite reporter and add emitter specific reporters -->
+          <params>
+            <statusFile>{STATUS_FILE}</statusFile>
+            <reportUpdateMillis>1000</reportUpdateMillis>
+          </params>
+        </pipesReporter>
+        {JDBC_PIPES_REPORTER}
+      </pipesReporters>
     </params>
   </pipesReporter>
 </async>

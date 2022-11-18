@@ -62,6 +62,11 @@ public class PackageBinaries {
                         "/tika-pipes-reporter-fs-status-" + TIKA_VERSION + ".jar",
                 "lib/tika-core"
         );
+        JARS_TO_PATH.put(
+                "org/apache/tika/tika-pipes-reporter-jdbc/" + TIKA_VERSION +
+                        "/tika-pipes-reporter-jdbc-" + TIKA_VERSION + ".jar",
+                "lib/tika-core"
+        );
 
         JARS_TO_PATH.put(
                 "org/apache/tika/tika-serialization/" + TIKA_VERSION +

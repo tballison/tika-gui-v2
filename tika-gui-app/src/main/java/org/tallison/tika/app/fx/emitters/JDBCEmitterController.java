@@ -29,6 +29,7 @@ import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
@@ -37,6 +38,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.kordamp.ikonli.javafx.FontIcon;
 import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
@@ -77,7 +79,18 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
     private TextField tableName;
 
     @FXML
-    private Button updateJDBC;
+    private Button validateJDBC;
+
+    @FXML
+    private FontIcon readyIcon;
+
+    @FXML
+    private FontIcon notReadyIcon;
+
+    @FXML
+    private Accordion jdbcAccordion;
+
+
 
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
@@ -117,6 +130,16 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             }
         }
 
+        VALIDITY validity = validate();
+        if (validity == VALIDITY.VALID) {
+            readyIcon.setVisible(true);
+            notReadyIcon.setVisible(false);
+        } else {
+            readyIcon.setVisible(false);
+            notReadyIcon.setVisible(true);
+        }
+        //Not clear why expanded=true is not working in fxml
+        jdbcAccordion.setExpandedPane(jdbcAccordion.getPanes().get(0));
     }
 
     @Override
@@ -157,21 +180,26 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
     }
 
 
-    public void updateJDBC(ActionEvent actionEvent) {
+    public void validateJDBC(ActionEvent actionEvent) {
         VALIDITY validity = validate();
         switch (validity) {
-            case METADATA_ANOMALY:
-                break;
             case VALID:
+                //TODO -- should we test this insert string against the db?
                 //recreate it every time
                 insertSql = createInsertString();
+                readyIcon.setVisible(true);
+                notReadyIcon.setVisible(false);
                 LOGGER.debug("insert sql: " + insertSql);
                 saveState();
-                ((Stage)updateJDBC.getScene().getWindow()).close();
+                ((Stage) validateJDBC.getScene().getWindow()).close();
                 return;
+            case METADATA_ANOMALY:
+                jdbcAccordion.setExpandedPane(jdbcAccordion.getPanes().get(1));
+                break;
             case METADATA_NOT_CONFIGURED:
                 alert(ALERT_TITLE, "Metadata Not Configured", "Need to configure metadata");
                 //TODO -- figure out if we can open the metadata accordion
+                jdbcAccordion.setExpandedPane(jdbcAccordion.getPanes().get(1));
                 break;
             case NO_CONNECTION_STRING:
                 alert(ALERT_TITLE, "No connection string?",
@@ -184,12 +212,18 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
                 alert("JDBC Emitter", "Failed to connect", "Couldn't open jdbc connection");
                 break;
             case NEED_TO_CREATE_TABLE:
-                createTableDialog();
+                boolean success = tryToCreateTable();
+                if (success) {
+                    validateJDBC(actionEvent);
+                    return;
+                }
                 break;
             case TABLE_EXISTS_WITH_DATA:
                 existingDataDialog();
                 break;
         }
+        notReadyIcon.setVisible(true);
+        readyIcon.setVisible(false);
         saveState();
         actionEvent.consume();
     }
@@ -367,7 +401,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         return true;
     }
 
-    private void createTableDialog() {
+    private boolean tryToCreateTable() {
         StringBuilder sb = new StringBuilder();
         sb.append("create table ").append(tableName.getText()).append(" (");
         sb.append(PATH_COL_NAME).append(" VARCHAR(1024),\n");
@@ -378,6 +412,8 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         }
         sb.append(")");
         String cString = jdbcConnection.getText();
+
+        //TODO -- get rid of this hack
         cString = cString.replace("AUTO_SERVER=TRUE", "");
         try (Connection connection = DriverManager.getConnection(cString)) {
             try (Statement st = connection.createStatement()) {
@@ -387,7 +423,11 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             LOGGER.warn("failed to create table");
             LOGGER.warn(sb.toString());
             LOGGER.warn(e);
+            alertStackTrace("Failed to create table", "Failed to create table",
+                    "SQL:\n" + sb.toString(), e);
+            return false;
         }
+        return true;
     }
 
     private String createInsertString() {

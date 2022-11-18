@@ -30,6 +30,7 @@ import org.tallison.tika.app.fx.tools.BatchProcess;
 
 import org.apache.tika.pipes.PipesResult;
 import org.apache.tika.pipes.async.AsyncStatus;
+import org.apache.tika.pipes.pipesiterator.TotalCountResult;
 
 public class StatusUpdater implements Callable<Integer> {
     private static Logger LOGGER = LogManager.getLogger(StatusUpdater.class);
@@ -57,14 +58,17 @@ public class StatusUpdater implements Callable<Integer> {
             if (asyncStatusOptional.isPresent()) {
                 AsyncStatus asyncStatus = asyncStatusOptional.get();
                 long processed = 0;
-                for (Map.Entry<PipesResult.STATUS, Long> e : asyncStatus.getStatusCounts()
-                        .entrySet()) {
+                for (Map.Entry<PipesResult.STATUS, Long> e :
+                        asyncStatus.getStatusCounts().entrySet()) {
                     processed += e.getValue();
                 }
                 LOGGER.debug("processed {}", asyncStatus);
                 long total = asyncStatus.getTotalCountResult().getTotalCount();
-                if (processed > total) {
-                    total = processed;
+                //act like you've only processed a quarter if the total
+                //result count has not completed
+                if (asyncStatus.getTotalCountResult().getStatus() !=
+                        TotalCountResult.STATUS.COMPLETED && processed > total) {
+                    total = 4 * processed;
                 }
                 if (total > 0) {
                     float percentage = ((float) processed / (float) total);
