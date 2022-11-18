@@ -1,9 +1,4 @@
 
-dialog w stacktrace: https://code.makery.ch/blog/javafx-dialogs-official/
-
-
-https://www.azul.com/downloads/?version=java-17-lts&architecture=x86-64-bit&package=jre-fx
-
 appassembler-maven-plugin
 
       <plugin>
