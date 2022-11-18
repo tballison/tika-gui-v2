@@ -48,7 +48,6 @@ public class FormattedTableCellFactory<S, T>
 
     @Override
     public TableCell<S, T> call(TableColumn<S, T> stTableColumn) {
-        System.out.println("call " + stTableColumn.getText() + " : " + stTableColumn.getId());
         TableCell<S, T> cell = new TableCell<S, T>() {
             @Override
             public void updateItem(Object item, boolean empty) {

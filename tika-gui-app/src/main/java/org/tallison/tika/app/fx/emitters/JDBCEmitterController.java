@@ -94,6 +94,8 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
 
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
+        //Not clear why expanded=true is not working in fxml
+        jdbcAccordion.setExpandedPane(jdbcAccordion.getPanes().get(0));
 
         if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
             LOGGER.warn("batch process config is empty?!");
@@ -138,8 +140,6 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             readyIcon.setVisible(false);
             notReadyIcon.setVisible(true);
         }
-        //Not clear why expanded=true is not working in fxml
-        jdbcAccordion.setExpandedPane(jdbcAccordion.getPanes().get(0));
     }
 
     @Override

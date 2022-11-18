@@ -54,7 +54,7 @@ public class StatusUpdater implements Callable<Integer> {
 
         while (true) {
             Optional<AsyncStatus> asyncStatusOptional = batchProcess.checkAsyncStatus();
-            System.out.println(asyncStatusOptional);
+            LOGGER.debug(asyncStatusOptional);
             if (asyncStatusOptional.isPresent()) {
                 AsyncStatus asyncStatus = asyncStatusOptional.get();
                 long processed = 0;
@@ -64,6 +64,9 @@ public class StatusUpdater implements Callable<Integer> {
                 }
                 LOGGER.debug("processed {}", asyncStatus);
                 long total = asyncStatus.getTotalCountResult().getTotalCount();
+                if (asyncStatus.getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
+                    total = processed;
+                }
                 //act like you've only processed a quarter if the total
                 //result count has not completed
                 if (asyncStatus.getTotalCountResult().getStatus() !=
@@ -77,7 +80,7 @@ public class StatusUpdater implements Callable<Integer> {
                 }
             }
             batchProcess.checkBatchRunnerStatus();
-            System.out.println("status: " + batchProcess.getMutableStatus());
+            LOGGER.debug("status: " + batchProcess.getMutableStatus());
 
             BatchProcess.STATUS status = batchProcess.getMutableStatus().get();
             if (status == BatchProcess.STATUS.ERROR) {

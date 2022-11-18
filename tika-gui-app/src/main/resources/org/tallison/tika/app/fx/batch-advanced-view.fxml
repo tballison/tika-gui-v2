@@ -28,7 +28,7 @@
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="Advanced Batch Options" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.AdvancedBatchController">
+<TitledPane collapsible="false" animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="Advanced Batch Options" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.AdvancedBatchController">
   <content>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
          <children>
@@ -40,7 +40,7 @@
             <TextField fx:id="memoryPerProcess" layoutX="191.0" layoutY="236.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="79.0" />
             <Label layoutX="39.0" layoutY="157.0" text="Number of Processes" />
             <TextField fx:id="numProcesses" layoutX="191.0" layoutY="153.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="79.0" />
-            <ComboBox fx:id="digestOptions" layoutX="184.0" layoutY="114.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="115.0">
+            <ComboBox fx:id="digestOptions" value="sha256" layoutX="184.0" layoutY="114.0" onAction="#saveAdvanced" prefHeight="26.0" prefWidth="115.0">
               <items>
                 <FXCollections fx:factory="observableArrayList">
                   <String fx:value="No Digest" />

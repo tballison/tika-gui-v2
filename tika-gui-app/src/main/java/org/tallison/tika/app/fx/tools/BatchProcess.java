@@ -64,6 +64,8 @@ public class BatchProcess {
     private Path configFile;
     private BatchRunner batchRunner = null;
 
+    private BatchProcessConfig batchProcessConfig = null;
+
     private Optional<Exception> jvmException = Optional.empty();
     private Optional<String> jvmErrorMsg = Optional.empty();
     private ObjectMapper objectMapper = JsonMapper.builder()
@@ -82,15 +84,13 @@ public class BatchProcess {
         deletePreviousRuns();
         TikaConfigWriter tikaConfigWriter = new TikaConfigWriter();
 
-        CSVEmitterHelper.setUp(AppContext.getInstance());
-
         try {
             configFile = tikaConfigWriter.writeConfig(batchProcessConfig);
             tikaConfigWriter.writeLog4j2();
         } catch (IOException e) {
             throw new TikaException("parser configuration", e);
         }
-
+        this.batchProcessConfig = batchProcessConfig;
         batchRunner = new BatchRunner(configFile, batchProcessConfig);
 
         executorCompletionService.submit(statusUpdater);
@@ -140,7 +140,11 @@ public class BatchProcess {
             }
         }
         daemonExecutorService.shutdownNow();
-        //CSVEmitterHelper.cleanTmpResources(APP_CONTEXT);
+        try {
+            CSVEmitterHelper.cleanCSVTempResources(batchProcessConfig.getEmitter().get());
+        } catch (IOException e) {
+            LOGGER.warn("Failed to delete csv tmp");
+        }
     }
 
     public Optional<AsyncStatus> checkAsyncStatus() {
@@ -163,10 +167,8 @@ public class BatchProcess {
     public void checkBatchRunnerStatus() {
         try {
             Future<Integer> future = executorCompletionService.poll();
-            System.out.println("executor service shutdown: " + daemonExecutorService.isShutdown());
             if (future != null) {
                 Integer i = future.get();
-                System.out.println("completed: " + i);
             }
         } catch (InterruptedException e) {
             LOGGER.warn("interrupted?!");
@@ -263,9 +265,9 @@ public class BatchProcess {
                         jvmErrorMsg = Optional.of(msg);
                         mutableStatus.set(STATUS.ERROR);
                     } else {
+                        CSVEmitterHelper.writeCSV(AppContext.getInstance());
                         mutableStatus.set(STATUS.COMPLETE);
                     }
-                    CSVEmitterHelper.writeCSV(AppContext.getInstance());
                     return PROCESS_ID.BATCH_PROCESS.ordinal();
                 } else {
                     Thread.sleep(500);

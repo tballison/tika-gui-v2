@@ -16,7 +16,9 @@
  */
 package org.tallison.tika.app.fx.tools;
 
+import static org.tallison.tika.app.fx.Constants.CSV_JDBC_CONNECTION_STRING;
 import static org.tallison.tika.app.fx.Constants.JDBC_CONNECTION_STRING;
+import static org.tallison.tika.app.fx.Constants.JDBC_EMITTER_CLASS;
 
 import java.io.File;
 import java.util.Optional;
@@ -136,11 +138,13 @@ public class BatchProcessConfig {
                 sb.append(ProcessUtils.escapeCommandLine(
                         AppContext.TIKA_LIB_PATH.resolve("tika-emitter-opensearch")
                                 .toAbsolutePath() + "/*"));
-            } else if (emitter.getClazz().equals(Constants.JDBC_EMITTER_CLASS)) {
+            } else if (emitter.getClazz().equals(Constants.JDBC_EMITTER_CLASS) ||
+                    emitter.getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
                 sb.append(AppContext.TIKA_LIB_PATH.resolve("tika-emitter-jdbc").toAbsolutePath() + "/*");
                 sb.append(File.pathSeparator);
-                String connectString =
-                        getEmitter().get().getAttributes().get(JDBC_CONNECTION_STRING);
+                String connectString = emitter.getClazz().equals(JDBC_EMITTER_CLASS) ?
+                        getEmitter().get().getAttributes().get(JDBC_CONNECTION_STRING) :
+                        getEmitter().get().getAttributes().get(CSV_JDBC_CONNECTION_STRING);
                 if (connectString.startsWith("jdbc:sqlite")) {
                     sb.append(
                             AppContext.TIKA_LIB_PATH.resolve("db/sqlite").toAbsolutePath() + "/*");

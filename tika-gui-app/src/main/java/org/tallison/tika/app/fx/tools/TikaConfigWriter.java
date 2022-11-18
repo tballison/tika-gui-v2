@@ -18,6 +18,8 @@ package org.tallison.tika.app.fx.tools;
 
 import static org.tallison.tika.app.fx.Constants.BASE_PATH;
 import static org.tallison.tika.app.fx.Constants.CSV_EMITTER_CLASS;
+import static org.tallison.tika.app.fx.Constants.CSV_JDBC_CONNECTION_STRING;
+import static org.tallison.tika.app.fx.Constants.CSV_JDBC_INSERT_SQL;
 import static org.tallison.tika.app.fx.Constants.JDBC_CONNECTION_STRING;
 import static org.tallison.tika.app.fx.Constants.JDBC_EMITTER_CLASS;
 import static org.tallison.tika.app.fx.Constants.JDBC_INSERT_SQL;
@@ -69,6 +71,13 @@ public class TikaConfigWriter {
         }
         Files.write(AppContext.ASYNC_LOG4J2_PATH, template.getBytes(StandardCharsets.UTF_8),
                 StandardOpenOption.CREATE);
+
+        //not actually a template
+        String xml = getTemplateLog4j2("log4j2-async-cli.xml");
+        Files.write(AppContext.CONFIG_PATH.resolve("log4j2-async-cli.xml"),
+                xml.getBytes(StandardCharsets.UTF_8),
+                StandardOpenOption.CREATE);
+
     }
 
     public Path writeConfig(BatchProcessConfig batchProcessConfig) throws IOException {
@@ -139,7 +148,12 @@ public class TikaConfigWriter {
         }
         String jdbcPipesReporter = getTemplate("jdbc-pipes-reporter.xml");
         ConfigItem emitter = bpc.getEmitter().get();
-        String connectionString = emitter.getAttributes().get(JDBC_CONNECTION_STRING);
+        String connectionString = "";
+        if (emitter.getClazz().equals(JDBC_EMITTER_CLASS)) {
+            connectionString = emitter.getAttributes().get(JDBC_CONNECTION_STRING);
+        } else if (emitter.getClazz().equals(CSV_EMITTER_CLASS)) {
+            connectionString = emitter.getAttributes().get(CSV_JDBC_CONNECTION_STRING);
+        }
         jdbcPipesReporter = jdbcPipesReporter.replace("{CONNECTION_STRING}", connectionString);
         return async.replace("{JDBC_PIPES_REPORTER}", jdbcPipesReporter);
     }
@@ -173,10 +187,16 @@ public class TikaConfigWriter {
                 appendOpenSearchEmitter(emitter, sb);
                 break;
             case Constants.CSV_EMITTER_CLASS:
-                appendCSVEmitter(emitter, sb);
+                appendJDBCEmitter(emitter,
+                        emitter.getAttributes().get(CSV_JDBC_CONNECTION_STRING),
+                        emitter.getAttributes().get(CSV_JDBC_INSERT_SQL),
+                        sb);
                 break;
             case Constants.JDBC_EMITTER_CLASS:
-                appendJDBCEmitter(emitter, sb);
+                appendJDBCEmitter(emitter,
+                        emitter.getAttributes().get(JDBC_CONNECTION_STRING),
+                        emitter.getAttributes().get(JDBC_INSERT_SQL),
+                        sb);
                 break;
             default:
                 throw new RuntimeException("I regret I don't yet support " +
@@ -184,22 +204,17 @@ public class TikaConfigWriter {
         }
     }
 
-    private void appendCSVEmitter(ConfigItem emitter, StringBuilder sb) {
-        //TODO
-        //sb.append(build table, etc);
-    }
 
-    private void appendJDBCEmitter(ConfigItem emitter, StringBuilder sb) throws IOException {
+    private void appendJDBCEmitter(ConfigItem emitter, String connectionString,
+                                   String insertString, StringBuilder sb) throws IOException {
         String template = getTemplate("jdbc-pipes-emitter.xml");
-        //assume this exists
-        String connectionString = emitter.getAttributes().get(JDBC_CONNECTION_STRING);
         //TODO -- a lot better than this.  LOL...
         connectionString = connectionString.replaceAll("&", "&amp;");
         template = template.replace("{CONNECTION_STRING}", connectionString);
         //for now we assume the table was created via the dialog
         template = template.replace("{CREATE_TABLE_SQL}", StringUtils.EMPTY);
 
-        template = template.replace("{INSERT_SQL}", emitter.getAttributes().get(JDBC_INSERT_SQL));
+        template = template.replace("{INSERT_SQL}", insertString);
 
         StringBuilder columns = new StringBuilder();
         //assume these exist
@@ -300,6 +315,9 @@ public class TikaConfigWriter {
         ConfigItem emitter = configItem.get();
         Optional<List<MetadataTuple>> metadataTuples = emitter.getMetadataTuples();
         if (metadataTuples.isEmpty() || metadataTuples.get().size() == 0) {
+            //add templated metadata filters
+            template = template.replace("{MAPPING_FILTER}", "");
+            tikaConfigBuilder.append(template).append("\n");
             return;
         }
 
