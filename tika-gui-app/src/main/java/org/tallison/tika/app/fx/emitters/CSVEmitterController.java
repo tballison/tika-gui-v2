@@ -17,8 +17,15 @@
 package org.tallison.tika.app.fx.emitters;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -34,6 +41,7 @@ import javafx.stage.Window;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
+import org.tallison.tika.app.fx.csv.CSVEmitterHelper;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
@@ -155,6 +163,14 @@ public class CSVEmitterController extends AbstractEmitterController implements I
                 Constants.CSV_METADATA_PATH, csvMetadataPathString);
 
         saveMetadataToEmitter(emitter);
+        List<MetadataTuple> metadataTuples = emitter.getMetadataTuples().get();
+        List<MetadataTuple> updatedTuples = new ArrayList<>();
+        for (MetadataTuple t : metadataTuples) {
+            updatedTuples.add(new MetadataTuple(t.getTika(), t.getOutput(), "VARCHAR(32000)"));
+        }
+        emitter.setMetadataTuples(updatedTuples);
+        addInsertSQL(emitter);
+
         if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
             LOGGER.warn("no app context?!");
             return;
@@ -163,7 +179,37 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         batchProcessConfig.setEmitter(emitter);
         //TODO -- do better than hard coding indices
         batchProcessConfig.setOutputSelectedTab(TAB_INDEX);
+        try {
+            CSVEmitterHelper.setUp(emitter);
+        } catch (IOException e) {
+            LOGGER.error("can't create tmp directory");
+            return;
+        }
+        CSVEmitterHelper.createTable(emitter);
         APP_CONTEXT.saveState();
+    }
+
+
+    private void addInsertSQL(ConfigItem emitter) {
+        StringBuilder sb = new StringBuilder();
+        String tableName = Constants.CSV_DB_TABLE_NAME;
+        sb.append("insert into ").append(tableName);
+        sb.append(" (path, attachment_num");
+        int cols = 2;
+        for (MetadataTuple t : emitter.getMetadataTuples().get()) {
+            sb.append(", " + t.getOutput());
+            cols++;
+        }
+        sb.append(") values (");
+        for (int i = 0; i < cols; i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append("?");
+        }
+        sb.append(")");
+        LOGGER.trace("insert sql: " + sb);
+        emitter.getAttributes().put(Constants.CSV_JDBC_INSERT_SQL, sb.toString());
     }
 
     public void updateCSV(ActionEvent actionEvent) {

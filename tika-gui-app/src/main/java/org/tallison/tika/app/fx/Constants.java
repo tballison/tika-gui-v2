@@ -42,10 +42,15 @@ public class Constants {
     public static final String JDBC_TABLE_NAME = "jdbcTableName";
 
     public static final String JDBC_INSERT_SQL = "jdbcInsertString";
+    public static final String CSV_JDBC_INSERT_SQL = "csvInsertString";
 
 
     //AbstractEmitterController
     public static final String CSV_METADATA_PATH = "csvMetadataPath";
+
+    public static final String CSV_JDBC_CONNECTION_STRING = "csvSQLConnectionString";
+
+    public static final String CSV_DB_DIRECTORY = "csvDBDirectory";
 
     //Used by filesystem emitter, fetcher and pipes iterator
     //used as working directory for csv emitter
@@ -60,6 +65,6 @@ public class Constants {
 
     //csv emitter
     public static final String CSV_DB_TABLE_NAME = "tika_table";
-    public static final String CSV_FILE_NAME = "csvFilePath";
-    public static final String CSV_DB_NAME = "tika-tmp-db";
+    public static final String CSV_FILE_NAME = "csvFileName";
+
 }
