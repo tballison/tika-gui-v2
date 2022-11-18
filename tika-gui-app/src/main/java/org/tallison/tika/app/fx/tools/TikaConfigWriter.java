@@ -71,6 +71,13 @@ public class TikaConfigWriter {
         }
         Files.write(AppContext.ASYNC_LOG4J2_PATH, template.getBytes(StandardCharsets.UTF_8),
                 StandardOpenOption.CREATE);
+
+        //not actually a template
+        String xml = getTemplateLog4j2("log4j2-async-cli.xml");
+        Files.write(AppContext.CONFIG_PATH.resolve("log4j2-async-cli.xml"),
+                xml.getBytes(StandardCharsets.UTF_8),
+                StandardOpenOption.CREATE);
+
     }
 
     public Path writeConfig(BatchProcessConfig batchProcessConfig) throws IOException {

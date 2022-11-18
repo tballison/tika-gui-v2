@@ -86,6 +86,8 @@ public class CSVEmitterController extends AbstractEmitterController implements I
 
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
+        //Not clear why expanded=true is not working in fxml
+        csvAccordion.setExpandedPane(csvAccordion.getPanes().get(0));
 
         if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
             LOGGER.warn("batch process config is empty?!");
@@ -118,9 +120,6 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         }
 
         safelySetCsvMetadataPath(emitter.getAttributes().get(Constants.CSV_METADATA_PATH));
-
-        //Not clear why expanded=true is not working in fxml
-        csvAccordion.setExpandedPane(csvAccordion.getPanes().get(0));
 
     }
 

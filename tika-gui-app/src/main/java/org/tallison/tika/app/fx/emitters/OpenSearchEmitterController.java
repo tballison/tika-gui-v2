@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
@@ -35,12 +36,15 @@ import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.ControllerBase;
 import org.tallison.tika.app.fx.ctx.AppContext;
+import org.tallison.tika.app.fx.metadata.MetadataRow;
+import org.tallison.tika.app.fx.metadata.MetadataTuple;
 import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
 
-public class OpenSearchEmitterController extends ControllerBase implements Initializable {
+public class OpenSearchEmitterController extends AbstractEmitterController
+        implements Initializable {
     private static AppContext APP_CONTEXT = AppContext.getInstance();
     private static Logger LOGGER = LogManager.getLogger(OpenSearchEmitterController.class);
 
@@ -62,30 +66,42 @@ public class OpenSearchEmitterController extends ControllerBase implements Initi
     @FXML
     private Button updateOpenSearchEmitter;
 
+    @FXML
+    private Accordion openSearchAccordion;
+
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
+        //Not clear why expanded=true is not working in fxml
+        openSearchAccordion.setExpandedPane(openSearchAccordion.getPanes().get(0));
         if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
             LOGGER.warn("batch process config must not be null at this point");
             return;
         }
         Optional<ConfigItem> emitterOptional =
                 APP_CONTEXT.getBatchProcessConfig().get().getEmitter();
+        if (APP_CONTEXT.getBatchProcessConfig().get().getEmitter().isEmpty()) {
+            return;
+        }
+        ConfigItem emitter = emitterOptional.get();
 
-        if (emitterOptional.isPresent()) {
-            ConfigItem emitter = emitterOptional.get();
-
-            if (emitter.getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
-                openSearchUrl.setText(emitter.getAttributes().get(Constants.OPEN_SEARCH_URL));
-                openSearchUserName.setText(emitter.getAttributes().get(Constants.OPEN_SEARCH_USER));
-                String selected = emitter.getAttributes().get(Constants.OPEN_SEARCH_UPDATE_STRATEGY);
-                if (!StringUtils.isBlank(selected)) {
-                    openSearchUpdateStrategy.getSelectionModel().select(selected);
-                } else {
-                    openSearchUpdateStrategy.getSelectionModel().select("Upsert");
-                }
+        if (emitter.getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
+            openSearchUrl.setText(emitter.getAttributes().get(Constants.OPEN_SEARCH_URL));
+            openSearchUserName.setText(emitter.getAttributes().get(Constants.OPEN_SEARCH_USER));
+            String selected = emitter.getAttributes().get(Constants.OPEN_SEARCH_UPDATE_STRATEGY);
+            if (!StringUtils.isBlank(selected)) {
+                openSearchUpdateStrategy.getSelectionModel().select(selected);
             } else {
                 openSearchUpdateStrategy.getSelectionModel().select("Upsert");
             }
+            if (emitter.getMetadataTuples().isPresent() &&
+                    emitter.getMetadataTuples().get().size() > 0) {
+                getMetadataRows().clear();
+                for (MetadataTuple t : emitter.getMetadataTuples().get()) {
+                    getMetadataRows().add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
+                }
+            }
+        } else {
+            openSearchUpdateStrategy.getSelectionModel().select("Upsert");
         }
     }
 
@@ -128,15 +144,14 @@ public class OpenSearchEmitterController extends ControllerBase implements Initi
             return;
         }
 
+        //TODO -- validate metadata
 
         //TODO -- check anything else?
-        batchProcessConfig.get().setEmitter(shortLabel, fullLabel,
-                Constants.OPEN_SEARCH_EMITTER_CLASS,
-                Constants.OPEN_SEARCH_URL, url,
-                Constants.OPEN_SEARCH_USER, userName,
-                Constants.OPEN_SEARCH_PW, password,
-                Constants.OPEN_SEARCH_UPDATE_STRATEGY,
-                openSearchUpdateStrategy.getSelectionModel().getSelectedItem());
+        batchProcessConfig.get()
+                .setEmitter(shortLabel, fullLabel, Constants.OPEN_SEARCH_EMITTER_CLASS,
+                        Constants.OPEN_SEARCH_URL, url, Constants.OPEN_SEARCH_USER, userName,
+                        Constants.OPEN_SEARCH_PW, password, Constants.OPEN_SEARCH_UPDATE_STRATEGY,
+                        openSearchUpdateStrategy.getSelectionModel().getSelectedItem());
 
         //TODO -- do better than hard coding indices
         APP_CONTEXT.getBatchProcessConfig().get().setOutputSelectedTab(2);
@@ -161,4 +176,8 @@ public class OpenSearchEmitterController extends ControllerBase implements Initi
         return null;
     }
 
+    @Override
+    protected void saveState() {
+        APP_CONTEXT.saveState();
+    }
 }

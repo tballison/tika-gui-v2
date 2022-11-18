@@ -18,13 +18,109 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Button?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.emitters.FileSystemEmitterController">
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.control.cell.TextFieldTableCell?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="360.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.emitters.FileSystemEmitterController">
   <children>
-    <Label layoutX="76.0" layoutY="70.0" text="Output Directory"/>
-    <Button fx:id="fsOutputButton" layoutX="338.0" layoutY="66.0" mnemonicParsing="false" onAction="#fileSystemOutputDirectorySelect" text="Select"/>
+    <Accordion fx:id="fsAccordion" layoutX="1.0" layoutY="5.0" prefHeight="359.0" prefWidth="586.0">
+      <panes>
+        <TitledPane fx:id="files" expanded="true" animated="false" prefHeight="100.0" prefWidth="586.0" text="File System">
+          <content>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="200.0">
+              <children>
+                <Label layoutX="76.0" layoutY="70.0" text="Output Directory"/>
+                <Button fx:id="fsOutputButton" layoutX="338.0" layoutY="66.0" mnemonicParsing="false" onAction="#fileSystemOutputDirectorySelect" text="Select"/>
+              </children>
+            </AnchorPane>
+          </content>
+        </TitledPane>
+        <TitledPane animated="false" prefHeight="296.0" prefWidth="433.0" text="Metadata">
+          <content>
+            <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+              <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+              </padding>
+              <TableView fx:id="tableView" editable="true" items="${controller.metadataRows}" prefHeight="200.0" prefWidth="580.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                <columns>
+                  <TableColumn fx:id="tikaMetadataColumn" prefWidth="275.0" text="Tika Metadata Key">
+                    <cellValueFactory>
+                      <PropertyValueFactory property="tika" />
+                    </cellValueFactory>
+                    <cellFactory>
+                      <TextFieldTableCell fx:factory="forTableColumn" />
+                    </cellFactory>
+                  </TableColumn>
+                  <TableColumn fx:id="outputMetadataColumn" prefWidth="280.0" text="Column Name">
+                    <cellValueFactory>
+                      <PropertyValueFactory property="output" />
+                    </cellValueFactory>
+                    <cellFactory>
+                      <TextFieldTableCell fx:factory="forTableColumn" />
+                    </cellFactory>
+                  </TableColumn>
+                  <!--
+                  <TableColumn fx:id="propertyColumn" prefWidth="139.0" text="SQL Type">
+                    <cellValueFactory>
+                      <PropertyValueFactory property="property" />
+                    </cellValueFactory>
+                    <cellFactory>
+                      <TextFieldTableCell fx:factory="forTableColumn" />
+                    </cellFactory>
+                  </TableColumn> -->
+                </columns>
+                <items>
+                  <FXCollections fx:id="backingData" fx:factory="observableArrayList">
+                  </FXCollections>
+                </items>
+              </TableView>
+              <HBox alignment="bottom_left" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                <TextField fx:id="tikaField" prefHeight="26.0" prefWidth="119.0" promptText="Tika Field" />
+                <TextField fx:id="outputField" prefHeight="26.0" prefWidth="133.0" promptText="Column Name" />
+                <!--<TextField fx:id="propertyField" prefHeight="26.0" prefWidth="123.0" promptText="VARCHAR(1000)" />-->
+                <Button onAction="#addMetadataRow" text="Add Row" />
+              </HBox>
+              <HBox alignment="bottom_left" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="4">
+                <Button fx:id="loadMetadataCSV" onAction="#loadMetadataCSV" text="Load CSV" />
+                <Button fx:id="clearAll" onAction="#clearMetadata" text="Clear All" />
+              </HBox>
+              <columnConstraints>
+                <ColumnConstraints />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints />
+                <RowConstraints />
+                <RowConstraints maxHeight="36.0" minHeight="22.0" prefHeight="30.0" />
+                <RowConstraints maxHeight="30.0" minHeight="16.0" prefHeight="30.0" />
+                <!--<RowConstraints maxHeight="0.0" minHeight="0.0" prefHeight="0.0" />-->
+              </rowConstraints>
+            </GridPane>
+          </content>
+        </TitledPane>
+        <TitledPane fx:id="advanced" animated="false" disable="true" prefHeight="100.0" prefWidth="586.0" text="Advanced Options">
+          <content>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="200.0">
+              <children>
+              </children>
+            </AnchorPane>
+          </content>
+        </TitledPane>
+      </panes>
+    </Accordion>
   </children>
 </AnchorPane>

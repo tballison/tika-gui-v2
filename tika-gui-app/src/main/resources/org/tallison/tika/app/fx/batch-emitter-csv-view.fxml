@@ -41,7 +41,7 @@
   <children>
     <Accordion fx:id="csvAccordion" layoutX="1.0" layoutY="5.0" prefHeight="359.0" prefWidth="586.0">
       <panes>
-        <TitledPane fx:id="files" animated="false" prefHeight="100.0" prefWidth="586.0" text="Output File">
+        <TitledPane fx:id="files" expanded="true" animated="false" prefHeight="100.0" prefWidth="586.0" text="Output File">
           <content>
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="200.0">
               <children>
