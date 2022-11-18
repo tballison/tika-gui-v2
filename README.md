@@ -55,6 +55,8 @@ To generate the download sections of the pom, run DownloadPluginUpdater and Zulu
 
 The release is currently triggered by pushing a tag starting with 'v'.
 
+```git tag -a "v1.0.0-alpha1" -m "v1.0.0-alpha1-release && git push origin v1.0.0-alpha1```
+
 We should figure out how to sign artifacts and offer sha256s.  Again, see jreleaser above.
 
 Further, short of going the full jreleaser route, we should start using: appassembler-maven-plugin.
