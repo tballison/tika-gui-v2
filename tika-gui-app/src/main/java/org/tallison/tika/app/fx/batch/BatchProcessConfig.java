@@ -58,9 +58,9 @@ public class BatchProcessConfig {
 
     private int parseTimeoutSeconds = 120;
 
-    private int perFileEmitThresholdMb = 100;
+    private int perFileEmitThresholdMb = 1;
 
-    private int totalEmitThesholdMb = 1000;
+    private int totalEmitThesholdMb = 100;
 
     private long emitWithinMs = 10000;
 

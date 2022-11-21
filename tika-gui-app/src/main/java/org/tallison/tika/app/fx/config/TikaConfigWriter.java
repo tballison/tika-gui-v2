@@ -20,6 +20,7 @@ import static org.tallison.tika.app.fx.Constants.BASE_PATH;
 import static org.tallison.tika.app.fx.Constants.CSV_EMITTER_CLASS;
 import static org.tallison.tika.app.fx.Constants.CSV_JDBC_CONNECTION_STRING;
 import static org.tallison.tika.app.fx.Constants.CSV_JDBC_INSERT_SQL;
+import static org.tallison.tika.app.fx.Constants.FS_FETCHER_CLASS;
 import static org.tallison.tika.app.fx.Constants.JDBC_CONNECTION_STRING;
 import static org.tallison.tika.app.fx.Constants.JDBC_EMITTER_CLASS;
 import static org.tallison.tika.app.fx.Constants.JDBC_INSERT_SQL;
@@ -32,13 +33,12 @@ import static org.tallison.tika.app.fx.Constants.OPEN_SEARCH_USER;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -124,7 +124,6 @@ public class TikaConfigWriter {
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            StringWriter debug = new StringWriter();
             try (Writer writer = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
                 StreamResult result = new StreamResult(writer);
                 DOMSource source = new DOMSource(document);
@@ -133,6 +132,7 @@ public class TikaConfigWriter {
         } catch (XMLStreamException | TransformerException | ParserConfigurationException e) {
             throw new IOException(e);
         }
+        LOGGER.debug("Finished writing tika-config: {}", tmp.toAbsolutePath());
         return tmp;
     }
 
@@ -171,8 +171,8 @@ public class TikaConfigWriter {
         }
         Element params = createAndGetElement(document, parser, "params");
         for (int i = 0; i < tuples.length; i += 3) {
-            appendTextElement(document, params, "param", tuples[2], "name", tuples[0], "type",
-                    tuples[1]);
+            appendTextElement(document, params, "param", tuples[i + 2], "name", tuples[i], "type",
+                    tuples[i + 1]);
         }
     }
 
@@ -213,21 +213,21 @@ public class TikaConfigWriter {
     private void appendAsync(BatchProcessConfig bpc, Document document, Element properties)
             throws IOException {
         Element async = createAndGetElement(document, properties, "async");
-        Element params = createAndGetElement(document, properties, "params");
+        Element params = createAndGetElement(document, async, "params");
         appendTextElement(document, params, "javaPath",
                 AppContext.getInstance().getJavaHome().resolve("java").toString());
         appendTextElement(document, params, "numClients", Integer.toString(bpc.getNumProcesses()));
         appendTextElement(document, params, "numEmitters", "1");
-        appendListElement(document, params, "forkedJVMArgs", "arg",
+        appendListElement(document, params, "forkedJvmArgs", "arg",
                 "-Xmx" + bpc.getMaxMemMb() + "m", "-Dlog4j.configurationFile=" +
                         AppContext.ASYNC_LOG4J2_PATH.toAbsolutePath().toString(), "-cp",
                 buildClassPath(bpc));
         appendTextElement(document, params, "timeoutMillis",
-                Long.toString(bpc.getParseTimeoutSeconds() * 1000));
+                Long.toString(bpc.getParseTimeoutSeconds() * 1000 ));
         appendTextElement(document, params, "emitWithinMillis",
                 Long.toString(bpc.getEmitWithinMs()));
         appendTextElement(document, params, "emitMaxEstimatedBytes",
-                Long.toString(bpc.getTotalEmitThesholdMb() * 1024 * 1024));
+                Long.toString(bpc.getTotalEmitThesholdMb() * 1024 *  1024));
         appendTextElement(document, params, "maxForEmitBatchBytes",
                 Long.toString(bpc.getPerFileEmitThresholdMb() * 1024 * 1024));
 
@@ -259,12 +259,15 @@ public class TikaConfigWriter {
                 !emitter.getClazz().equals(CSV_EMITTER_CLASS)) {
             return;
         }
+        String connectionString = emitter.getAttributes().get(JDBC_CONNECTION_STRING);
+        if (emitter.getClazz().equals(CSV_EMITTER_CLASS)) {
+            connectionString = emitter.getAttributes().get(CSV_JDBC_CONNECTION_STRING);
+        }
         Element jdbc = createAndGetElement(document, pipesReporters, "pipesReporter", "class",
                 "org.apache.tika.pipes.reporters.jdbc.JDBCPipesReporter");
 
         Element jdbcParams = createAndGetElement(document, jdbc, "params");
-        appendTextElement(document, jdbcParams, "connection",
-                emitter.getAttributes().get(JDBC_CONNECTION_STRING));
+        appendTextElement(document, jdbcParams, "connection", connectionString);
     }
 
     private void appendListElement(Document document, Element parent, String itemNames,
@@ -333,9 +336,9 @@ public class TikaConfigWriter {
                 emitter.getMetadataTuples().get().size() == 0) {
             return;
         }
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new LinkedHashMap<>();
         emitter.getMetadataTuples().get().stream()
-                .forEach(e -> map.put(e.getTika(), e.getOutput()));
+                .forEach(e -> map.put(e.getOutput(), e.getProperty()));
 
         appendMap(document, params, "keys", "key", map);
     }
@@ -352,6 +355,9 @@ public class TikaConfigWriter {
                 emitter.getAttributes().get(OPEN_SEARCH_URL));
         appendTextElement(document, params, OPEN_SEARCH_UPDATE_STRATEGY,
                 emitter.getAttributes().get(OPEN_SEARCH_UPDATE_STRATEGY));
+        //for now, we need this for upserts.  parent+child upserts are not
+        //yet supported in Tika.
+        appendTextElement(document, params, "attachmentStrategy", "SEPARATE_DOCUMENTS");
         appendTextElement(document, params, "connectionTimeout", "60000");
         appendTextElement(document, params, "socketTimeout", "120000");
         ;
@@ -395,7 +401,9 @@ public class TikaConfigWriter {
     private void appendFSFetcher(ConfigItem fetcher, Document document, Element properties)
             throws IOException {
         Element fetchers = createAndGetElement(document, properties, "fetchers");
-        Element fetcherElement = createAndGetElement(document, fetchers, "fetcher");
+        Element fetcherElement =
+                createAndGetElement(document, fetchers, "fetcher",
+                        "class", FS_FETCHER_CLASS);
         Element params = createAndGetElement(document, fetcherElement, "params");
         appendTextElement(document, params, "name", "fetcher");
         appendTextElement(document, params, BASE_PATH, fetcher.getAttributes().get(BASE_PATH));
@@ -423,7 +431,8 @@ public class TikaConfigWriter {
     private void appendFSPipesIterator(ConfigItem pipesIterator, Document document, Element parent)
             throws IOException {
         Element pipesIteratorElement =
-                createAndGetElement(document, parent, "pipesIterator", "class");
+                createAndGetElement(document, parent, "pipesIterator",
+                        "class", "org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator");
         Element params = createAndGetElement(document, pipesIteratorElement, "params");
         appendTextElement(document, params, "fetcherName", "fetcher");
         appendTextElement(document, params, "emitterName", "emitter");
@@ -459,7 +468,7 @@ public class TikaConfigWriter {
         Element params = createAndGetElement(document, filter, "params");
         appendTextElement(document, params, "excludeUnmapped", "true");
 
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new LinkedHashMap<>();
         metadataTuples.get().stream().forEach(e -> map.put(e.getTika(), e.getOutput()));
 
         appendMap(document, params, "mappings", "mapping", map);
@@ -467,7 +476,7 @@ public class TikaConfigWriter {
 
     private void appendMap(Document document, Element parent, String mappingsElementName,
                            String mappingElementName, Map<String, String> map, String... attrs) {
-        Element mappings = createAndGetElement(document, parent, mappingElementName, attrs);
+        Element mappings = createAndGetElement(document, parent, mappingsElementName, attrs);
         for (Map.Entry<String, String> e : map.entrySet()) {
             appendLeafElement(document, mappings, mappingElementName, "from", e.getKey(), "to",
                     e.getValue());
