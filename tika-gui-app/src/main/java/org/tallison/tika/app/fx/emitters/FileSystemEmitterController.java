@@ -34,16 +34,16 @@ import javafx.stage.Window;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
+import org.tallison.tika.app.fx.batch.BatchProcessConfig;
+import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
-import org.tallison.tika.app.fx.tools.BatchProcessConfig;
-import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
 
-public class FileSystemEmitterController extends AbstractEmitterController implements
-        Initializable {
+public class FileSystemEmitterController extends AbstractEmitterController
+        implements Initializable {
     private static AppContext APP_CONTEXT = AppContext.getInstance();
     private static Logger LOGGER = LogManager.getLogger(FileSystemEmitterController.class);
 
@@ -69,10 +69,11 @@ public class FileSystemEmitterController extends AbstractEmitterController imple
         }
 
         ConfigItem emitter = APP_CONTEXT.getBatchProcessConfig().get().getEmitter().get();
-        if (! emitter.getClazz().equals(Constants.FS_EMITTER_CLASS)) {
+        if (!emitter.getClazz().equals(Constants.FS_EMITTER_CLASS)) {
             return;
         }
-        if (emitter.getMetadataTuples().isPresent() && emitter.getMetadataTuples().get().size() > 0) {
+        if (emitter.getMetadataTuples().isPresent() &&
+                emitter.getMetadataTuples().get().size() > 0) {
             getMetadataRows().clear();
             for (MetadataTuple t : emitter.getMetadataTuples().get()) {
                 getMetadataRows().add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
@@ -128,10 +129,8 @@ public class FileSystemEmitterController extends AbstractEmitterController imple
             Path p = directory.get();
             String shortLabel = "FileSystem: " + ellipsize(p.getFileName().toString(), 30);
             String fullLabel = "FileSystem: " + p.toAbsolutePath();
-            ConfigItem emitter = ConfigItem.build(
-                    shortLabel, fullLabel, Constants.FS_EMITTER_CLASS,
-                    Constants.BASE_PATH, p.toAbsolutePath().toString()
-            );
+            ConfigItem emitter = ConfigItem.build(shortLabel, fullLabel, Constants.FS_EMITTER_CLASS,
+                    Constants.BASE_PATH, p.toAbsolutePath().toString());
             saveMetadataToEmitter(emitter);
             bpc.setEmitter(emitter);
         }

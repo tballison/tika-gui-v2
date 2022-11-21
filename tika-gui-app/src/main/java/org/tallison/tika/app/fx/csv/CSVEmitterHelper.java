@@ -39,10 +39,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
+import org.tallison.tika.app.fx.batch.BatchProcessConfig;
+import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
-import org.tallison.tika.app.fx.tools.BatchProcessConfig;
-import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
 
@@ -51,7 +51,7 @@ public class CSVEmitterHelper {
     private static Logger LOGGER = LogManager.getLogger(CSVEmitterHelper.class);
 
     public static void setUp(ConfigItem emitter) throws IOException {
-        if (! emitter.getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
+        if (!emitter.getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
             return;
         }
         Path dbDir = Files.createTempDirectory("tika-app-csv-tmp");
@@ -72,9 +72,8 @@ public class CSVEmitterHelper {
         }
         createTable.append(")");
         LOGGER.debug("create table: " + createTable);
-        try (Connection connection =
-                     DriverManager.getConnection(emitter.getAttributes()
-                             .get(Constants.CSV_JDBC_CONNECTION_STRING))) {
+        try (Connection connection = DriverManager.getConnection(
+                emitter.getAttributes().get(Constants.CSV_JDBC_CONNECTION_STRING))) {
             try (Statement st = connection.createStatement()) {
                 st.execute(sql);
                 st.execute(createTable.toString());
@@ -96,7 +95,7 @@ public class CSVEmitterHelper {
             return;
         }
         ConfigItem emitter = optionalConfigItem.get();
-        if (! emitter.getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
+        if (!emitter.getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
             return;
         }
         LOGGER.debug("about to write csv");
@@ -106,12 +105,12 @@ public class CSVEmitterHelper {
         Path csvPath = getCsvPath(emitter);
         LOGGER.debug("about to write " + csvPath.toAbsolutePath());
         int rows = 0;
-        try (OutputStream os = Files.newOutputStream(csvPath); CSVPrinter printer =
-                new CSVPrinter(new OutputStreamWriter(os, UTF_8), CSVFormat.EXCEL)) {
+        try (OutputStream os = Files.newOutputStream(csvPath);
+                CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(os, UTF_8),
+                         CSVFormat.EXCEL)) {
             writeHeaders(printer, emitter);
 
-            Connection connection =
-                    DriverManager.getConnection(getConnectionString(emitter));
+            Connection connection = DriverManager.getConnection(getConnectionString(emitter));
             try (Statement st = connection.createStatement()) {
                 List<String> cells = new ArrayList<>();
                 Integer columnCount = null;
@@ -131,8 +130,7 @@ public class CSVEmitterHelper {
         } catch (IOException e) {
             LOGGER.warn("Failed to write CSV", e);
         }
-        LOGGER.info("successfully wrote {} rows to {}", rows,
-                csvPath.toAbsolutePath());
+        LOGGER.info("successfully wrote {} rows to {}", rows, csvPath.toAbsolutePath());
         try {
             cleanCSVTempResources(emitter.getAttributes().get(Constants.CSV_DB_DIRECTORY));
         } catch (IOException e) {
@@ -157,7 +155,7 @@ public class CSVEmitterHelper {
     }
 
     public static void cleanCSVTempResources(ConfigItem emitter) throws IOException {
-        if (! emitter.getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
+        if (!emitter.getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
             return;
         }
         cleanCSVTempResources(emitter.getAttributes().get(Constants.CSV_DB_DIRECTORY));
@@ -165,7 +163,7 @@ public class CSVEmitterHelper {
 
     private static void cleanCSVTempResources(String path) throws IOException {
         Path tmpDbDir = Paths.get(path);
-        if (! Files.isDirectory(tmpDbDir)) {
+        if (!Files.isDirectory(tmpDbDir)) {
             LOGGER.warn("Not a directory?! {}", path);
             return;
         }
@@ -176,8 +174,7 @@ public class CSVEmitterHelper {
         return item.getAttributes().get(Constants.CSV_JDBC_CONNECTION_STRING);
     }
 
-    private static void writeHeaders(CSVPrinter printer, ConfigItem configItem)
-            throws IOException {
+    private static void writeHeaders(CSVPrinter printer, ConfigItem configItem) throws IOException {
         List<String> headers = new ArrayList<>();
         headers.add("path");
         headers.add("status");

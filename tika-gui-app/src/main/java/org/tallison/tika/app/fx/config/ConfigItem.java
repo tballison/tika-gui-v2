@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tallison.tika.app.fx.tools;
+package org.tallison.tika.app.fx.config;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,20 +38,20 @@ public class ConfigItem {
 
     }
 
-    public static ConfigItem build(String... args) {
-        Map<String, String> params = new HashMap<>();
-        for (int i = 3; i < args.length; i++) {
-            params.put(args[i], args[++i]);
-        }
-        return new ConfigItem(args[0], args[1], args[2], params);
-    }
-
     public ConfigItem(String shortLabel, String fullLabel, String clazz,
                       Map<String, String> attributes) {
         this.shortLabel = shortLabel;
         this.fullLabel = fullLabel;
         this.clazz = clazz;
         this.attributes = attributes;
+    }
+
+    public static ConfigItem build(String... args) {
+        Map<String, String> params = new HashMap<>();
+        for (int i = 3; i < args.length; i++) {
+            params.put(args[i], args[++i]);
+        }
+        return new ConfigItem(args[0], args[1], args[2], params);
     }
 
     public String getShortLabel() {

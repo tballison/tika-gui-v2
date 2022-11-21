@@ -25,7 +25,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.tallison.tika.app.fx.Constants;
-import org.tallison.tika.app.fx.tools.BatchProcess;
+import org.tallison.tika.app.fx.batch.BatchProcess;
 
 import org.apache.tika.pipes.PipesResult;
 

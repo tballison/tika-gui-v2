@@ -38,11 +38,11 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tallison.tika.app.fx.batch.BatchProcess;
+import org.tallison.tika.app.fx.batch.BatchProcessConfig;
+import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.status.StatusUpdater;
-import org.tallison.tika.app.fx.tools.BatchProcess;
-import org.tallison.tika.app.fx.tools.BatchProcessConfig;
-import org.tallison.tika.app.fx.tools.ConfigItem;
 
 public class TikaController extends ControllerBase {
 

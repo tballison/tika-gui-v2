@@ -28,9 +28,9 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tallison.tika.app.fx.batch.BatchProcessConfig;
+import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.ctx.AppContext;
-import org.tallison.tika.app.fx.tools.BatchProcessConfig;
-import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator;
 import org.apache.tika.utils.StringUtils;
@@ -47,7 +47,7 @@ public class BatchInputController extends ControllerBase {
         final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Open Resource File");
-        if (! APP_CONTEXT.getBatchProcessConfig().isPresent()) {
+        if (!APP_CONTEXT.getBatchProcessConfig().isPresent()) {
             LOGGER.warn("BatchProcessConfig must not be empty");
             actionEvent.consume();
             return;
@@ -71,12 +71,11 @@ public class BatchInputController extends ControllerBase {
         String shortLabel = "FileSystem: " + ellipsize(directory.getName(), 30);
         String fullLabel = "FileSystem: " + directory.getAbsolutePath();
 
-        batchProcessConfig.setFetcher(shortLabel, fullLabel,
-                Constants.FS_FETCHER_CLASS, "basePath",
+        batchProcessConfig.setFetcher(shortLabel, fullLabel, Constants.FS_FETCHER_CLASS, "basePath",
                 directory.toPath().toAbsolutePath().toString());
         batchProcessConfig.setPipesIterator(shortLabel, fullLabel,
-                FileSystemPipesIterator.class.getName(),
-                "basePath", directory.toPath().toAbsolutePath().toString());
+                FileSystemPipesIterator.class.getName(), "basePath",
+                directory.toPath().toAbsolutePath().toString());
         batchProcessConfig.setInputSelectedTab(0);
         APP_CONTEXT.saveState();
         ((Stage) fsInputButton.getScene().getWindow()).close();

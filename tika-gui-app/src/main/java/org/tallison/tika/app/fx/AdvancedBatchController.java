@@ -28,8 +28,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tallison.tika.app.fx.batch.BatchProcessConfig;
 import org.tallison.tika.app.fx.ctx.AppContext;
-import org.tallison.tika.app.fx.tools.BatchProcessConfig;
 
 import org.apache.tika.utils.StringUtils;
 
@@ -68,14 +68,12 @@ public class AdvancedBatchController implements Initializable {
         if (batchProcessConfig.getDigest().isPresent()) {
             digestOptions.getSelectionModel().select(batchProcessConfig.getDigest().get());
         }
-        parseTimeoutSeconds.setText(
-                Integer.toString(batchProcessConfig.getParseTimeoutSeconds()));
-        memoryPerProcess.setText(
-                Integer.toString(batchProcessConfig.getMaxMemMb())
-        );
+        parseTimeoutSeconds.setText(Integer.toString(batchProcessConfig.getParseTimeoutSeconds()));
+        memoryPerProcess.setText(Integer.toString(batchProcessConfig.getMaxMemMb()));
         numProcesses.setText(Integer.toString(batchProcessConfig.getNumProcesses()));
 
-        perFileEmitThresholdMb.setText(Integer.toString(batchProcessConfig.getPerFileEmitThresholdMb()));
+        perFileEmitThresholdMb.setText(
+                Integer.toString(batchProcessConfig.getPerFileEmitThresholdMb()));
 
         totalEmitThresholdMb.setText(Integer.toString(batchProcessConfig.getTotalEmitThesholdMb()));
         emitWithinMs.setText(Long.toString(batchProcessConfig.getEmitWithinMs()));
@@ -141,8 +139,7 @@ public class AdvancedBatchController implements Initializable {
         APP_CONTEXT.saveState();
     }
 
-    private int getInt(String label, TextField textField, int min, int max,
-                       int defaultVal) {
+    private int getInt(String label, TextField textField, int min, int max, int defaultVal) {
 
         String txt = textField.getText();
         if (StringUtils.isBlank(txt)) {
@@ -166,8 +163,7 @@ public class AdvancedBatchController implements Initializable {
         return num;
     }
 
-    private long getLong(String label, TextField textField, long min, long max,
-                       long defaultVal) {
+    private long getLong(String label, TextField textField, long min, long max, long defaultVal) {
 
         String txt = textField.getText();
         if (StringUtils.isBlank(txt)) {

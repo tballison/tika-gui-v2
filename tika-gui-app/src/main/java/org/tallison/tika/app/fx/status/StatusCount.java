@@ -32,24 +32,24 @@ public class StatusCount implements Comparable<StatusCount> {
         return statusName.get();
     }
 
-    public SimpleStringProperty statusNameProperty() {
-        return statusName;
-    }
-
     public void setStatusName(String statusName) {
         this.statusName.set(statusName);
+    }
+
+    public SimpleStringProperty statusNameProperty() {
+        return statusName;
     }
 
     public double getCount() {
         return count.get();
     }
 
-    public SimpleDoubleProperty countProperty() {
-        return count;
-    }
-
     public void setCount(double count) {
         this.count.set(count);
+    }
+
+    public SimpleDoubleProperty countProperty() {
+        return count;
     }
 
     @Override

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tallison.tika.app.fx.tools;
+package org.tallison.tika.app.fx.batch;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tallison.tika.app.fx.config.TikaConfigWriter;
 import org.tallison.tika.app.fx.csv.CSVEmitterHelper;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.status.MutableStatus;
@@ -49,28 +50,16 @@ import org.apache.tika.utils.StringUtils;
 
 public class BatchProcess {
 
-    public enum STATUS {
-        READY, ERROR, RUNNING, COMPLETE, CANCELED;
-    }
-
-    private enum PROCESS_ID {
-        BATCH_PROCESS
-    }
-
     private static Logger LOGGER = LogManager.getLogger(BatchProcess.class);
-
     private final MutableStatus mutableStatus = new MutableStatus(STATUS.READY);
     private long runningProcessId = -1;
     private Path configFile;
     private BatchRunner batchRunner = null;
-
     private BatchProcessConfig batchProcessConfig = null;
-
     private Optional<Exception> jvmException = Optional.empty();
     private Optional<String> jvmErrorMsg = Optional.empty();
-    private ObjectMapper objectMapper = JsonMapper.builder()
-            .addModule(new JavaTimeModule())
-            .build();
+    private ObjectMapper objectMapper =
+            JsonMapper.builder().addModule(new JavaTimeModule()).build();
     private ExecutorService daemonExecutorService = Executors.newFixedThreadPool(2, r -> {
         Thread t = Executors.defaultThreadFactory().newThread(r);
         t.setDaemon(true);
@@ -79,8 +68,8 @@ public class BatchProcess {
     private ExecutorCompletionService<Integer> executorCompletionService =
             new ExecutorCompletionService<>(daemonExecutorService);
 
-    public synchronized void start(BatchProcessConfig batchProcessConfig, StatusUpdater statusUpdater)
-            throws TikaException, IOException {
+    public synchronized void start(BatchProcessConfig batchProcessConfig,
+                                   StatusUpdater statusUpdater) throws TikaException, IOException {
         deletePreviousRuns();
         TikaConfigWriter tikaConfigWriter = new TikaConfigWriter();
 
@@ -148,7 +137,7 @@ public class BatchProcess {
     }
 
     public Optional<AsyncStatus> checkAsyncStatus() {
-        if (! Files.isRegularFile(AppContext.BATCH_STATUS_PATH)) {
+        if (!Files.isRegularFile(AppContext.BATCH_STATUS_PATH)) {
             return Optional.empty();
         }
         try {
@@ -191,8 +180,6 @@ public class BatchProcess {
         }
     }
 
-    //If the emitter is a csv file,
-
     public long getRunningProcessId() {
         return runningProcessId;
     }
@@ -201,12 +188,22 @@ public class BatchProcess {
         return mutableStatus;
     }
 
+    //If the emitter is a csv file,
+
     public Optional<Exception> getJvmException() {
         return jvmException;
     }
 
     public Optional<String> getJvmErrorMsg() {
         return jvmErrorMsg;
+    }
+
+    public enum STATUS {
+        READY, ERROR, RUNNING, COMPLETE, CANCELED;
+    }
+
+    private enum PROCESS_ID {
+        BATCH_PROCESS
     }
 
     private class BatchRunner implements Callable<Integer> {
@@ -222,9 +219,8 @@ public class BatchProcess {
         @Override
         public Integer call() throws Exception {
             List<String> commandLine = buildCommandLine();
-            process = new ProcessBuilder(commandLine)
-                        .inheritIO() //TODO -- for dev purposes only
-                        .start();
+            process = new ProcessBuilder(commandLine).inheritIO() //TODO -- for dev purposes only
+                    .start();
             mutableStatus.set(STATUS.RUNNING);
             if (LOGGER.isTraceEnabled()) {
                 LOGGER.trace("process {}", process.isAlive());
@@ -278,8 +274,8 @@ public class BatchProcess {
         private List<String> buildCommandLine() {
             List<String> commandLine = new ArrayList<>();
 
-            commandLine.add(
-                    ProcessUtils.escapeCommandLine(AppContext.getInstance().getJavaHome().resolve("java").toString()));
+            commandLine.add(ProcessUtils.escapeCommandLine(
+                    AppContext.getInstance().getJavaHome().resolve("java").toString()));
             commandLine.add("-Dlog4j.configurationFile=config/log4j2-async-cli.xml");
             commandLine.add("-cp");
             String cp = buildClassPath();
