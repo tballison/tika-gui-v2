@@ -41,9 +41,9 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.util.StringConverter;
+import org.tallison.tika.app.fx.batch.BatchProcess;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.status.StatusCount;
-import org.tallison.tika.app.fx.tools.BatchProcess;
 
 import org.apache.tika.pipes.PipesResult;
 import org.apache.tika.pipes.async.AsyncStatus;
@@ -52,60 +52,44 @@ import org.apache.tika.pipes.pipesiterator.TotalCountResult;
 public class BatchStatusController implements Initializable {
 
     private static Map<String, PipesResult.STATUS> PIPES_STATUS_LOOKUP = new HashMap<>();
+    private static String UNPROCESSED_COLOR = "0066cc";
+    private static Map<PipesResult.STATUS, String> COLORS =
+            Map.of(PipesResult.STATUS.PARSE_SUCCESS, "009900",
+                    PipesResult.STATUS.PARSE_SUCCESS_WITH_EXCEPTION, "ffff00",
+                    PipesResult.STATUS.EMIT_SUCCESS, "009900", PipesResult.STATUS.TIMEOUT, "ff9900",
+                    PipesResult.STATUS.UNSPECIFIED_CRASH, "ff0000", PipesResult.STATUS.OOM,
+                    "ff8000", PipesResult.STATUS.CLIENT_UNAVAILABLE_WITHIN_MS, "",
+                    PipesResult.STATUS.INTERRUPTED_EXCEPTION, "", PipesResult.STATUS.EMPTY_OUTPUT,
+                    "ffe6cc", PipesResult.STATUS.PARSE_EXCEPTION_EMIT, ""
+                    //TODO -- fill out rest?
+            );
 
     static {
-        Arrays.stream(PipesResult.STATUS.values()).forEach(
-                s -> PIPES_STATUS_LOOKUP.put(s.name(), s));
+        Arrays.stream(PipesResult.STATUS.values())
+                .forEach(s -> PIPES_STATUS_LOOKUP.put(s.name(), s));
     }
-
-    private static String UNPROCESSED_COLOR = "0066cc";
-
-    private static Map<PipesResult.STATUS, String> COLORS = Map.of(
-            PipesResult.STATUS.PARSE_SUCCESS, "009900",
-            PipesResult.STATUS.PARSE_SUCCESS_WITH_EXCEPTION, "ffff00",
-            PipesResult.STATUS.EMIT_SUCCESS, "009900",
-            PipesResult.STATUS.TIMEOUT, "ff9900",
-            PipesResult.STATUS.UNSPECIFIED_CRASH, "ff0000",
-            PipesResult.STATUS.OOM, "ff8000",
-            PipesResult.STATUS.CLIENT_UNAVAILABLE_WITHIN_MS, "",
-            PipesResult.STATUS.INTERRUPTED_EXCEPTION, "",
-            PipesResult.STATUS.EMPTY_OUTPUT, "ffe6cc",
-            PipesResult.STATUS.PARSE_EXCEPTION_EMIT, ""
-            //TODO -- fill out rest?
-            );
-    @FXML
-    PieChart statusPieChart;
-
-    @FXML
-    TextField totalToProcess;
-
-    @FXML
-    TextField totalProcessed;
-
-    @FXML
-    TextField overallStatus;
-
-    @FXML
-    TableColumn countColumn;
-
-    @FXML
-    TableView statusTable;
 
     @FXML
     private final ObservableList<StatusCount> statusCounts = FXCollections.observableArrayList();
-
+    private final Label pieSliceCaption = new Label("");
+    @FXML
+    PieChart statusPieChart;
+    @FXML
+    TextField totalToProcess;
+    @FXML
+    TextField totalProcessed;
+    @FXML
+    TextField overallStatus;
+    @FXML
+    TableColumn countColumn;
+    @FXML
+    TableView statusTable;
+    ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+    private Thread updaterThread;
 
     public ObservableList<StatusCount> getStatusCounts() {
         return statusCounts;
     }
-
-
-    private Thread updaterThread;
-
-    private final Label pieSliceCaption = new Label("");
-
-
-    ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
@@ -129,7 +113,7 @@ public class BatchStatusController implements Initializable {
 
     private void updateStatusTable() {
         //remove 0 entries
-        statusCounts.removeIf( e -> e.getCount() < 0.1);
+        statusCounts.removeIf(e -> e.getCount() < 0.1);
         statusTable.sort();
         statusTable.refresh();
     }
@@ -146,7 +130,7 @@ public class BatchStatusController implements Initializable {
                 if (batchProcess.isPresent()) {
                     final Optional<AsyncStatus> status = batchProcess.get().checkAsyncStatus();
 
-                    if (! status.isEmpty()) {
+                    if (!status.isEmpty()) {
                         Platform.runLater(() -> {
                             updatePieChart(status.get());
                             updateTotalToProcess(status.get());
@@ -206,7 +190,7 @@ public class BatchStatusController implements Initializable {
                 }
             }
             for (Map.Entry<PipesResult.STATUS, Long> e : status.getStatusCounts().entrySet()) {
-                if (! seen.contains(e.getKey())) {
+                if (!seen.contains(e.getKey())) {
                     addData(e.getKey().name(), e.getValue());
                 }
             }
@@ -226,9 +210,10 @@ public class BatchStatusController implements Initializable {
                 }
             }
 
-            data.getNode().addEventHandler(MouseEvent.MOUSE_PRESSED,
-                    new EventHandler<MouseEvent>() {
-                        @Override public void handle(MouseEvent e) {
+            data.getNode()
+                    .addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
+                        @Override
+                        public void handle(MouseEvent e) {
                             pieSliceCaption.setTranslateX(e.getSceneX());
                             pieSliceCaption.setTranslateY(e.getSceneY());
                             pieSliceCaption.setText(String.valueOf(data.getPieValue()) + "%");
@@ -239,9 +224,10 @@ public class BatchStatusController implements Initializable {
             statusCount.countProperty().bind(data.pieValueProperty());
             statusCounts.add(statusCount);
         }
+
         private PipesResult.STATUS lookup(String name) {
 
-            if (! PIPES_STATUS_LOOKUP.containsKey(name)) {
+            if (!PIPES_STATUS_LOOKUP.containsKey(name)) {
                 return null;
             }
             return PIPES_STATUS_LOOKUP.get(name);

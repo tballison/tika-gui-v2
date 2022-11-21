@@ -24,8 +24,7 @@ public class Constants {
     public static final String FS_FETCHER_CLASS = FileSystemFetcher.class.getName();
 
     //an imaginary class
-    public static final String CSV_EMITTER_CLASS =
-            "org.apache.tika.pipes.emitter.csv.CSVEmitter";
+    public static final String CSV_EMITTER_CLASS = "org.apache.tika.pipes.emitter.csv.CSVEmitter";
 
     public static final String OPEN_SEARCH_EMITTER_CLASS =
             "org.apache.tika.pipes.emitter.opensearch.OpenSearchEmitter";

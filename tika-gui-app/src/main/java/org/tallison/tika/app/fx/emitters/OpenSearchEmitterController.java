@@ -34,23 +34,21 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
+import org.tallison.tika.app.fx.batch.BatchProcessConfig;
+import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
-import org.tallison.tika.app.fx.tools.BatchProcessConfig;
-import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
 
 public class OpenSearchEmitterController extends AbstractEmitterController
         implements Initializable {
-    private static AppContext APP_CONTEXT = AppContext.getInstance();
-    private static Logger LOGGER = LogManager.getLogger(OpenSearchEmitterController.class);
-
     //TODO -- this is bad
     private static final Pattern SIMPLE_URL_PATTERN =
             Pattern.compile("(?i)^https?:\\/\\/[-_a-z0-9\\.]+(?::\\d+)?\\/([-_a-z0-9\\.]+)");
-
+    private static AppContext APP_CONTEXT = AppContext.getInstance();
+    private static Logger LOGGER = LogManager.getLogger(OpenSearchEmitterController.class);
     @FXML
     private TextField openSearchUrl;
 
@@ -96,7 +94,8 @@ public class OpenSearchEmitterController extends AbstractEmitterController
                     emitter.getMetadataTuples().get().size() > 0) {
                 getMetadataRows().clear();
                 for (MetadataTuple t : emitter.getMetadataTuples().get()) {
-                    getMetadataRows().add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
+                    getMetadataRows().add(
+                            new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
                 }
             }
         } else {

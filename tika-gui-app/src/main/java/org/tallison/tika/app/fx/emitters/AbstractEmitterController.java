@@ -42,11 +42,11 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ControllerBase;
+import org.tallison.tika.app.fx.batch.BatchProcessConfig;
+import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
-import org.tallison.tika.app.fx.tools.BatchProcessConfig;
-import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
 
@@ -56,11 +56,6 @@ public abstract class AbstractEmitterController extends ControllerBase {
 
     @FXML
     private final ObservableList<MetadataRow> metadataRows = FXCollections.observableArrayList();
-
-    public ObservableList<MetadataRow> getMetadataRows() {
-        return metadataRows;
-    }
-
     @FXML
     private TextField tikaField;
     @FXML
@@ -69,12 +64,16 @@ public abstract class AbstractEmitterController extends ControllerBase {
     private TextField propertyField;
     private Optional<Path> csvMetadataPath = Optional.empty();
 
+    public ObservableList<MetadataRow> getMetadataRows() {
+        return metadataRows;
+    }
+
     abstract protected void saveState();
 
     /**
      * This confirms the string is not empty and represents an
      * actual path that exists as a regular file.
-     *
+     * <p>
      * It will silently do nothing if these conditions are not met.
      *
      * @param csvMetadataFilePath
@@ -122,9 +121,9 @@ public abstract class AbstractEmitterController extends ControllerBase {
     }
 
     private void loadMetadataCSV(File csvFile) throws IOException {
-        char delimiter = csvFile.getName().endsWith(".txt") ||
-                csvFile.getName().endsWith(".tsv") ?
-                '\t' : ',';
+        char delimiter =
+                csvFile.getName().endsWith(".txt") || csvFile.getName().endsWith(".tsv") ? '\t' :
+                        ',';
         //TODO add a reader that removes the BOM
         CSVFormat format = CSVFormat.Builder.create(CSVFormat.EXCEL).setDelimiter(delimiter)
                 .setHeader() // no clue why this is needed,but it is
@@ -155,8 +154,8 @@ public abstract class AbstractEmitterController extends ControllerBase {
         if (!StringUtils.isBlank(tikaField.getText()) &&
                 !StringUtils.isBlank(outputField.getText())) {
             //check that property can be parsed to int > 0 if exists
-            metadataRows.add(new MetadataRow(tikaField.getText(),
-                    outputField.getText(), propertyField.getText()));
+            metadataRows.add(new MetadataRow(tikaField.getText(), outputField.getText(),
+                    propertyField.getText()));
             tikaField.setText("");
             outputField.setText("");
             propertyField.setText("");
@@ -167,14 +166,15 @@ public abstract class AbstractEmitterController extends ControllerBase {
     protected void saveMetadataToEmitter(ConfigItem emitter) {
         List<MetadataTuple> metadataTuples = new ArrayList<>();
         for (MetadataRow metadataRow : getMetadataRows()) {
-            metadataTuples.add(new MetadataTuple(metadataRow.getTika(),
-                    metadataRow.getOutput(), metadataRow.getProperty()));
+            metadataTuples.add(new MetadataTuple(metadataRow.getTika(), metadataRow.getOutput(),
+                    metadataRow.getProperty()));
         }
         emitter.setMetadataTuples(metadataTuples);
     }
 
     /**
      * This checks for empty keys and duplicate output keys
+     *
      * @return
      */
     protected boolean validateMetadataRows() {
@@ -187,15 +187,15 @@ public abstract class AbstractEmitterController extends ControllerBase {
             String t = row.getTika();
             if (StringUtils.isBlank(t)) {
                 alert("Blank Tika key", "Blank Tika key",
-                        "There's an empty Tika key in row " + i +
-                        ". The output value is: " + row.getOutput());
+                        "There's an empty Tika key in row " + i + ". The output value is: " +
+                                row.getOutput());
                 return false;
             }
             String o = row.getOutput();
             if (StringUtils.isBlank(o)) {
                 alert("Blank output key", "Blank output key",
-                        "There's an empty output key in row " + i +
-                                ". The Tika value is: " + row.getTika());
+                        "There's an empty output key in row " + i + ". The Tika value is: " +
+                                row.getTika());
                 return false;
             } else {
                 if (output.contains(o)) {

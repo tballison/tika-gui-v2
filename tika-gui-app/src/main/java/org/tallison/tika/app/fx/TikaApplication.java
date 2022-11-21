@@ -30,8 +30,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.tallison.tika.app.fx.batch.BatchProcess;
 import org.tallison.tika.app.fx.ctx.AppContext;
-import org.tallison.tika.app.fx.tools.BatchProcess;
 
 public class TikaApplication extends Application {
 

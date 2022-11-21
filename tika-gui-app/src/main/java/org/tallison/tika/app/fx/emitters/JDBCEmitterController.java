@@ -40,57 +40,35 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.tallison.tika.app.fx.Constants;
+import org.tallison.tika.app.fx.batch.BatchProcessConfig;
+import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
-import org.tallison.tika.app.fx.tools.BatchProcessConfig;
-import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
 
 public class JDBCEmitterController extends AbstractEmitterController implements Initializable {
 
-    private enum VALIDITY {
-        NO_CONNECTION_STRING,
-        METADATA_NOT_CONFIGURED,
-        METADATA_ANOMALY,
-        FAILED_TO_CONNECT,
-        VALID,
-        COLUMN_MISMATCH,
-        TABLE_EXISTS_WITH_DATA,
-        NEED_TO_CREATE_TABLE,
-        SQL_EXCEPTION
-    }
-
+    private final static int TAB_INDEX = 3;
     private static String ALERT_TITLE = "JDBC Emitter";
     private static Logger LOGGER = LogManager.getLogger(JDBCEmitterController.class);
 
     private static String PATH_COL_NAME = "path";
 
     private static String ATTACHMENT_NUM_COL_NAME = "attach_num";
-
-    private final static int TAB_INDEX = 3;
-
     private String insertSql = StringUtils.EMPTY;
-
     @FXML
     private TextField jdbcConnection;
-
     @FXML
     private TextField tableName;
-
     @FXML
     private Button validateJDBC;
-
     @FXML
     private FontIcon readyIcon;
-
     @FXML
     private FontIcon notReadyIcon;
-
     @FXML
     private Accordion jdbcAccordion;
-
-
 
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
@@ -107,25 +85,26 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             return;
         }
         ConfigItem emitter = configItem.get();
-        if (! emitter.getClazz().equals(Constants.JDBC_EMITTER_CLASS)) {
+        if (!emitter.getClazz().equals(Constants.JDBC_EMITTER_CLASS)) {
             return;
         }
 
         if (emitter.getAttributes().containsKey(Constants.JDBC_CONNECTION_STRING)) {
             String s = emitter.getAttributes().get(Constants.JDBC_CONNECTION_STRING);
-            if (! StringUtils.isBlank(s)) {
+            if (!StringUtils.isBlank(s)) {
                 jdbcConnection.setText(s);
             }
         }
 
         if (emitter.getAttributes().containsKey(Constants.JDBC_TABLE_NAME)) {
             String s = emitter.getAttributes().get(Constants.JDBC_TABLE_NAME);
-            if (! StringUtils.isBlank(s)) {
+            if (!StringUtils.isBlank(s)) {
                 tableName.setText(s);
             }
         }
 
-        if (emitter.getMetadataTuples().isPresent() && emitter.getMetadataTuples().get().size() > 0) {
+        if (emitter.getMetadataTuples().isPresent() &&
+                emitter.getMetadataTuples().get().size() > 0) {
             getMetadataRows().clear();
             for (MetadataTuple t : emitter.getMetadataTuples().get()) {
                 getMetadataRows().add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
@@ -149,21 +128,19 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         String jdbcConnectionString = StringUtils.EMPTY;
         String tableNameString = StringUtils.EMPTY;
 
-        if (! StringUtils.isBlank(jdbcConnection.getText())) {
+        if (!StringUtils.isBlank(jdbcConnection.getText())) {
             jdbcConnectionString = jdbcConnection.getText();
         }
 
-        if (! StringUtils.isBlank(tableName.getText())) {
+        if (!StringUtils.isBlank(tableName.getText())) {
             tableNameString = tableName.getText();
             shortLabel = "JDBC: " + ellipsize(tableNameString, 30);
             fullLabel = "JDBC: " + tableNameString;
         }
 
-        ConfigItem emitter = ConfigItem.build(shortLabel, fullLabel,
-                Constants.JDBC_EMITTER_CLASS,
-                Constants.JDBC_CONNECTION_STRING, jdbcConnectionString,
-                Constants.JDBC_TABLE_NAME, tableNameString,
-                Constants.JDBC_INSERT_SQL, insertSql);
+        ConfigItem emitter = ConfigItem.build(shortLabel, fullLabel, Constants.JDBC_EMITTER_CLASS,
+                Constants.JDBC_CONNECTION_STRING, jdbcConnectionString, Constants.JDBC_TABLE_NAME,
+                tableNameString, Constants.JDBC_INSERT_SQL, insertSql);
 
         saveMetadataToEmitter(emitter);
 
@@ -178,7 +155,6 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
 
         APP_CONTEXT.saveState();
     }
-
 
     public void validateJDBC(ActionEvent actionEvent) {
         VALIDITY validity = validate();
@@ -245,7 +221,6 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         });
     }
 
-
     private void existingDataDialog() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(ALERT_TITLE);
@@ -309,7 +284,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             return VALIDITY.METADATA_NOT_CONFIGURED;
         }
         boolean validMetadata = validateMetadata();
-        if (! validMetadata) {
+        if (!validMetadata) {
             return VALIDITY.METADATA_ANOMALY;
         }
 
@@ -329,9 +304,10 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         try (Connection connection = DriverManager.getConnection(cString)) {
             try (Statement st = connection.createStatement()) {
                 int rows = 0;
-                try (ResultSet rs = st.executeQuery("select * from " + tableName.getText() + " limit 10;")) {
+                try (ResultSet rs = st.executeQuery(
+                        "select * from " + tableName.getText() + " limit 10;")) {
                     boolean validColumns = validateColumns(rs.getMetaData());
-                    if (! validColumns) {
+                    if (!validColumns) {
                         //TODO -- add a drop table or modify option
                         //TODO -- show the specific mismatch
                         return VALIDITY.COLUMN_MISMATCH;
@@ -361,15 +337,16 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
 
     private boolean validateColumns(ResultSetMetaData metaData) throws SQLException {
         //TODO -- check column types!
-        for (int i = 1;  i <= metaData.getColumnCount(); i++) {
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
             if (i == 1) {
-                if (! PATH_COL_NAME.equalsIgnoreCase(metaData.getColumnName(i))) {
-                    alert(ALERT_TITLE, "Unexpected column name", "First column should be: " + PATH_COL_NAME);
+                if (!PATH_COL_NAME.equalsIgnoreCase(metaData.getColumnName(i))) {
+                    alert(ALERT_TITLE, "Unexpected column name",
+                            "First column should be: " + PATH_COL_NAME);
                     return false;
                 }
             }
             if (i == 2) {
-                if (! ATTACHMENT_NUM_COL_NAME.equalsIgnoreCase(metaData.getColumnName(i))) {
+                if (!ATTACHMENT_NUM_COL_NAME.equalsIgnoreCase(metaData.getColumnName(i))) {
                     alert(ALERT_TITLE, "Unexpected column name",
                             "Second column should be: " + ATTACHMENT_NUM_COL_NAME);
                     return false;
@@ -377,11 +354,12 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             }
             if (i > 2) {
                 int tableRow = i - 3;
-                if (!metaData.getColumnName(i).equalsIgnoreCase(getMetadataRows().get(tableRow).getOutput())) {
+                if (!metaData.getColumnName(i)
+                        .equalsIgnoreCase(getMetadataRows().get(tableRow).getOutput())) {
                     alert(ALERT_TITLE, "Unexpected column name",
                             "Column number (" + i + ")  should be: " +
                                     getMetadataRows().get(tableRow).getOutput() + " but is " +
-                            metaData.getColumnName(i));
+                                    metaData.getColumnName(i));
                     return false;
                 }
             }
@@ -393,7 +371,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             sb.append("'").append(col).append("'").append(" ");
         }
         String warn = sb.toString().trim();
-        if (! StringUtils.isBlank(warn)) {
+        if (!StringUtils.isBlank(warn)) {
             alert(ALERT_TITLE, "Unexpected column(s)",
                     "Columns defined in metadata but not defined in the table: " + warn);
             return false;
@@ -446,6 +424,11 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         }
         sb.append(")");
         return sb.toString();
+    }
+
+    private enum VALIDITY {
+        NO_CONNECTION_STRING, METADATA_NOT_CONFIGURED, METADATA_ANOMALY, FAILED_TO_CONNECT, VALID,
+        COLUMN_MISMATCH, TABLE_EXISTS_WITH_DATA, NEED_TO_CREATE_TABLE, SQL_EXCEPTION
     }
 
 }

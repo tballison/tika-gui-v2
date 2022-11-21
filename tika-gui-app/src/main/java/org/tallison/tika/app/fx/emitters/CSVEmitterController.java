@@ -47,11 +47,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.tallison.tika.app.fx.Constants;
+import org.tallison.tika.app.fx.batch.BatchProcessConfig;
+import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.csv.CSVEmitterHelper;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
-import org.tallison.tika.app.fx.tools.BatchProcessConfig;
-import org.tallison.tika.app.fx.tools.ConfigItem;
 
 import org.apache.tika.utils.StringUtils;
 
@@ -99,10 +99,11 @@ public class CSVEmitterController extends AbstractEmitterController implements I
             return;
         }
         ConfigItem emitter = configItem.get();
-        if (! emitter.getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
+        if (!emitter.getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
             return;
         }
-        if (emitter.getMetadataTuples().isPresent() && emitter.getMetadataTuples().get().size() > 0) {
+        if (emitter.getMetadataTuples().isPresent() &&
+                emitter.getMetadataTuples().get().size() > 0) {
             getMetadataRows().clear();
             for (MetadataTuple t : emitter.getMetadataTuples().get()) {
                 getMetadataRows().add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
@@ -177,13 +178,12 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         }
 
         Optional<Path> csvMetadataPath = getCsvMetadataPath();
-        String csvMetadataPathString = csvMetadataPath.isPresent() ?
-                csvMetadataPath.get().toAbsolutePath().toString() : StringUtils.EMPTY;
+        String csvMetadataPathString =
+                csvMetadataPath.isPresent() ? csvMetadataPath.get().toAbsolutePath().toString() :
+                        StringUtils.EMPTY;
 
-        ConfigItem emitter = ConfigItem.build(shortLabel, fullLabel,
-                Constants.CSV_EMITTER_CLASS,
-                Constants.BASE_PATH, directoryString,
-                Constants.CSV_FILE_NAME, csvOutputFileString,
+        ConfigItem emitter = ConfigItem.build(shortLabel, fullLabel, Constants.CSV_EMITTER_CLASS,
+                Constants.BASE_PATH, directoryString, Constants.CSV_FILE_NAME, csvOutputFileString,
                 Constants.CSV_METADATA_PATH, csvMetadataPathString);
 
         saveMetadataToEmitter(emitter);
@@ -271,7 +271,7 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         if (Files.isRegularFile(csvFile)) {
             success = deleteCSVFileDialog(csvFile);
         }
-        if (! success) {
+        if (!success) {
             LOGGER.warn("didn't delete csv file");
             actionEvent.consume();
             return;
@@ -289,7 +289,7 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         readyIcon.setVisible(true);
         notReadyIcon.setVisible(false);
 
-        ((Stage)updateCSV.getScene().getWindow()).close();
+        ((Stage) updateCSV.getScene().getWindow()).close();
     }
 
     private boolean deleteCSVFileDialog(Path csvFile) {
@@ -307,8 +307,8 @@ public class CSVEmitterController extends AbstractEmitterController implements I
                     Files.delete(csvFile);
                     success.set(true);
                 } catch (IOException e) {
-                    alert(ALERT_TITLE, "Couldn't delete csv file", "Couldn't delete file: " +
-                            csvFile.toAbsolutePath());
+                    alert(ALERT_TITLE, "Couldn't delete csv file",
+                            "Couldn't delete file: " + csvFile.toAbsolutePath());
                 }
             } else if (type.getText().startsWith("Cancel")) {
                 return;

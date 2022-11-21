@@ -14,28 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tallison.tika.app.fx.status;
+package org.tallison.tika.app.fx.config;
 
-import org.tallison.tika.app.fx.batch.BatchProcess;
+import java.nio.file.Path;
 
-public class MutableStatus {
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.tallison.tika.app.fx.batch.BatchProcessConfig;
 
-    private BatchProcess.STATUS status;
+public class TestTikaConfigWriter {
 
-    public MutableStatus(BatchProcess.STATUS status) {
-        this.status = status;
+    @Test
+    public void testBasic(@TempDir Path dir) throws Exception {
+
+        TikaConfigWriter configWriter = new TikaConfigWriter();
+        BatchProcessConfig batchProcessConfig = new BatchProcessConfig();
+        Path tmp = configWriter.writeConfig(batchProcessConfig, dir);
+
     }
 
-    public synchronized void set(BatchProcess.STATUS status) {
-        this.status = status;
-    }
-
-    public BatchProcess.STATUS get() {
-        return status;
-    }
-
-    @Override
-    public String toString() {
-        return "MutableStatus{" + "status=" + status + '}';
-    }
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tallison.tika.app.fx.tools;
+package org.tallison.tika.app.fx.batch;
 
 import static org.tallison.tika.app.fx.Constants.CSV_JDBC_CONNECTION_STRING;
 import static org.tallison.tika.app.fx.Constants.JDBC_CONNECTION_STRING;
@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.tallison.tika.app.fx.Constants;
+import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.ctx.AppContext;
 
 import org.apache.tika.utils.ProcessUtils;
@@ -57,9 +58,9 @@ public class BatchProcessConfig {
 
     private int parseTimeoutSeconds = 120;
 
-    private int perFileEmitThresholdMb = 100;
+    private int perFileEmitThresholdMb = 1;
 
-    private int totalEmitThesholdMb = 1000;
+    private int totalEmitThesholdMb = 100;
 
     private long emitWithinMs = 10000;
 
@@ -140,7 +141,8 @@ public class BatchProcessConfig {
                                 .toAbsolutePath() + "/*"));
             } else if (emitter.getClazz().equals(Constants.JDBC_EMITTER_CLASS) ||
                     emitter.getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
-                sb.append(AppContext.TIKA_LIB_PATH.resolve("tika-emitter-jdbc").toAbsolutePath() + "/*");
+                sb.append(AppContext.TIKA_LIB_PATH.resolve("tika-emitter-jdbc").toAbsolutePath() +
+                        "/*");
                 sb.append(File.pathSeparator);
                 String connectString = emitter.getClazz().equals(JDBC_EMITTER_CLASS) ?
                         getEmitter().get().getAttributes().get(JDBC_CONNECTION_STRING) :
@@ -151,7 +153,8 @@ public class BatchProcessConfig {
                 } else if (connectString.startsWith("jdbc:h2")) {
                     sb.append(AppContext.TIKA_LIB_PATH.resolve("db/h2").toAbsolutePath() + "/*");
                 } else if (connectString.startsWith("jdbc:postgres")) {
-                    sb.append(AppContext.TIKA_LIB_PATH.resolve("db/postgresql").toAbsolutePath() + "/*");
+                    sb.append(AppContext.TIKA_LIB_PATH.resolve("db/postgresql").toAbsolutePath() +
+                            "/*");
                 }
             }
         }
@@ -189,20 +192,20 @@ public class BatchProcessConfig {
         this.maxMemMb = maxMemMb;
     }
 
-    public void setOutputSelectedTab(int outputSelectedTab) {
-        this.outputSelectedTab = outputSelectedTab;
-    }
-
-    public void setInputSelectedTab(int inputSelectedTab) {
-        this.inputSelectedTab = inputSelectedTab;
-    }
-
     public int getOutputSelectedTab() {
         return outputSelectedTab;
     }
 
+    public void setOutputSelectedTab(int outputSelectedTab) {
+        this.outputSelectedTab = outputSelectedTab;
+    }
+
     public int getInputSelectedTab() {
         return inputSelectedTab;
+    }
+
+    public void setInputSelectedTab(int inputSelectedTab) {
+        this.inputSelectedTab = inputSelectedTab;
     }
 
     public int getPerFileEmitThresholdMb() {

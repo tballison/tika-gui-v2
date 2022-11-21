@@ -32,17 +32,28 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.tallison.tika.app.fx.tools.BatchProcess;
-import org.tallison.tika.app.fx.tools.BatchProcessConfig;
+import org.tallison.tika.app.fx.batch.BatchProcess;
+import org.tallison.tika.app.fx.batch.BatchProcessConfig;
 
 import org.apache.tika.utils.StringUtils;
 
 
 public class AppContext {
 
+    public static Path TIKA_GUI_JAVA_HOME;
+    public static Path TIKA_APP_HOME = Paths.get("");
+    public static Path TIKA_LIB_PATH = TIKA_APP_HOME.resolve("lib");
+    public static Path TIKA_CORE_BIN_PATH = TIKA_LIB_PATH.resolve("tika-core");
+    public static Path TIKA_APP_BIN_PATH = TIKA_LIB_PATH.resolve("tika-app");
+    public static Path TIKA_EXTRAS_BIN_PATH = TIKA_LIB_PATH.resolve("tika-extras");
+    public static Path APP_STATE_PATH = TIKA_APP_HOME.resolve("config/tika-app-v2-config.json");
+    public static Path CONFIG_PATH = TIKA_APP_HOME.resolve("config");
+    public static Path ASYNC_LOG4J2_PATH = CONFIG_PATH.resolve("log4j2-async.xml");
+    public static Path LOGS_PATH = TIKA_APP_HOME.resolve("logs");
+    public static Path BATCH_STATUS_PATH = LOGS_PATH.resolve("batch_status.json");
     private static Logger LOGGER = LogManager.getLogger(AppContext.class);
-
     private static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static volatile AppContext APP_CONTEXT;
 
     static {
         //this is necessary for optionals
@@ -51,38 +62,23 @@ public class AppContext {
         OBJECT_MAPPER.registerModule(new Jdk8Module());
     }
 
-    public static Path TIKA_GUI_JAVA_HOME;
     static {
-        if (! StringUtils.isBlank(System.getProperty("TIKA_GUI_JAVA_HOME"))) {
+        if (!StringUtils.isBlank(System.getProperty("TIKA_GUI_JAVA_HOME"))) {
             LOGGER.debug("setting TIKA_GUI_JAVA_HOME {}", System.getProperty("TIKA_GUI_JAVA_HOME"));
             TIKA_GUI_JAVA_HOME = Paths.get(System.getProperty("TIKA_GUI_JAVA_HOME"));
-        } else if (! StringUtils.isBlank(System.getProperty("java.home"))) {
+        } else if (!StringUtils.isBlank(System.getProperty("java.home"))) {
             TIKA_GUI_JAVA_HOME = Paths.get(System.getProperty("java.home"));
             LOGGER.debug("setting TIKA_GUI_JAVA_HOME {} from java.home",
                     System.getProperty("java.home"));
         }
     }
-    public static Path TIKA_APP_HOME = Paths.get("");
-    public static Path TIKA_LIB_PATH = TIKA_APP_HOME.resolve("lib");
-    public static Path TIKA_CORE_BIN_PATH = TIKA_LIB_PATH.resolve("tika-core");
-    public static Path TIKA_APP_BIN_PATH = TIKA_LIB_PATH.resolve("tika-app");
-    public static Path TIKA_EXTRAS_BIN_PATH = TIKA_LIB_PATH.resolve("tika-extras");
-    public static Path APP_STATE_PATH = TIKA_APP_HOME.resolve("config/tika-app-v2-config.json");
-    private static volatile AppContext APP_CONTEXT;
-    public static Path CONFIG_PATH = TIKA_APP_HOME.resolve("config");
-    public static Path ASYNC_LOG4J2_PATH = CONFIG_PATH.resolve("log4j2-async.xml");
-    public static Path LOGS_PATH = TIKA_APP_HOME.resolve("logs");
-    public static Path BATCH_STATUS_PATH = LOGS_PATH.resolve("batch_status.json");
 
-
-
+    private final boolean allowBatchToRunOnExit = false;
     private String tikaVersion = "2.6.0";
     private Optional<BatchProcessConfig> batchProcessConfig = Optional.of(new BatchProcessConfig());
-
     @JsonIgnore
     private Optional<BatchProcess> batchProcess = Optional.empty();
     private volatile boolean closed = false;
-    private final boolean allowBatchToRunOnExit = false;
 
     public static AppContext load() {
 
@@ -109,7 +105,7 @@ public class AppContext {
 
     private static AppContext load(Path configPath) throws IOException {
         try (Reader reader = Files.newBufferedReader(configPath, StandardCharsets.UTF_8)) {
-            AppContext appContext =  OBJECT_MAPPER.readValue(reader, AppContext.class);
+            AppContext appContext = OBJECT_MAPPER.readValue(reader, AppContext.class);
             //for now, set the batch process to null
             appContext.setBatchProcess(null);
             return appContext;

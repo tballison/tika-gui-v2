@@ -26,7 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ControllerBase;
 import org.tallison.tika.app.fx.TikaController;
-import org.tallison.tika.app.fx.tools.BatchProcess;
+import org.tallison.tika.app.fx.batch.BatchProcess;
 
 import org.apache.tika.pipes.PipesResult;
 import org.apache.tika.pipes.async.AsyncStatus;
@@ -34,10 +34,10 @@ import org.apache.tika.pipes.pipesiterator.TotalCountResult;
 
 public class StatusUpdater implements Callable<Integer> {
     private static Logger LOGGER = LogManager.getLogger(StatusUpdater.class);
-    private SimpleFloatProperty progressValue = new SimpleFloatProperty(0.0f);
     private final ProgressIndicator progressIndicator;
     private final TikaController tikaController;
     private final BatchProcess batchProcess;
+    private SimpleFloatProperty progressValue = new SimpleFloatProperty(0.0f);
 
     public StatusUpdater(BatchProcess batchProcess, TikaController tikaController) {
         this.batchProcess = batchProcess;
@@ -58,8 +58,8 @@ public class StatusUpdater implements Callable<Integer> {
             if (asyncStatusOptional.isPresent()) {
                 AsyncStatus asyncStatus = asyncStatusOptional.get();
                 long processed = 0;
-                for (Map.Entry<PipesResult.STATUS, Long> e :
-                        asyncStatus.getStatusCounts().entrySet()) {
+                for (Map.Entry<PipesResult.STATUS, Long> e : asyncStatus.getStatusCounts()
+                        .entrySet()) {
                     processed += e.getValue();
                 }
                 LOGGER.debug("processed {}", asyncStatus);
@@ -87,9 +87,8 @@ public class StatusUpdater implements Callable<Integer> {
                 Optional<Exception> exception = batchProcess.getJvmException();
                 Optional<String> jvmError = batchProcess.getJvmErrorMsg();
                 if (exception.isPresent()) {
-                    ControllerBase.alertStackTrace("Batch process failed",
-                            "Batch process failed", "Serious problem",
-                            exception.get());
+                    ControllerBase.alertStackTrace("Batch process failed", "Batch process failed",
+                            "Serious problem", exception.get());
                 } else if (jvmError.isPresent()) {
                     ControllerBase.alert("Batch process failed", "Batch process failed",
                             jvmError.get());
@@ -100,8 +99,8 @@ public class StatusUpdater implements Callable<Integer> {
                 }
                 return 1;
             }
-            if (asyncStatusOptional.isPresent() &&
-                    asyncStatusOptional.get().getAsyncStatus() == AsyncStatus.ASYNC_STATUS.COMPLETED) {
+            if (asyncStatusOptional.isPresent() && asyncStatusOptional.get().getAsyncStatus() ==
+                    AsyncStatus.ASYNC_STATUS.COMPLETED) {
                 progressValue.set(1.0f);
                 tikaController.updateButtons(BatchProcess.STATUS.COMPLETE);
                 return 1;

@@ -64,12 +64,12 @@ public class MetadataRow {
         return property.get();
     }
 
-    public SimpleStringProperty propertyProperty() {
-        return property;
-    }
-
     public void setProperty(String property) {
         this.property.set(property);
+    }
+
+    public SimpleStringProperty propertyProperty() {
+        return property;
     }
 
     @Override
