@@ -23,7 +23,7 @@
   <parent>
     <artifactId>tika-gui-v2</artifactId>
     <groupId>org.tallison</groupId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0-ALPHA2</version>
   </parent>
 
   <artifactId>tika-gui-app</artifactId>
