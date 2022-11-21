@@ -31,23 +31,6 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>${project.basedir}/target/jres/linux_x64/zulu17.38.21-ca-fx-jre17.0.5-linux_x64</directory>
-      <outputDirectory>jre</outputDirectory>
-      <excludes>
-        <exclude>bin/java</exclude>
-        <exclude>lib/jspawnhelper</exclude>
-      </excludes>
-    </fileSet>
-    <fileSet>
-      <directory>${project.basedir}/target/jres/linux_x64/zulu17.38.21-ca-fx-jre17.0.5-linux_x64</directory>
-      <outputDirectory>jre</outputDirectory>
-      <includes>
-        <include>bin/java</include>
-        <include>lib/jspawnhelper</include>
-      </includes>
-      <fileMode>0755</fileMode>
-    </fileSet>
-    <fileSet>
       <directory>${project.basedir}/config</directory>
       <outputDirectory>config</outputDirectory>
     </fileSet>
@@ -57,6 +40,10 @@
     </fileSet>
   </fileSets>
   <files>
+    <file>
+      <source>${project.basedir}/target/jres/linux_x64/zulu17.38.21-ca-fx-jre17.0.5-linux_x64.tar.gz</source>
+      <outputDirectory>jre</outputDirectory>
+    </file>
     <file>
       <source>${project.basedir}/bin/tika-gui.sh</source>
       <outputDirectory></outputDirectory>
