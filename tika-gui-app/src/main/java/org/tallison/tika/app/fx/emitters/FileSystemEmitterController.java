@@ -39,13 +39,14 @@ import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
+import org.tallison.tika.app.fx.utils.OptionalUtil;
 
 import org.apache.tika.utils.StringUtils;
 
 public class FileSystemEmitterController extends AbstractEmitterController
         implements Initializable {
-    private static AppContext APP_CONTEXT = AppContext.getInstance();
-    private static Logger LOGGER = LogManager.getLogger(FileSystemEmitterController.class);
+    private static final AppContext APP_CONTEXT = AppContext.getInstance();
+    private static final Logger LOGGER = LogManager.getLogger(FileSystemEmitterController.class);
 
     @FXML
     private Button fsOutputButton;
@@ -68,17 +69,11 @@ public class FileSystemEmitterController extends AbstractEmitterController
             return;
         }
 
-        ConfigItem emitter = APP_CONTEXT.getBatchProcessConfig().get().getEmitter().get();
-        if (!emitter.getClazz().equals(Constants.FS_EMITTER_CLASS)) {
+        EmitterSpec emitter = APP_CONTEXT.getBatchProcessConfig().get().getEmitter().get();
+        if (! (emitter instanceof FileSystemEmitterSpec)) {
             return;
         }
-        if (emitter.getMetadataTuples().isPresent() &&
-                emitter.getMetadataTuples().get().size() > 0) {
-            getMetadataRows().clear();
-            for (MetadataTuple t : emitter.getMetadataTuples().get()) {
-                getMetadataRows().add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
-            }
-        }
+        updateMetadataRows(((FileSystemEmitterSpec) emitter).getMetadataTuples());
 
     }
 
@@ -96,13 +91,12 @@ public class FileSystemEmitterController extends AbstractEmitterController
             actionEvent.consume();
             return;
         }
-        Optional<ConfigItem> emitter = batchProcessConfig.getEmitter();
+        Optional<EmitterSpec> emitter = batchProcessConfig.getEmitter();
         if (emitter.isPresent()) {
-            if (emitter.get().getClazz() != null &&
-                    emitter.get().getClazz().equals(Constants.FS_EMITTER_CLASS)) {
-                String path = emitter.get().getAttributes().get(Constants.BASE_PATH);
-                if (!StringUtils.isBlank(path)) {
-                    File f = new File(path);
+            if (emitter.get() instanceof FileSystemEmitterSpec) {
+                Optional<Path> path = ((FileSystemEmitterSpec)emitter.get()).getBasePath();
+                if (path.isPresent()) {
+                    File f = path.get().toFile();
                     if (f.isDirectory()) {
                         directoryChooser.setInitialDirectory(f);
                     }
@@ -129,9 +123,15 @@ public class FileSystemEmitterController extends AbstractEmitterController
             Path p = directory.get();
             String shortLabel = "FileSystem: " + ellipsize(p.getFileName().toString(), 30);
             String fullLabel = "FileSystem: " + p.toAbsolutePath();
-            ConfigItem emitter = ConfigItem.build(shortLabel, fullLabel, Constants.FS_EMITTER_CLASS,
-                    Constants.BASE_PATH, p.toAbsolutePath().toString());
-            saveMetadataToEmitter(emitter);
+            EmitterSpec emitter = new FileSystemEmitterSpec(getMetadataTuples());
+            ((FileSystemEmitterSpec) emitter).setBasePath(p);
+            emitter.setShortLabel(shortLabel);
+            emitter.setFullLabel(fullLabel);
+            ValidationResult validationResult = emitter.validate();
+            if (validationResult != ValidationResult.OK) {
+                alert(validationResult.getHeader().get(), validationResult.getTitle().get(),
+                        validationResult.getMsg().get());
+            }
             bpc.setEmitter(emitter);
         }
         //TODO -- do better than hard coding indices

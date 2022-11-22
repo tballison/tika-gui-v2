@@ -33,11 +33,11 @@ import org.apache.tika.pipes.async.AsyncStatus;
 import org.apache.tika.pipes.pipesiterator.TotalCountResult;
 
 public class StatusUpdater implements Callable<Integer> {
-    private static Logger LOGGER = LogManager.getLogger(StatusUpdater.class);
+    private static final Logger LOGGER = LogManager.getLogger(StatusUpdater.class);
     private final ProgressIndicator progressIndicator;
     private final TikaController tikaController;
     private final BatchProcess batchProcess;
-    private SimpleFloatProperty progressValue = new SimpleFloatProperty(0.0f);
+    private final SimpleFloatProperty progressValue = new SimpleFloatProperty(0.0f);
 
     public StatusUpdater(BatchProcess batchProcess, TikaController tikaController) {
         this.batchProcess = batchProcess;

@@ -17,12 +17,14 @@
 package org.tallison.tika.app.fx.emitters;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Accordion;
@@ -31,6 +33,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.Constants;
@@ -44,11 +47,13 @@ import org.apache.tika.utils.StringUtils;
 
 public class OpenSearchEmitterController extends AbstractEmitterController
         implements Initializable {
+
     //TODO -- this is bad
     private static final Pattern SIMPLE_URL_PATTERN =
             Pattern.compile("(?i)^https?:\\/\\/[-_a-z0-9\\.]+(?::\\d+)?\\/([-_a-z0-9\\.]+)");
-    private static AppContext APP_CONTEXT = AppContext.getInstance();
-    private static Logger LOGGER = LogManager.getLogger(OpenSearchEmitterController.class);
+
+    private static final AppContext APP_CONTEXT = AppContext.getInstance();
+    private static final Logger LOGGER = LogManager.getLogger(OpenSearchEmitterController.class);
     @FXML
     private TextField openSearchUrl;
 
@@ -74,34 +79,31 @@ public class OpenSearchEmitterController extends AbstractEmitterController
             LOGGER.warn("batch process config must not be null at this point");
             return;
         }
-        Optional<ConfigItem> emitterOptional =
+        Optional<EmitterSpec> emitterOptional =
                 APP_CONTEXT.getBatchProcessConfig().get().getEmitter();
         if (APP_CONTEXT.getBatchProcessConfig().get().getEmitter().isEmpty()) {
             return;
         }
-        ConfigItem emitter = emitterOptional.get();
-
-        if (emitter.getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
-            openSearchUrl.setText(emitter.getAttributes().get(Constants.OPEN_SEARCH_URL));
-            openSearchUserName.setText(emitter.getAttributes().get(Constants.OPEN_SEARCH_USER));
-            String selected = emitter.getAttributes().get(Constants.OPEN_SEARCH_UPDATE_STRATEGY);
-            if (!StringUtils.isBlank(selected)) {
-                openSearchUpdateStrategy.getSelectionModel().select(selected);
-            } else {
-                openSearchUpdateStrategy.getSelectionModel().select("Upsert");
-            }
-            if (emitter.getMetadataTuples().isPresent() &&
-                    emitter.getMetadataTuples().get().size() > 0) {
-                getMetadataRows().clear();
-                for (MetadataTuple t : emitter.getMetadataTuples().get()) {
-                    getMetadataRows().add(
-                            new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
-                }
-            }
-        } else {
-            openSearchUpdateStrategy.getSelectionModel().select("Upsert");
+        EmitterSpec emitter = emitterOptional.get();
+        if (! (emitter instanceof OpenSearchEmitterSpec openSearchEmitterSpec)) {
+            return;
         }
+        if (openSearchEmitterSpec.getUrl().isPresent()) {
+            openSearchUrl.setText(openSearchEmitterSpec.getUrl().get());
+        }
+        if (openSearchEmitterSpec.getUserName().isPresent()) {
+            openSearchUserName.setText(openSearchEmitterSpec.getUserName().get());
+        }
+
+        if (openSearchEmitterSpec.getPassword().isPresent()) {
+            openSearchPassword.setText(openSearchEmitterSpec.getPassword().get());
+        }
+
+        openSearchUpdateStrategy.getSelectionModel().select(openSearchEmitterSpec.getUpdateStrategy());
+        updateMetadataRows(openSearchEmitterSpec.getMetadataTuples());
+
     }
+
 
     public void updateOpenSearchEmitter(ActionEvent actionEvent) {
         Optional<BatchProcessConfig> batchProcessConfig = APP_CONTEXT.getBatchProcessConfig();
@@ -110,59 +112,53 @@ public class OpenSearchEmitterController extends AbstractEmitterController
             actionEvent.consume();
             return;
         }
-        //TODO -- check that all required information is here...at least the url
-        //check that the url includes an index and is not the bare url
+        ValidationResult validationResult = createSetAndValidate();
+        if (validationResult.getValidity() != ValidationResult.VALIDITY.OK) {
+            alert(validationResult.getTitle().get(), validationResult.getHeader().get(),
+                    validationResult.getMsg().get());
+            return;
+        }
+        ((Stage) updateOpenSearchEmitter.getScene().getWindow()).close();
+    }
 
+    private ValidationResult createSetAndValidate() {
+        OpenSearchEmitterSpec emitter = new OpenSearchEmitterSpec(getMetadataTuples());
         String url = openSearchUrl.getText();
         String index = getIndex(url);
-        if (StringUtils.isEmpty(url)) {
-            alert("Emitter", "Missing URL?", "Must specify a url including the index, " +
-                    "e.g. https://localhost:9500/my-index");
-            actionEvent.consume();
-            return;
-        }
-        if (StringUtils.isEmpty(index)) {
-            alert("Emitter", "Missing index?", "Please specify an index, I only see: " + url);
-            actionEvent.consume();
-            return;
-        }
-        String shortLabel = "OpenSearch: " + ellipsize(index, 30);
-        String fullLabel = "OpenSearch: " + url;
-        String userName = openSearchUserName.getText();
-        String password = openSearchPassword.getText();
-        if (StringUtils.isEmpty(userName) && !StringUtils.isEmpty(password)) {
-            alert("Emitter", "Credentials?", "Password with no username?!");
-            actionEvent.consume();
-            return;
-        }
+        emitter.setUrl(url);
+        emitter.setIndex(index);
+        emitter.setShortLabel("OpenSearch: " + ellipsize(index, 30));
+        emitter.setFullLabel("OpenSearch: " + url);
+        emitter.setUserName(openSearchUserName.getText());
+        emitter.setPassword(openSearchPassword.getText());
+        emitter.setUpdateStrategy(openSearchUpdateStrategy.getSelectionModel().getSelectedItem());
 
-        if (StringUtils.isEmpty(password) && !StringUtils.isEmpty(userName)) {
-            alert("Emitter", "Credentials?", "UserName with no password?!");
-            actionEvent.consume();
-            return;
-        }
-
-        //TODO -- validate metadata
-
-        //TODO -- check anything else?
-        batchProcessConfig.get()
-                .setEmitter(shortLabel, fullLabel, Constants.OPEN_SEARCH_EMITTER_CLASS,
-                        Constants.OPEN_SEARCH_URL, url, Constants.OPEN_SEARCH_USER, userName,
-                        Constants.OPEN_SEARCH_PW, password, Constants.OPEN_SEARCH_UPDATE_STRATEGY,
-                        openSearchUpdateStrategy.getSelectionModel().getSelectedItem());
-
+        APP_CONTEXT.getBatchProcessConfig().get().setEmitter(emitter);
         //TODO -- do better than hard coding indices
         APP_CONTEXT.getBatchProcessConfig().get().setOutputSelectedTab(2);
         APP_CONTEXT.saveState();
-        ((Stage) updateOpenSearchEmitter.getScene().getWindow()).close();
+        return emitter.validate();
+    }
+
+
+    private void onExit() {
+        ValidationResult result = createSetAndValidate();
+        if (result != ValidationResult.OK) {
+
+        }
+    }
+
+    @Override
+    protected void saveState() {
+        APP_CONTEXT.saveState();
     }
 
     private String getIndex(String url) {
         if (url == null) {
-            return null;
+            return StringUtils.EMPTY;
         }
         if (url.length() < 2) {
-            return null;
+            return StringUtils.EMPTY;
         }
         if (url.endsWith("/")) {
             url = url.substring(0, url.length() - 1);
@@ -171,11 +167,6 @@ public class OpenSearchEmitterController extends AbstractEmitterController
         if (m.find()) {
             return m.group(1);
         }
-        return null;
-    }
-
-    @Override
-    protected void saveState() {
-        APP_CONTEXT.saveState();
+        return StringUtils.EMPTY;
     }
 }

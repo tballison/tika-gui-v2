@@ -16,6 +16,9 @@
  */
 package org.tallison.tika.app.fx.emitters;
 
+import static org.tallison.tika.app.fx.emitters.JDBCEmitterSpec.ATTACHMENT_NUM_COL_NAME;
+import static org.tallison.tika.app.fx.emitters.JDBCEmitterSpec.PATH_COL_NAME;
+
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -23,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -50,13 +54,11 @@ import org.apache.tika.utils.StringUtils;
 public class JDBCEmitterController extends AbstractEmitterController implements Initializable {
 
     private final static int TAB_INDEX = 3;
-    private static String ALERT_TITLE = "JDBC Emitter";
-    private static Logger LOGGER = LogManager.getLogger(JDBCEmitterController.class);
+    private static final String ALERT_TITLE = "JDBC Emitter";
+    private static final Logger LOGGER = LogManager.getLogger(JDBCEmitterController.class);
 
-    private static String PATH_COL_NAME = "path";
 
-    private static String ATTACHMENT_NUM_COL_NAME = "attach_num";
-    private String insertSql = StringUtils.EMPTY;
+    private final String insertSql = StringUtils.EMPTY;
     @FXML
     private TextField jdbcConnection;
     @FXML
@@ -80,39 +82,30 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             return;
         }
         BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig().get();
-        Optional<ConfigItem> configItem = batchProcessConfig.getEmitter();
-        if (configItem.isEmpty()) {
+        Optional<EmitterSpec> optionalEmitterSpec = batchProcessConfig.getEmitter();
+        if (optionalEmitterSpec.isEmpty()) {
             return;
         }
-        ConfigItem emitter = configItem.get();
-        if (!emitter.getClazz().equals(Constants.JDBC_EMITTER_CLASS)) {
+        if (! (optionalEmitterSpec.get() instanceof JDBCEmitterSpec emitterSpec)) {
             return;
         }
 
-        if (emitter.getAttributes().containsKey(Constants.JDBC_CONNECTION_STRING)) {
-            String s = emitter.getAttributes().get(Constants.JDBC_CONNECTION_STRING);
+        if (emitterSpec.getConnectionString().isPresent()) {
+            String s = emitterSpec.getConnectionString().get();
             if (!StringUtils.isBlank(s)) {
                 jdbcConnection.setText(s);
             }
         }
 
-        if (emitter.getAttributes().containsKey(Constants.JDBC_TABLE_NAME)) {
-            String s = emitter.getAttributes().get(Constants.JDBC_TABLE_NAME);
+        if (emitterSpec.getTableName().isPresent()) {
+            String s = emitterSpec.getTableName().get();
             if (!StringUtils.isBlank(s)) {
                 tableName.setText(s);
             }
         }
+        updateMetadataRows(getMetadataTuples());
 
-        if (emitter.getMetadataTuples().isPresent() &&
-                emitter.getMetadataTuples().get().size() > 0) {
-            getMetadataRows().clear();
-            for (MetadataTuple t : emitter.getMetadataTuples().get()) {
-                getMetadataRows().add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
-            }
-        }
-
-        VALIDITY validity = validate();
-        if (validity == VALIDITY.VALID) {
+        if (emitterSpec.isValid()) {
             readyIcon.setVisible(true);
             notReadyIcon.setVisible(false);
         } else {
@@ -138,31 +131,30 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             fullLabel = "JDBC: " + tableNameString;
         }
 
-        ConfigItem emitter = ConfigItem.build(shortLabel, fullLabel, Constants.JDBC_EMITTER_CLASS,
-                Constants.JDBC_CONNECTION_STRING, jdbcConnectionString, Constants.JDBC_TABLE_NAME,
-                tableNameString, Constants.JDBC_INSERT_SQL, insertSql);
+        JDBCEmitterSpec jdbcEmitterSpec = new JDBCEmitterSpec(getMetadataTuples());
+        jdbcEmitterSpec.setConnectionString(jdbcConnectionString);
+        jdbcEmitterSpec.setTableName(tableNameString);
+        jdbcEmitterSpec.setShortLabel(shortLabel);
+        jdbcEmitterSpec.setFullLabel(fullLabel);
 
-        saveMetadataToEmitter(emitter);
 
         if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
             LOGGER.warn("no app context?!");
             return;
         }
         BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig().get();
-        batchProcessConfig.setEmitter(emitter);
+        batchProcessConfig.setEmitter(jdbcEmitterSpec);
         //TODO -- do better than hard coding indices
         batchProcessConfig.setOutputSelectedTab(TAB_INDEX);
 
         APP_CONTEXT.saveState();
     }
 
+
     public void validateJDBC(ActionEvent actionEvent) {
         VALIDITY validity = validate();
         switch (validity) {
             case VALID:
-                //TODO -- should we test this insert string against the db?
-                //recreate it every time
-                insertSql = createInsertString();
                 readyIcon.setVisible(true);
                 notReadyIcon.setVisible(false);
                 LOGGER.debug("insert sql: " + insertSql);
@@ -181,11 +173,11 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
                 alert(ALERT_TITLE, "No connection string?",
                         "Need to specify a jdbc connection string");
                 break;
-            case COLUMN_MISMATCH:
-                columnMismatchDialog();
-                break;
             case FAILED_TO_CONNECT:
                 alert("JDBC Emitter", "Failed to connect", "Couldn't open jdbc connection");
+                break;
+            case COLUMN_MISMATCH:
+                columnMismatchDialog();
                 break;
             case NEED_TO_CREATE_TABLE:
                 boolean success = tryToCreateTable();
@@ -216,7 +208,6 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             if (type.getText().startsWith("Drop")) {
                 dropTable();
             } else if (type.getText().startsWith("Cancel")) {
-                return;
             }
         });
     }
@@ -233,7 +224,6 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             if (type.getText().startsWith("Truncate")) {
                 truncate();
             } else if (type.getText().startsWith("Append")) {
-                return;
             }
         });
 
@@ -332,7 +322,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
     }
 
     private boolean validateMetadata() {
-        return validateMetadataRows();
+        return true;//validateMetadataRows();
     }
 
     private boolean validateColumns(ResultSetMetaData metaData) throws SQLException {
@@ -402,29 +392,12 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             LOGGER.warn(sb.toString());
             LOGGER.warn(e);
             alertStackTrace("Failed to create table", "Failed to create table",
-                    "SQL:\n" + sb.toString(), e);
+                    "SQL:\n" + sb, e);
             return false;
         }
         return true;
     }
 
-    private String createInsertString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("insert into ").append(tableName.getText()).append(" (");
-        sb.append(PATH_COL_NAME).append(", ").append(ATTACHMENT_NUM_COL_NAME);
-        int colCount = 2;
-        for (MetadataRow r : getMetadataRows()) {
-            sb.append(", ");
-            sb.append(r.getOutput());
-            colCount++;
-        }
-        sb.append(") values (?");
-        for (int i = 1; i < colCount; i++) {
-            sb.append(",?");
-        }
-        sb.append(")");
-        return sb.toString();
-    }
 
     private enum VALIDITY {
         NO_CONNECTION_STRING, METADATA_NOT_CONFIGURED, METADATA_ANOMALY, FAILED_TO_CONNECT, VALID,

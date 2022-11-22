@@ -131,8 +131,8 @@ public class ZuluDownloader {
 
     public static class DownloadTuple {
         String osArchPkg;
-        private String sha256;
-        private String url;
+        private final String sha256;
+        private final String url;
 
         public DownloadTuple(String osArchPkg, String sha256, String url) {
             this.osArchPkg = osArchPkg;

@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 
 public class Main {
 
-    private static Logger LOGGER = LogManager.getLogger(Main.class);
+    private static final Logger LOGGER = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) throws Exception {
         String javaHome = System.getProperty("TIKA_GUI_JAVA_HOME");

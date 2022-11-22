@@ -37,8 +37,8 @@ import org.apache.tika.utils.StringUtils;
 
 public class BatchInputController extends ControllerBase {
 
-    private static AppContext APP_CONTEXT = AppContext.getInstance();
-    private static Logger LOGGER = LogManager.getLogger(BatchInputController.class);
+    private static final AppContext APP_CONTEXT = AppContext.getInstance();
+    private static final Logger LOGGER = LogManager.getLogger(BatchInputController.class);
 
     @FXML
     private Button fsInputButton;

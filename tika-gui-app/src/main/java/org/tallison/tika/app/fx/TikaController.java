@@ -18,6 +18,7 @@ package org.tallison.tika.app.fx;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -26,6 +27,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TabPane;
@@ -42,12 +45,14 @@ import org.tallison.tika.app.fx.batch.BatchProcess;
 import org.tallison.tika.app.fx.batch.BatchProcessConfig;
 import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.ctx.AppContext;
+import org.tallison.tika.app.fx.emitters.EmitterSpec;
+import org.tallison.tika.app.fx.emitters.ValidationResult;
 import org.tallison.tika.app.fx.status.StatusUpdater;
 
 public class TikaController extends ControllerBase {
 
     static AppContext APP_CONTEXT = AppContext.getInstance();
-    private static Logger LOGGER = LogManager.getLogger(TikaController.class);
+    private static final Logger LOGGER = LogManager.getLogger(TikaController.class);
     @FXML
     private Label welcomeText;
 
@@ -185,9 +190,58 @@ public class TikaController extends ControllerBase {
         final Stage stage = new Stage();
         stage.setTitle("Select Output");
         stage.setScene(scene);
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+                onEmitterClose(we, stage);
+            }
+        });
         stage.showAndWait();
-        updateButtons(BatchProcess.STATUS.READY);
+
     }
+
+    private void onEmitterClose(WindowEvent windowEvent, Stage stage) {
+
+        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
+            windowEvent.consume();
+            return;
+        }
+        if (APP_CONTEXT.getBatchProcessConfig().get().getEmitter().isEmpty()) {
+            windowEvent.consume();
+            return;
+        }
+        EmitterSpec emitterSpec = APP_CONTEXT.getBatchProcessConfig().get().getEmitter().get();
+        if (emitterSpec.isValid()) {
+            windowEvent.consume();
+            updateButtons(BatchProcess.STATUS.READY);
+            return;
+        }
+        AtomicBoolean close = new AtomicBoolean(true);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Output Not Fully Configured");
+        alert.setContentText("");
+        ButtonType okButton = new ButtonType("Go Back to Configuration", ButtonBar.ButtonData.YES);
+        ButtonType noButton = new ButtonType("Ignore", ButtonBar.ButtonData.NO);
+        //ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        alert.getButtonTypes().setAll(okButton, noButton);
+        alert.showAndWait().ifPresent(type -> {
+            if (type.getText().startsWith("Go Back")) {
+                close.set(false);
+            } else if (type.getText().startsWith("Ignore")) {
+                close.set(true);
+            }
+        });
+
+
+        //}
+        if (close.get()) {
+            stage.close();
+        } else {
+            //go back to where we were
+            windowEvent.consume();
+        }
+
+    }
+
 
     public void updateButtons(BatchProcess.STATUS status) {
 
@@ -208,17 +262,15 @@ public class TikaController extends ControllerBase {
         configureAdvanced.setDisable(false);
         cancelButton.setDisable(true);
 
-        if (fullyConfigured()) {
-            runButton.setDisable(false);
-        } else {
-            runButton.setDisable(true);
-        }
+        runButton.setDisable(!fullyConfigured());
     }
 
     private boolean fullyConfigured() {
         BatchProcessConfig config = APP_CONTEXT.getBatchProcessConfig().get();
-        return config.getEmitter().isPresent() && config.getPipesIterator().isPresent() &&
-                config.getEmitter().isPresent();
+        return config.getFetcher().isPresent() && config.getFetcher().get().isValid() &&
+                config.getPipesIterator().isPresent() &&
+                config.getPipesIterator().get().isValid() && config.getEmitter().isPresent() &&
+                config.getEmitter().get().isValid();
     }
 
     @FXML
@@ -233,6 +285,16 @@ public class TikaController extends ControllerBase {
         }
         if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
             LOGGER.warn("batch processConfig must not be empty!");
+            return;
+        }
+
+        BatchProcessConfig bpc = APP_CONTEXT.getBatchProcessConfig().get();
+        //TODO -- validate as much as possible
+        EmitterSpec emitterSpec = bpc.getEmitter().get();
+        ValidationResult result = emitterSpec.initialize();
+        if (result != ValidationResult.OK) {
+            alert(result.getTitle().get(), result.getHeader().get(), result.getMsg().get());
+            return;
         }
         //TODO -- all sorts of checks
         //Is there already a batch process.
@@ -282,14 +344,13 @@ public class TikaController extends ControllerBase {
     }
 
     public void showEmitter(MouseEvent mouseEvent) {
-        Optional<ConfigItem> configItem = APP_CONTEXT.getBatchProcessConfig().get().getEmitter();
-        if (configItem.isPresent()) {
-            String fullLabel = configItem.get().getAttributes().get("basePath");
+        Optional<EmitterSpec> emitterSpec = APP_CONTEXT.getBatchProcessConfig().get().getEmitter();
+        if (emitterSpec.isPresent()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Emitter");
-            alert.setHeaderText(configItem.get().getShortLabel());
+            alert.setHeaderText(emitterSpec.get().getShortLabel().get());
             alert.setResizable(true);
-            alert.setContentText(configItem.get().getFullLabel());
+            alert.setContentText(emitterSpec.get().getFullLabel().get());
             alert.getDialogPane().setMinWidth(500);
             alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
             alert.showAndWait();

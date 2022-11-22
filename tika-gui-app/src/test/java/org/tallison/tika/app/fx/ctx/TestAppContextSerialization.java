@@ -17,6 +17,9 @@
 package org.tallison.tika.app.fx.ctx;
 
 import java.io.StringWriter;
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Collections;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +29,9 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.batch.BatchProcess;
+import org.tallison.tika.app.fx.batch.BatchProcessConfig;
+import org.tallison.tika.app.fx.emitters.EmitterSpec;
+import org.tallison.tika.app.fx.emitters.FileSystemEmitterSpec;
 
 import org.apache.tika.pipes.PipesResult;
 
@@ -39,13 +45,14 @@ public class TestAppContextSerialization {
     @Test
     public void testBasic() throws Exception {
         AppContext appContext = new AppContext();
-        appContext.getBatchProcessConfig().get().setEmitter(
-                "emitter label",
-                "emitter full label",
-                Constants.FS_EMITTER_CLASS,
-                "basePath", "something");
-        BatchProcess batchProcess = new BatchProcess();
-        appContext.setBatchProcess(batchProcess);
+        EmitterSpec emitterSpec = new FileSystemEmitterSpec(Collections.EMPTY_LIST);
+        ((FileSystemEmitterSpec)emitterSpec).setBasePath(Paths.get("something"));
+        emitterSpec.setShortLabel("short label");
+        emitterSpec.setFullLabel("full label");
+        emitterSpec.validate();
+        BatchProcessConfig batchProcessConfig = new BatchProcessConfig();
+        batchProcessConfig.setEmitter(emitterSpec);
+        appContext.setBatchProcessConfig(batchProcessConfig);
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         //this is necessary for timestamps
