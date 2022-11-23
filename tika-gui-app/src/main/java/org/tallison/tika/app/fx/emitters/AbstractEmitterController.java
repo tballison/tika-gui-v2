@@ -128,7 +128,6 @@ public abstract class AbstractEmitterController extends ControllerBase {
                 .setSkipHeaderRecord(true).build();
         metadataRows.clear();
         for (CSVRecord record : CSVParser.parse(csvFile, StandardCharsets.UTF_8, format)) {
-            List<String> data = new ArrayList<>();
             if (record.size() > 2) {
                 metadataRows.add(new MetadataRow(record.get(0), record.get(1), record.get(2)));
             } else if (record.size() > 1) {
