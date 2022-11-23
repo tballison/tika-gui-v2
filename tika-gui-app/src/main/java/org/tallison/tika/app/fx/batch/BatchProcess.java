@@ -37,7 +37,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.config.TikaConfigWriter;
-import org.tallison.tika.app.fx.csv.CSVEmitterHelper;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.status.MutableStatus;
 import org.tallison.tika.app.fx.status.StatusUpdater;
@@ -52,12 +51,6 @@ public class BatchProcess {
 
     private static final Logger LOGGER = LogManager.getLogger(BatchProcess.class);
     private final MutableStatus mutableStatus = new MutableStatus(STATUS.READY);
-    private long runningProcessId = -1;
-    private Path configFile;
-    private BatchRunner batchRunner = null;
-    private BatchProcessConfig batchProcessConfig = null;
-    private Optional<Exception> jvmException = Optional.empty();
-    private Optional<String> jvmErrorMsg = Optional.empty();
     private final ObjectMapper objectMapper =
             JsonMapper.builder().addModule(new JavaTimeModule()).build();
     private final ExecutorService daemonExecutorService = Executors.newFixedThreadPool(2, r -> {
@@ -67,6 +60,12 @@ public class BatchProcess {
     });
     private final ExecutorCompletionService<Integer> executorCompletionService =
             new ExecutorCompletionService<>(daemonExecutorService);
+    private long runningProcessId = -1;
+    private Path configFile;
+    private BatchRunner batchRunner = null;
+    private BatchProcessConfig batchProcessConfig = null;
+    private Optional<Exception> jvmException = Optional.empty();
+    private Optional<String> jvmErrorMsg = Optional.empty();
 
     public synchronized void start(BatchProcessConfig batchProcessConfig,
                                    StatusUpdater statusUpdater) throws TikaException, IOException {
@@ -221,6 +220,8 @@ public class BatchProcess {
         @Override
         public Integer call() throws Exception {
             List<String> commandLine = buildCommandLine();
+
+
             process = new ProcessBuilder(commandLine).inheritIO() //TODO -- for dev purposes only
                     .start();
             mutableStatus.set(STATUS.RUNNING);

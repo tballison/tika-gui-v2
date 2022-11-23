@@ -43,7 +43,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ControllerBase;
 import org.tallison.tika.app.fx.batch.BatchProcessConfig;
-import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
@@ -51,9 +50,8 @@ import org.tallison.tika.app.fx.metadata.MetadataTuple;
 import org.apache.tika.utils.StringUtils;
 
 public abstract class AbstractEmitterController extends ControllerBase {
-    static AppContext APP_CONTEXT = AppContext.getInstance();
     private static final Logger LOGGER = LogManager.getLogger(AbstractEmitterController.class);
-
+    static AppContext APP_CONTEXT = AppContext.getInstance();
     @FXML
     private final ObservableList<MetadataRow> metadataRows = FXCollections.observableArrayList();
     @FXML
@@ -68,7 +66,7 @@ public abstract class AbstractEmitterController extends ControllerBase {
         return metadataRows;
     }
 
-    abstract protected void saveState();
+    abstract protected void saveState(boolean isValid);
 
     /**
      * This confirms the string is not empty and represents an
@@ -139,13 +137,13 @@ public abstract class AbstractEmitterController extends ControllerBase {
                 metadataRows.add(new MetadataRow(record.get(0), record.get(0), ""));
             }
         }
-        saveState();
+        saveState(false);
     }
 
     @FXML
     public void clearMetadata(ActionEvent actionEvent) {
         metadataRows.clear();
-        saveState();
+        saveState(false);
     }
 
     @FXML
@@ -160,7 +158,7 @@ public abstract class AbstractEmitterController extends ControllerBase {
             outputField.setText("");
             propertyField.setText("");
         }
-        saveState();
+        saveState(false);
     }
 
 
@@ -178,7 +176,44 @@ public abstract class AbstractEmitterController extends ControllerBase {
         for (MetadataTuple t : metadataTuples) {
             metadataRows.add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
         }
+    }
 
+    /**
+     * This checks for empty keys and duplicate output keys
+     *
+     * @return
+     */
+    protected ValidationResult validateMetadataRows() {
+
+        //Set<String> tika = new HashSet<>();
+        //duplicate tika keys are ok?
+        Set<String> output = new HashSet<>();
+        int i = 0;
+        for (MetadataTuple row : getMetadataTuples()) {
+            String t = row.getTika();
+            if (StringUtils.isBlank(t)) {
+                return new ValidationResult(ValidationResult.VALIDITY.NOT_OK, "Blank Tika key",
+                        "Blank Tika key",
+                        "There's an empty Tika key in row " + i + ". The output value is: " +
+                                row.getOutput());
+            }
+            String o = row.getOutput();
+            if (StringUtils.isBlank(o)) {
+                return new ValidationResult(ValidationResult.VALIDITY.NOT_OK, "Blank output key",
+                        "Blank output key",
+                        "There's an empty output key in row " + i + ". The Tika value is: " +
+                                row.getTika());
+            } else {
+                if (output.contains(o)) {
+                    return new ValidationResult(ValidationResult.VALIDITY.NOT_OK,
+                            "Duplicate output key", "Duplicate output key",
+                            "There's a duplicate output key '" + o + "'");
+                }
+            }
+            output.add(o);
+            i++;
+        }
+        return ValidationResult.OK;
     }
 
 

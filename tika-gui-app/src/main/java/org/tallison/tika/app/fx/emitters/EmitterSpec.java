@@ -18,7 +18,6 @@ package org.tallison.tika.app.fx.emitters;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 
@@ -30,17 +29,11 @@ import org.w3c.dom.Element;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 public interface EmitterSpec extends Closeable {
 
-    /**
-     * This should be the lightweight stuff.
-     * Is all the data filled out, etc.  Creating tables
-     * and what not should be in initialize().
-     *
-     * This is what's called when the user is still selecting the configuration.
-     */
-    ValidationResult validate();
 
     @JsonIgnore
     boolean isValid();
+
+    void setValid(boolean valid);
 
     /**
      * This is the heavier duty stuff, like creating tables.
@@ -53,6 +46,7 @@ public interface EmitterSpec extends Closeable {
 
     /**
      * If this is not valid, what is the message that should be shown.
+     *
      * @return
      */
     @JsonIgnore
@@ -60,9 +54,9 @@ public interface EmitterSpec extends Closeable {
 
     Optional<String> getShortLabel();
 
-    Optional<String> getFullLabel();
-
     void setShortLabel(String shortLabel);
+
+    Optional<String> getFullLabel();
 
     void setFullLabel(String fullLabel);
 

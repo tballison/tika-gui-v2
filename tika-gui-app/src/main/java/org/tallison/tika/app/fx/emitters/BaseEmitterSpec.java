@@ -17,33 +17,22 @@
 package org.tallison.tika.app.fx.emitters;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
-
-import org.apache.tika.utils.StringUtils;
 
 
 public abstract class BaseEmitterSpec implements EmitterSpec {
 
-    private final String emitterClass;
+
     private final List<MetadataTuple> metadataTuples;
-
+    boolean valid = false;
     private Optional<String> shortLabel = Optional.empty();
-
     private Optional<String> fullLabel = Optional.empty();
-
     private Optional<String> notValidMessage = Optional.empty();
 
-    boolean valid = false;
-
-    public BaseEmitterSpec(String emitterClass, List<MetadataTuple> metadataTuples) {
-        this.emitterClass = emitterClass;
+    public BaseEmitterSpec(List<MetadataTuple> metadataTuples) {
         this.metadataTuples = metadataTuples;
     }
 
@@ -51,47 +40,6 @@ public abstract class BaseEmitterSpec implements EmitterSpec {
         return metadataTuples;
     }
 
-    void validateMetadata() {
-
-    }
-
-    /**
-     * This checks for empty keys and duplicate output keys
-     *
-     * @return
-     */
-    protected ValidationResult validateMetadataRows() {
-
-        //Set<String> tika = new HashSet<>();
-        //duplicate tika keys are ok?
-        Set<String> output = new HashSet<>();
-        int i = 0;
-        for (MetadataTuple row : getMetadataTuples()) {
-            String t = row.getTika();
-            if (StringUtils.isBlank(t)) {
-                return new ValidationResult(ValidationResult.VALIDITY.NOT_OK,
-                    "Blank Tika key", "Blank Tika key",
-                        "There's an empty Tika key in row " + i + ". The output value is: " +
-                                row.getOutput());
-            }
-            String o = row.getOutput();
-            if (StringUtils.isBlank(o)) {
-                return new ValidationResult(ValidationResult.VALIDITY.NOT_OK,"Blank output key",
-                        "Blank output key",
-                        "There's an empty output key in row " + i + ". The Tika value is: " +
-                                row.getTika());
-            } else {
-                if (output.contains(o)) {
-                    return new ValidationResult(ValidationResult.VALIDITY.NOT_OK,
-                            "Duplicate output key", "Duplicate output key",
-                            "There's a duplicate output key '" + o + "'");
-                }
-            }
-            output.add(o);
-            i++;
-        }
-        return ValidationResult.OK;
-    }
 
     @Override
     public void close() throws IOException {
@@ -101,6 +49,11 @@ public abstract class BaseEmitterSpec implements EmitterSpec {
     @Override
     public boolean isValid() {
         return valid;
+    }
+
+    @Override
+    public void setValid(boolean valid) {
+        this.valid = valid;
     }
 
     @Override
@@ -117,13 +70,13 @@ public abstract class BaseEmitterSpec implements EmitterSpec {
     }
 
     @Override
-    public Optional<String> getFullLabel() {
-        return fullLabel;
+    public void setShortLabel(String shortLabel) {
+        this.shortLabel = Optional.of(shortLabel);
     }
 
     @Override
-    public void setShortLabel(String shortLabel) {
-        this.shortLabel = Optional.of(shortLabel);
+    public Optional<String> getFullLabel() {
+        return fullLabel;
     }
 
     @Override

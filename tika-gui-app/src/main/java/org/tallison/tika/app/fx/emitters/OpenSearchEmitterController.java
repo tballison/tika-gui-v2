@@ -17,31 +17,29 @@
 package org.tallison.tika.app.fx.emitters;
 
 import java.net.URL;
-import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Accordion;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.batch.BatchProcessConfig;
-import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.ctx.AppContext;
-import org.tallison.tika.app.fx.metadata.MetadataRow;
-import org.tallison.tika.app.fx.metadata.MetadataTuple;
+import org.tallison.tika.app.fx.utils.OptionalUtil;
 
 import org.apache.tika.utils.StringUtils;
 
@@ -85,7 +83,7 @@ public class OpenSearchEmitterController extends AbstractEmitterController
             return;
         }
         EmitterSpec emitter = emitterOptional.get();
-        if (! (emitter instanceof OpenSearchEmitterSpec openSearchEmitterSpec)) {
+        if (!(emitter instanceof OpenSearchEmitterSpec openSearchEmitterSpec)) {
             return;
         }
         if (openSearchEmitterSpec.getUrl().isPresent()) {
@@ -99,7 +97,8 @@ public class OpenSearchEmitterController extends AbstractEmitterController
             openSearchPassword.setText(openSearchEmitterSpec.getPassword().get());
         }
 
-        openSearchUpdateStrategy.getSelectionModel().select(openSearchEmitterSpec.getUpdateStrategy());
+        openSearchUpdateStrategy.getSelectionModel()
+                .select(openSearchEmitterSpec.getUpdateStrategy());
         updateMetadataRows(openSearchEmitterSpec.getMetadataTuples());
 
     }
@@ -112,16 +111,38 @@ public class OpenSearchEmitterController extends AbstractEmitterController
             actionEvent.consume();
             return;
         }
-        ValidationResult validationResult = createSetAndValidate();
+        OpenSearchEmitterSpec emitterSpec = buildEmitterSpec();
+
+        ValidationResult validationResult = validate(emitterSpec);
+
         if (validationResult.getValidity() != ValidationResult.VALIDITY.OK) {
-            alert(validationResult.getTitle().get(), validationResult.getHeader().get(),
-                    validationResult.getMsg().get());
+            saveState(false);
+            alert(validationResult);
             return;
         }
+        if (emitterSpec.getMetadataTuples().size() == 0) {
+            boolean goSchemaless = missingMetadataMappingDialog();
+            if (!goSchemaless) {
+                saveState(false);
+                actionEvent.consume();
+                return;
+            }
+        }
+        saveState(true);
         ((Stage) updateOpenSearchEmitter.getScene().getWindow()).close();
     }
 
-    private ValidationResult createSetAndValidate() {
+    @Override
+    public void saveState(boolean validated) {
+        OpenSearchEmitterSpec emitter = buildEmitterSpec();
+        emitter.setValid(validated);
+        APP_CONTEXT.getBatchProcessConfig().get().setEmitter(emitter);
+        //TODO -- do better than hard coding indices
+        APP_CONTEXT.getBatchProcessConfig().get().setOutputSelectedTab(2);
+        APP_CONTEXT.saveState();
+    }
+
+    private OpenSearchEmitterSpec buildEmitterSpec() {
         OpenSearchEmitterSpec emitter = new OpenSearchEmitterSpec(getMetadataTuples());
         String url = openSearchUrl.getText();
         String index = getIndex(url);
@@ -132,25 +153,41 @@ public class OpenSearchEmitterController extends AbstractEmitterController
         emitter.setUserName(openSearchUserName.getText());
         emitter.setPassword(openSearchPassword.getText());
         emitter.setUpdateStrategy(openSearchUpdateStrategy.getSelectionModel().getSelectedItem());
-
-        APP_CONTEXT.getBatchProcessConfig().get().setEmitter(emitter);
-        //TODO -- do better than hard coding indices
-        APP_CONTEXT.getBatchProcessConfig().get().setOutputSelectedTab(2);
-        APP_CONTEXT.saveState();
-        return emitter.validate();
+        return emitter;
     }
 
+    private ValidationResult validate(OpenSearchEmitterSpec emitter) {
+        ValidationResult result = validateMetadataRows();
+        if (result.getValidity() != ValidationResult.VALIDITY.OK) {
+            return result;
+        }
 
-    private void onExit() {
-        ValidationResult result = createSetAndValidate();
-        if (result != ValidationResult.OK) {
+        if (OptionalUtil.isEmpty(emitter.getUrl())) {
+            return new ValidationResult(ValidationResult.VALIDITY.NOT_OK, "Emitter", "Missing URL?",
+                    "Must specify a url including the index, " +
+                            "e.g. https://localhost:9200/my-index");
+        }
+
+        if (OptionalUtil.isEmpty(emitter.getIndex())) {
+            return new ValidationResult(ValidationResult.VALIDITY.NOT_OK, "Emitter",
+                    "Missing index?",
+                    "Please specify an index, I only see: " + emitter.getUrl().get());
 
         }
-    }
 
-    @Override
-    protected void saveState() {
-        APP_CONTEXT.saveState();
+        if (OptionalUtil.isEmpty(emitter.getPassword()) &&
+                !OptionalUtil.isEmpty(emitter.getUserName())) {
+            return new ValidationResult(ValidationResult.VALIDITY.NOT_OK, "Emitter", "Credentials?",
+                    "Username with no password?!");
+        }
+
+
+        if (OptionalUtil.isEmpty(emitter.getUserName()) &&
+                !OptionalUtil.isEmpty(emitter.getPassword())) {
+            return new ValidationResult(ValidationResult.VALIDITY.NOT_OK, "Emitter", "Credentials?",
+                    "Password with no username?!");
+        }
+        return ValidationResult.OK;
     }
 
     private String getIndex(String url) {
@@ -168,5 +205,25 @@ public class OpenSearchEmitterController extends AbstractEmitterController
             return m.group(1);
         }
         return StringUtils.EMPTY;
+    }
+
+    private boolean missingMetadataMappingDialog() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setHeaderText("OpenSearch Emitter");
+        alert.setTitle("OpenSearch Emitter");
+        alert.setContentText("No metadata mappings have been selected. Continue with schemaless?");
+        ButtonType continueButton = new ButtonType("Continue", ButtonBar.ButtonData.YES);
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        alert.getButtonTypes().setAll(continueButton, cancelButton);
+        AtomicBoolean processAnyways = new AtomicBoolean(false);
+        alert.showAndWait().ifPresent(type -> {
+            if (type.getText().startsWith("Continue")) {
+                processAnyways.set(true);
+            } else if (type.getText().startsWith("Cancel")) {
+                processAnyways.set(false);
+            }
+        });
+        return processAnyways.get();
     }
 }

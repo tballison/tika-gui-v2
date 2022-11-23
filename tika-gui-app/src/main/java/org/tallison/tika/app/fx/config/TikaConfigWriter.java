@@ -17,9 +17,7 @@
 package org.tallison.tika.app.fx.config;
 
 import static org.tallison.tika.app.fx.Constants.BASE_PATH;
-import static org.tallison.tika.app.fx.Constants.CSV_JDBC_CONNECTION_STRING;
 import static org.tallison.tika.app.fx.Constants.FS_FETCHER_CLASS;
-import static org.tallison.tika.app.fx.Constants.JDBC_CONNECTION_STRING;
 import static org.tallison.tika.app.fx.Constants.NO_DIGEST;
 
 import java.io.File;
@@ -47,7 +45,6 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.batch.BatchProcessConfig;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.emitters.BaseEmitterSpec;
@@ -60,7 +57,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import org.apache.tika.utils.ProcessUtils;
-import org.apache.tika.utils.StringUtils;
 
 /**
  * This is an embarrassment of hardcoding.  Need to figure out better
@@ -153,9 +149,9 @@ public class TikaConfigWriter {
                 "true", "includeDeletedContent", "bool", "true", "includeMoveFromContent", "bool",
                 "true");
 
-        addLegacyParams(writer, parsers, "parser",
-                "org.apache.tika.parser.microsoft.OfficeParser", "extractMacros", "bool", "true");
-        
+        addLegacyParams(writer, parsers, "parser", "org.apache.tika.parser.microsoft.OfficeParser",
+                "extractMacros", "bool", "true");
+
     }
 
     private void addLegacyParams(DomWriter writer, Element parent, String nodeName, String clz,
@@ -167,8 +163,8 @@ public class TikaConfigWriter {
         }
         Element params = writer.createAndGetElement(parser, "params");
         for (int i = 0; i < tuples.length; i += 3) {
-            writer.appendTextElement(params, "param", tuples[i + 2],
-                    "name", tuples[i], "type", tuples[i + 1]);
+            writer.appendTextElement(params, "param", tuples[i + 2], "name", tuples[i], "type",
+                    tuples[i + 1]);
         }
     }
 
@@ -214,16 +210,14 @@ public class TikaConfigWriter {
                 AppContext.getInstance().getJavaHome().resolve("java").toString());
         writer.appendTextElement(params, "numClients", Integer.toString(bpc.getNumProcesses()));
         writer.appendTextElement(params, "numEmitters", "1");
-        writer.appendListElement(params, "forkedJvmArgs", "arg",
-                "-Xmx" + bpc.getMaxMemMb() + "m", "-Dlog4j.configurationFile=" +
-                        AppContext.ASYNC_LOG4J2_PATH.toAbsolutePath(), "-cp",
+        writer.appendListElement(params, "forkedJvmArgs", "arg", "-Xmx" + bpc.getMaxMemMb() + "m",
+                "-Dlog4j.configurationFile=" + AppContext.ASYNC_LOG4J2_PATH.toAbsolutePath(), "-cp",
                 buildClassPath(bpc));
         writer.appendTextElement(params, "timeoutMillis",
                 Long.toString(bpc.getParseTimeoutSeconds() * 1000L));
-        writer.appendTextElement(params, "emitWithinMillis",
-                Long.toString(bpc.getEmitWithinMs()));
+        writer.appendTextElement(params, "emitWithinMillis", Long.toString(bpc.getEmitWithinMs()));
         writer.appendTextElement(params, "emitMaxEstimatedBytes",
-                Long.toString((long) bpc.getTotalEmitThesholdMb() * 1024 *  1024));
+                Long.toString((long) bpc.getTotalEmitThesholdMb() * 1024 * 1024));
         writer.appendTextElement(params, "maxForEmitBatchBytes",
                 Long.toString((long) bpc.getPerFileEmitThresholdMb() * 1024 * 1024));
 
@@ -232,9 +226,8 @@ public class TikaConfigWriter {
     }
 
     private void appendPipesReporters(DomWriter writer, Element async, BatchProcessConfig bpc) {
-        Element compositePipesReporter =
-                writer.createAndGetElement(async, "pipesReporter", "class",
-                        "org.apache.tika.pipes.CompositePipesReporter");
+        Element compositePipesReporter = writer.createAndGetElement(async, "pipesReporter", "class",
+                "org.apache.tika.pipes.CompositePipesReporter");
         Element params = writer.createAndGetElement(compositePipesReporter, "params");
         Element pipesReporters = writer.createAndGetElement(params, "pipesReporters", "class",
                 "org.apache.tika.pipes.PipesReporter");
@@ -251,11 +244,10 @@ public class TikaConfigWriter {
             return;
         }
         EmitterSpec emitter = bpc.getEmitter().get();
-        if (! (emitter instanceof JDBCEmitterSpec) && ! (emitter instanceof CSVEmitterSpec)) {
+        if (!(emitter instanceof JDBCEmitterSpec) && !(emitter instanceof CSVEmitterSpec)) {
             return;
         }
-        Optional<String> connectionString =
-                ((JDBCEmitterSpec)emitter).getConnectionString();
+        Optional<String> connectionString = ((JDBCEmitterSpec) emitter).getConnectionString();
 
         if (connectionString.isPresent()) {
             Element jdbc = writer.createAndGetElement(pipesReporters, "pipesReporter", "class",
@@ -309,8 +301,7 @@ public class TikaConfigWriter {
             throws IOException {
         Element fetchers = writer.createAndGetElement(properties, "fetchers");
         Element fetcherElement =
-                writer.createAndGetElement(fetchers, "fetcher",
-                        "class", FS_FETCHER_CLASS);
+                writer.createAndGetElement(fetchers, "fetcher", "class", FS_FETCHER_CLASS);
         Element params = writer.createAndGetElement(fetcherElement, "params");
         writer.appendTextElement(params, "name", "fetcher");
         writer.appendTextElement(params, BASE_PATH, fetcher.getAttributes().get(BASE_PATH));
@@ -335,14 +326,12 @@ public class TikaConfigWriter {
 
     private void appendFSPipesIterator(ConfigItem pipesIterator, DomWriter writer, Element parent)
             throws IOException {
-        Element pipesIteratorElement =
-                writer.createAndGetElement(parent, "pipesIterator",
-                        "class", "org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator");
+        Element pipesIteratorElement = writer.createAndGetElement(parent, "pipesIterator", "class",
+                "org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator");
         Element params = writer.createAndGetElement(pipesIteratorElement, "params");
         writer.appendTextElement(params, "fetcherName", "fetcher");
         writer.appendTextElement(params, "emitterName", "emitter");
-        writer.appendTextElement(params, "basePath",
-                pipesIterator.getAttributes().get(BASE_PATH));
+        writer.appendTextElement(params, "basePath", pipesIterator.getAttributes().get(BASE_PATH));
         writer.appendTextElement(params, "countTotal", "true");
     }
 
@@ -377,7 +366,6 @@ public class TikaConfigWriter {
 
         writer.appendMap(params, "mappings", "mapping", map);
     }
-
 
 
     private String getTemplateLog4j2(String template) throws IOException {

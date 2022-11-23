@@ -23,29 +23,9 @@ public class Constants {
     public static final String FS_FETCHER_CLASS = FileSystemFetcher.class.getName();
 
     public static final String NO_DIGEST = "No Digest";
-
-    //JDBC emitter
-
-    // if the table doesn't exist, we create it via the dialog
-    // public static final String JDBC_TABLE_CREATED = "tableCreated";
-    public static final String JDBC_CONNECTION_STRING = "jdbcConnection";
-    public static final String JDBC_TABLE_NAME = "jdbcTableName";
-
-    public static final String JDBC_INSERT_SQL = "jdbcInsertString";
-    public static final String CSV_JDBC_INSERT_SQL = "csvInsertString";
-
-
-    //AbstractEmitterController
-    public static final String CSV_METADATA_PATH = "csvMetadataPath";
-
-    public static final String CSV_JDBC_CONNECTION_STRING = "csvSQLConnectionString";
-
-    public static final String CSV_DB_DIRECTORY = "csvDBDirectory";
-
     //Used by filesystem emitter, fetcher and pipes iterator
     //used as working directory for csv emitter
     public static final String BASE_PATH = "basePath";
-
 
 
 }

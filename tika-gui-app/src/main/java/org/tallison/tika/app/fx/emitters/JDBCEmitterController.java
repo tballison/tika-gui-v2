@@ -26,7 +26,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -43,11 +42,8 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kordamp.ikonli.javafx.FontIcon;
-import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.batch.BatchProcessConfig;
-import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
-import org.tallison.tika.app.fx.metadata.MetadataTuple;
 
 import org.apache.tika.utils.StringUtils;
 
@@ -72,6 +68,8 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
     @FXML
     private Accordion jdbcAccordion;
 
+    private boolean append = false;
+
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
         //Not clear why expanded=true is not working in fxml
@@ -86,10 +84,11 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         if (optionalEmitterSpec.isEmpty()) {
             return;
         }
-        if (! (optionalEmitterSpec.get() instanceof JDBCEmitterSpec emitterSpec)) {
+
+        if (!optionalEmitterSpec.get().getClass().equals(JDBCEmitterSpec.class)) {
             return;
         }
-
+        JDBCEmitterSpec emitterSpec = (JDBCEmitterSpec) optionalEmitterSpec.get();
         if (emitterSpec.getConnectionString().isPresent()) {
             String s = emitterSpec.getConnectionString().get();
             if (!StringUtils.isBlank(s)) {
@@ -103,19 +102,13 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
                 tableName.setText(s);
             }
         }
-        updateMetadataRows(getMetadataTuples());
-
-        if (emitterSpec.isValid()) {
-            readyIcon.setVisible(true);
-            notReadyIcon.setVisible(false);
-        } else {
-            readyIcon.setVisible(false);
-            notReadyIcon.setVisible(true);
-        }
+        updateMetadataRows(emitterSpec.getMetadataTuples());
+        readyIcon.setVisible(false);
+        notReadyIcon.setVisible(true);
     }
 
     @Override
-    public void saveState() {
+    public void saveState(boolean validated) {
         String shortLabel = StringUtils.EMPTY;
         String fullLabel = StringUtils.EMPTY;
         String jdbcConnectionString = StringUtils.EMPTY;
@@ -136,12 +129,13 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         jdbcEmitterSpec.setTableName(tableNameString);
         jdbcEmitterSpec.setShortLabel(shortLabel);
         jdbcEmitterSpec.setFullLabel(fullLabel);
-
+        jdbcEmitterSpec.setValid(validated);
 
         if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
             LOGGER.warn("no app context?!");
             return;
         }
+
         BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig().get();
         batchProcessConfig.setEmitter(jdbcEmitterSpec);
         //TODO -- do better than hard coding indices
@@ -151,14 +145,14 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
     }
 
 
+    @FXML
     public void validateJDBC(ActionEvent actionEvent) {
         VALIDITY validity = validate();
         switch (validity) {
             case VALID:
                 readyIcon.setVisible(true);
                 notReadyIcon.setVisible(false);
-                LOGGER.debug("insert sql: " + insertSql);
-                saveState();
+                saveState(true);
                 ((Stage) validateJDBC.getScene().getWindow()).close();
                 return;
             case METADATA_ANOMALY:
@@ -187,12 +181,16 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
                 }
                 break;
             case TABLE_EXISTS_WITH_DATA:
-                existingDataDialog();
+                boolean toAppend = existingDataDialog();
+                if (toAppend) {
+                    validateJDBC(actionEvent);
+                    return;
+                }
                 break;
         }
         notReadyIcon.setVisible(true);
         readyIcon.setVisible(false);
-        saveState();
+        saveState(false);
         actionEvent.consume();
     }
 
@@ -212,7 +210,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         });
     }
 
-    private void existingDataDialog() {
+    private boolean existingDataDialog() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(ALERT_TITLE);
         alert.setContentText("Data exists. Truncate table, append data or cancel?");
@@ -223,9 +221,12 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         alert.showAndWait().ifPresent(type -> {
             if (type.getText().startsWith("Truncate")) {
                 truncate();
+                append = false;
             } else if (type.getText().startsWith("Append")) {
+                append = true;
             }
         });
+        return append;
 
     }
 
@@ -283,7 +284,11 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             return VALIDITY.NO_CONNECTION_STRING;
         }
         String cString = connectionString.replace("AUTO_SERVER=TRUE", "");
-
+        try {
+            Class.forName("org.h2.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         try (Connection connection = DriverManager.getConnection(cString)) {
 
         } catch (SQLException e) {
@@ -310,7 +315,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
                     //For now, assume table does not exist
                     return VALIDITY.NEED_TO_CREATE_TABLE;
                 }
-                if (rows == 0) {
+                if (rows == 0 || append) {
                     return VALIDITY.VALID;
                 }
                 return VALIDITY.TABLE_EXISTS_WITH_DATA;
@@ -322,8 +327,11 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
     }
 
     private boolean validateMetadata() {
-        return true;//validateMetadataRows();
+        //vali
+        //TODO
+        return true;
     }
+
 
     private boolean validateColumns(ResultSetMetaData metaData) throws SQLException {
         //TODO -- check column types!
@@ -391,8 +399,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             LOGGER.warn("failed to create table");
             LOGGER.warn(sb.toString());
             LOGGER.warn(e);
-            alertStackTrace("Failed to create table", "Failed to create table",
-                    "SQL:\n" + sb, e);
+            alertStackTrace("Failed to create table", "Failed to create table", "SQL:\n" + sb, e);
             return false;
         }
         return true;

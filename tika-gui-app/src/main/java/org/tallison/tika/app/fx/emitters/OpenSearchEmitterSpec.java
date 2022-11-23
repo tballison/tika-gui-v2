@@ -16,8 +16,6 @@
  */
 package org.tallison.tika.app.fx.emitters;
 
-import static org.tallison.tika.app.fx.utils.OptionalUtil.isEmpty;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +28,6 @@ import org.tallison.tika.app.fx.sax.DomWriter;
 import org.w3c.dom.Element;
 
 import org.apache.tika.utils.ProcessUtils;
-import org.apache.tika.utils.StringUtils;
 
 public class OpenSearchEmitterSpec extends BaseEmitterSpec {
     private static final String EMITTER_CLASS =
@@ -46,42 +43,9 @@ public class OpenSearchEmitterSpec extends BaseEmitterSpec {
     private Optional<String> password = Optional.empty();
     private String updateStrategy = "Upsert";//or Overwrite
 
-    public OpenSearchEmitterSpec(@JsonProperty("metadataTuples") List<MetadataTuple> metadataTuples) {
-        super(EMITTER_CLASS, metadataTuples);
-    }
-
-    @Override
-    public ValidationResult validate() {
-
-        if (isEmpty(openSearchUrl)) {
-            return new ValidationResult(ValidationResult.VALIDITY.NOT_OK,
-                    "Emitter", "Missing URL?", "Must specify a url including the index, " +
-                            "e.g. https://localhost:9200/my-index");
-        }
-
-        if (isEmpty(index)) {
-            return new ValidationResult(ValidationResult.VALIDITY.NOT_OK,
-                    "Emitter", "Missing index?",
-                    "Please specify an index, I only see: " + openSearchUrl.get());
-
-        }
-
-        if (isEmpty(password) && ! isEmpty(userName)) {
-            return new ValidationResult(ValidationResult.VALIDITY.NOT_OK,
-                    "Emitter", "Credentials?", "Username with no password?!");
-        }
-
-
-        if (isEmpty(userName) && ! isEmpty(password)) {
-            return new ValidationResult(ValidationResult.VALIDITY.NOT_OK,
-                    "Emitter", "Credentials?", "Password with no username?!");
-        }
-
-        ValidationResult result = validateMetadataRows();
-        if (result.getValidity() == ValidationResult.VALIDITY.OK) {
-            valid = true;
-        }
-        return result;
+    public OpenSearchEmitterSpec(
+            @JsonProperty("metadataTuples") List<MetadataTuple> metadataTuples) {
+        super(metadataTuples);
     }
 
     @Override
@@ -93,8 +57,8 @@ public class OpenSearchEmitterSpec extends BaseEmitterSpec {
     @Override
     public void write(DomWriter writer, Element properties) {
         Element emitters = writer.createAndGetElement(properties, "emitters");
-        Element emitterElement = writer.createAndGetElement(emitters, "emitter", "class",
-                "org.apache.tika.pipes.emitter.opensearch.OpenSearchEmitter");
+        Element emitterElement =
+                writer.createAndGetElement(emitters, "emitter", "class", EMITTER_CLASS);
         Element params = writer.createAndGetElement(emitterElement, "params");
         writer.appendTextElement(params, "name", "emitter");
         writer.appendTextElement(params, "idField", "_id");
@@ -116,53 +80,51 @@ public class OpenSearchEmitterSpec extends BaseEmitterSpec {
     @Override
     public Set<String> getClassPathDependencies() {
         Set<String> items = new HashSet<>();
-        items.add(
-                ProcessUtils.escapeCommandLine(
-                        AppContext.TIKA_LIB_PATH.resolve("tika-emitter-opensearch")
-                                .toAbsolutePath() + "/*"));
+        items.add(ProcessUtils.escapeCommandLine(
+                AppContext.TIKA_LIB_PATH.resolve("tika-emitter-opensearch").toAbsolutePath() +
+                        "/*"));
 
         return items;
-    }
-
-
-    public void setUrl(String url) {
-        this.openSearchUrl = Optional.of(url);
     }
 
     public Optional<String> getUrl() {
         return openSearchUrl;
     }
 
-    public void setIndex(String index) {
-        this.index = Optional.of(index);
-    }
-
-    public void setUpdateStrategy(String updateStrategy) {
-        //TODO validate upsert or ...?
-        this.updateStrategy = updateStrategy;
+    public void setUrl(String url) {
+        this.openSearchUrl = Optional.of(url);
     }
 
     public Optional<String> getIndex() {
         return index;
     }
 
-    public void setUserName(String userName) {
-        this.userName = Optional.of(userName);
+    public void setIndex(String index) {
+        this.index = Optional.of(index);
     }
 
     public Optional<String> getUserName() {
         return userName;
     }
 
-    public void setPassword(String password) {
-        this.password = Optional.of(password);
+    public void setUserName(String userName) {
+        this.userName = Optional.of(userName);
     }
 
     public Optional<String> getPassword() {
         return password;
     }
 
+    public void setPassword(String password) {
+        this.password = Optional.of(password);
+    }
+
     public String getUpdateStrategy() {
         return updateStrategy;
+    }
+
+    public void setUpdateStrategy(String updateStrategy) {
+        //TODO validate upsert or ...?
+        this.updateStrategy = updateStrategy;
     }
 }

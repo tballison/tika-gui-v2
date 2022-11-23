@@ -34,13 +34,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.batch.BatchProcess;
 import org.tallison.tika.app.fx.batch.BatchProcessConfig;
-import org.tallison.tika.app.fx.emitters.ValidationResult;
 
 import org.apache.tika.utils.StringUtils;
 
 
 public class AppContext {
 
+    private static final Logger LOGGER = LogManager.getLogger(AppContext.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     public static Path TIKA_GUI_JAVA_HOME;
     public static Path TIKA_APP_HOME = Paths.get("");
     public static Path TIKA_LIB_PATH = TIKA_APP_HOME.resolve("lib");
@@ -52,8 +53,6 @@ public class AppContext {
     public static Path ASYNC_LOG4J2_PATH = CONFIG_PATH.resolve("log4j2-async.xml");
     public static Path LOGS_PATH = TIKA_APP_HOME.resolve("logs");
     public static Path BATCH_STATUS_PATH = LOGS_PATH.resolve("batch_status.json");
-    private static final Logger LOGGER = LogManager.getLogger(AppContext.class);
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static volatile AppContext APP_CONTEXT;
 
     static {

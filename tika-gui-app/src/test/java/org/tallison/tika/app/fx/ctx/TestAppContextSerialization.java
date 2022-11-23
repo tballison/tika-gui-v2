@@ -18,7 +18,6 @@ package org.tallison.tika.app.fx.ctx;
 
 import java.io.StringWriter;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Collections;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -27,8 +26,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.tallison.tika.app.fx.Constants;
-import org.tallison.tika.app.fx.batch.BatchProcess;
 import org.tallison.tika.app.fx.batch.BatchProcessConfig;
 import org.tallison.tika.app.fx.emitters.EmitterSpec;
 import org.tallison.tika.app.fx.emitters.FileSystemEmitterSpec;
@@ -49,7 +46,7 @@ public class TestAppContextSerialization {
         ((FileSystemEmitterSpec)emitterSpec).setBasePath(Paths.get("something"));
         emitterSpec.setShortLabel("short label");
         emitterSpec.setFullLabel("full label");
-        emitterSpec.validate();
+        emitterSpec.initialize();
         BatchProcessConfig batchProcessConfig = new BatchProcessConfig();
         batchProcessConfig.setEmitter(emitterSpec);
         appContext.setBatchProcessConfig(batchProcessConfig);

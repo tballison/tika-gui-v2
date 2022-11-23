@@ -48,11 +48,12 @@ import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.emitters.EmitterSpec;
 import org.tallison.tika.app.fx.emitters.ValidationResult;
 import org.tallison.tika.app.fx.status.StatusUpdater;
+import org.tallison.tika.app.fx.utils.OptionalUtil;
 
 public class TikaController extends ControllerBase {
 
-    static AppContext APP_CONTEXT = AppContext.getInstance();
     private static final Logger LOGGER = LogManager.getLogger(TikaController.class);
+    static AppContext APP_CONTEXT = AppContext.getInstance();
     @FXML
     private Label welcomeText;
 
@@ -195,7 +196,9 @@ public class TikaController extends ControllerBase {
                 onEmitterClose(we, stage);
             }
         });
+
         stage.showAndWait();
+        updateButtons(BatchProcess.STATUS.READY);
 
     }
 
@@ -218,11 +221,15 @@ public class TikaController extends ControllerBase {
         AtomicBoolean close = new AtomicBoolean(true);
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Output Not Fully Configured");
-        alert.setContentText("");
-        ButtonType okButton = new ButtonType("Go Back to Configuration", ButtonBar.ButtonData.YES);
-        ButtonType noButton = new ButtonType("Ignore", ButtonBar.ButtonData.NO);
+        if (!OptionalUtil.isEmpty(emitterSpec.getNotValidMessage())) {
+            alert.setContentText(emitterSpec.getNotValidMessage().get());
+        } else {
+            alert.setContentText("");
+        }
+        ButtonType goBack = new ButtonType("Go Back to Configuration", ButtonBar.ButtonData.YES);
+        ButtonType ignore = new ButtonType("Ignore", ButtonBar.ButtonData.NO);
         //ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-        alert.getButtonTypes().setAll(okButton, noButton);
+        alert.getButtonTypes().setAll(ignore, goBack);
         alert.showAndWait().ifPresent(type -> {
             if (type.getText().startsWith("Go Back")) {
                 close.set(false);
@@ -230,18 +237,13 @@ public class TikaController extends ControllerBase {
                 close.set(true);
             }
         });
-
-
-        //}
+        //go back to where we were
+        windowEvent.consume();
         if (close.get()) {
             stage.close();
-        } else {
-            //go back to where we were
-            windowEvent.consume();
         }
 
     }
-
 
     public void updateButtons(BatchProcess.STATUS status) {
 
@@ -292,6 +294,9 @@ public class TikaController extends ControllerBase {
         //TODO -- validate as much as possible
         EmitterSpec emitterSpec = bpc.getEmitter().get();
         ValidationResult result = emitterSpec.initialize();
+        //invalidate emitter so that run button is turned off --
+        //this forces the user to have to reconfigure the emitters
+        emitterSpec.setValid(false);
         if (result != ValidationResult.OK) {
             alert(result.getTitle().get(), result.getHeader().get(), result.getMsg().get());
             return;

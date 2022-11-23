@@ -27,21 +27,15 @@ import javafx.beans.property.StringProperty;
 import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.emitters.EmitterSpec;
 
-import org.apache.tika.utils.ProcessUtils;
-
 public class BatchProcessConfig {
-
-    private Optional<ConfigItem> pipesIterator = Optional.empty();
-    private Optional<ConfigItem> fetcher = Optional.empty();
-    private Optional<EmitterSpec> emitter = Optional.empty();
-
 
     @JsonIgnore
     private final StringProperty fetcherLabel = new SimpleStringProperty("Unselected");
-
     @JsonIgnore
     private final StringProperty emitterLabel = new SimpleStringProperty("Unselected");
-
+    private Optional<ConfigItem> pipesIterator = Optional.empty();
+    private Optional<ConfigItem> fetcher = Optional.empty();
+    private Optional<EmitterSpec> emitter = Optional.empty();
     private int outputSelectedTab = 0;
 
     private int inputSelectedTab = 0;
@@ -112,7 +106,7 @@ public class BatchProcessConfig {
     @JsonSetter
     public void setEmitter(EmitterSpec emitter) {
         this.emitter = Optional.ofNullable(emitter);
-        if (emitter.getShortLabel().isPresent()) {
+        if (this.emitter.isPresent() && this.emitter.get().getShortLabel().isPresent()) {
             setEmitterLabel(this.emitter.get().getShortLabel().get());
         }
     }

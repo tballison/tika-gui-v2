@@ -17,9 +17,7 @@
 package org.tallison.tika.app.fx.emitters;
 
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -32,49 +30,46 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
-import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
 import org.tallison.tika.app.fx.sax.DomWriter;
 import org.w3c.dom.Element;
 
 public class JDBCEmitterSpec extends BaseEmitterSpec {
-    private static final String EMITTER_CLASS =
-            "org.apache.tika.pipes.emitter.jdbc.JDBCEmitter";
+    private static final String EMITTER_CLASS = "org.apache.tika.pipes.emitter.jdbc.JDBCEmitter";
 
     private static final Logger LOGGER = LogManager.getLogger(JDBCEmitterSpec.class);
 
     static String PATH_COL_NAME = "path";
 
-    static String ATTACHMENT_NUM_COL_NAME = "attach_num";
+    static String ATTACHMENT_NUM_COL_NAME = "attachment_num";
 
-    private Optional<String> connectionString;
+    private Optional<String> connectionString = Optional.empty();
 
-    private Optional<String> insertString;
+    private Optional<String> insertString = Optional.empty();
 
-    private Optional<String> tableName;
+    private Optional<String> tableName = Optional.empty();
 
-    JDBCEmitterSpec(String emitterClass, List<MetadataTuple> metadataTuples) {
-        super(emitterClass, metadataTuples);
-    }
 
     public JDBCEmitterSpec(@JsonProperty("metadataTuples") List<MetadataTuple> metadataTuples) {
-        this(EMITTER_CLASS, metadataTuples);
+        super(metadataTuples);
     }
 
-    @Override
-    public ValidationResult validate() {
-        return null;
-    }
 
     @Override
     public ValidationResult initialize() throws IOException {
         createAndSetInsertString(getTableName().get());
+        //invalidate before next run
+        valid = false;
         //TODO -- fix this
         return ValidationResult.OK;
     }
 
     Optional<String> getTableName() {
         return tableName;
+    }
+
+    public void setTableName(String tableNameString) {
+        this.tableName = Optional.of(tableNameString);
     }
 
     public void set(String tableName) {
@@ -97,8 +92,7 @@ public class JDBCEmitterSpec extends BaseEmitterSpec {
             return;
         }
         Map<String, String> map = new LinkedHashMap<>();
-        getMetadataTuples().stream()
-                .forEach(e -> map.put(e.getOutput(), e.getProperty()));
+        getMetadataTuples().stream().forEach(e -> map.put(e.getOutput(), e.getProperty()));
 
         writer.appendMap(params, "keys", "key", map);
     }
@@ -108,7 +102,7 @@ public class JDBCEmitterSpec extends BaseEmitterSpec {
     }
 
     public void setConnectionString(String connectionString) {
-        this.connectionString = Optional.of(connectionString);
+        this.connectionString = Optional.ofNullable(connectionString);
     }
 
     void createAndSetInsertString(String tableName) {
@@ -129,32 +123,22 @@ public class JDBCEmitterSpec extends BaseEmitterSpec {
         insertString = Optional.of(sb.toString());
     }
 
-
     @Override
     public Set<String> getClassPathDependencies() {
         Set<String> items = new HashSet<>();
-        items.add(
-                AppContext.TIKA_LIB_PATH.resolve("tika-emitter-jdbc")
-                        .toAbsolutePath() + "/*");
+        items.add(AppContext.TIKA_LIB_PATH.resolve("tika-emitter-jdbc").toAbsolutePath() + "/*");
         if (getConnectionString().isEmpty()) {
             LOGGER.warn("connection string is empty?!");
             return Collections.EMPTY_SET;
         }
         String connectionString = getConnectionString().get();
         if (connectionString.startsWith("jdbc:sqlite")) {
-            items.add(
-                    AppContext.TIKA_LIB_PATH.resolve("db/sqlite").toAbsolutePath() + "/*");
+            items.add(AppContext.TIKA_LIB_PATH.resolve("db/sqlite").toAbsolutePath() + "/*");
         } else if (connectionString.startsWith("jdbc:h2")) {
             items.add(AppContext.TIKA_LIB_PATH.resolve("db/h2").toAbsolutePath() + "/*");
         } else if (connectionString.startsWith("jdbc:postgres")) {
-            items.add(AppContext.TIKA_LIB_PATH.resolve("db/postgresql").toAbsolutePath() +
-                    "/*");
+            items.add(AppContext.TIKA_LIB_PATH.resolve("db/postgresql").toAbsolutePath() + "/*");
         }
         return items;
-    }
-
-
-    public void setTableName(String tableNameString) {
-        this.tableName = Optional.of(tableNameString);
     }
 }
