@@ -40,7 +40,7 @@ public class BatchProcessConfig {
 
     private int inputSelectedTab = 0;
 
-    private Optional<String> digest = Optional.of("No Digest");
+    private Optional<String> digest = Optional.of("sha256");
 
     private int numProcesses = 5;
 
