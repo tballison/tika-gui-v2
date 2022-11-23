@@ -284,11 +284,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             return VALIDITY.NO_CONNECTION_STRING;
         }
         String cString = connectionString.replace("AUTO_SERVER=TRUE", "");
-        try {
-            Class.forName("org.h2.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+
         try (Connection connection = DriverManager.getConnection(cString)) {
 
         } catch (SQLException e) {
