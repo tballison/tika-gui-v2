@@ -16,6 +16,9 @@
  */
 package org.tallison.tika.app.fx.emitters;
 
+import static org.tallison.tika.app.fx.emitters.JDBCEmitterSpec.ATTACHMENT_NUM_COL_NAME;
+import static org.tallison.tika.app.fx.emitters.JDBCEmitterSpec.PATH_COL_NAME;
+
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -39,24 +42,19 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kordamp.ikonli.javafx.FontIcon;
-import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.batch.BatchProcessConfig;
-import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
-import org.tallison.tika.app.fx.metadata.MetadataTuple;
 
 import org.apache.tika.utils.StringUtils;
 
 public class JDBCEmitterController extends AbstractEmitterController implements Initializable {
 
     private final static int TAB_INDEX = 3;
-    private static String ALERT_TITLE = "JDBC Emitter";
-    private static Logger LOGGER = LogManager.getLogger(JDBCEmitterController.class);
+    private static final String ALERT_TITLE = "JDBC Emitter";
+    private static final Logger LOGGER = LogManager.getLogger(JDBCEmitterController.class);
 
-    private static String PATH_COL_NAME = "path";
 
-    private static String ATTACHMENT_NUM_COL_NAME = "attach_num";
-    private String insertSql = StringUtils.EMPTY;
+    private final String insertSql = StringUtils.EMPTY;
     @FXML
     private TextField jdbcConnection;
     @FXML
@@ -70,6 +68,8 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
     @FXML
     private Accordion jdbcAccordion;
 
+    private boolean append = false;
+
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
         //Not clear why expanded=true is not working in fxml
@@ -80,49 +80,35 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             return;
         }
         BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig().get();
-        Optional<ConfigItem> configItem = batchProcessConfig.getEmitter();
-        if (configItem.isEmpty()) {
-            return;
-        }
-        ConfigItem emitter = configItem.get();
-        if (!emitter.getClazz().equals(Constants.JDBC_EMITTER_CLASS)) {
+        Optional<EmitterSpec> optionalEmitterSpec = batchProcessConfig.getEmitter();
+        if (optionalEmitterSpec.isEmpty()) {
             return;
         }
 
-        if (emitter.getAttributes().containsKey(Constants.JDBC_CONNECTION_STRING)) {
-            String s = emitter.getAttributes().get(Constants.JDBC_CONNECTION_STRING);
+        if (!optionalEmitterSpec.get().getClass().equals(JDBCEmitterSpec.class)) {
+            return;
+        }
+        JDBCEmitterSpec emitterSpec = (JDBCEmitterSpec) optionalEmitterSpec.get();
+        if (emitterSpec.getConnectionString().isPresent()) {
+            String s = emitterSpec.getConnectionString().get();
             if (!StringUtils.isBlank(s)) {
                 jdbcConnection.setText(s);
             }
         }
 
-        if (emitter.getAttributes().containsKey(Constants.JDBC_TABLE_NAME)) {
-            String s = emitter.getAttributes().get(Constants.JDBC_TABLE_NAME);
+        if (emitterSpec.getTableName().isPresent()) {
+            String s = emitterSpec.getTableName().get();
             if (!StringUtils.isBlank(s)) {
                 tableName.setText(s);
             }
         }
-
-        if (emitter.getMetadataTuples().isPresent() &&
-                emitter.getMetadataTuples().get().size() > 0) {
-            getMetadataRows().clear();
-            for (MetadataTuple t : emitter.getMetadataTuples().get()) {
-                getMetadataRows().add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
-            }
-        }
-
-        VALIDITY validity = validate();
-        if (validity == VALIDITY.VALID) {
-            readyIcon.setVisible(true);
-            notReadyIcon.setVisible(false);
-        } else {
-            readyIcon.setVisible(false);
-            notReadyIcon.setVisible(true);
-        }
+        updateMetadataRows(emitterSpec.getMetadataTuples());
+        readyIcon.setVisible(false);
+        notReadyIcon.setVisible(true);
     }
 
     @Override
-    public void saveState() {
+    public void saveState(boolean validated) {
         String shortLabel = StringUtils.EMPTY;
         String fullLabel = StringUtils.EMPTY;
         String jdbcConnectionString = StringUtils.EMPTY;
@@ -138,35 +124,35 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             fullLabel = "JDBC: " + tableNameString;
         }
 
-        ConfigItem emitter = ConfigItem.build(shortLabel, fullLabel, Constants.JDBC_EMITTER_CLASS,
-                Constants.JDBC_CONNECTION_STRING, jdbcConnectionString, Constants.JDBC_TABLE_NAME,
-                tableNameString, Constants.JDBC_INSERT_SQL, insertSql);
-
-        saveMetadataToEmitter(emitter);
+        JDBCEmitterSpec jdbcEmitterSpec = new JDBCEmitterSpec(getMetadataTuples());
+        jdbcEmitterSpec.setConnectionString(jdbcConnectionString);
+        jdbcEmitterSpec.setTableName(tableNameString);
+        jdbcEmitterSpec.setShortLabel(shortLabel);
+        jdbcEmitterSpec.setFullLabel(fullLabel);
+        jdbcEmitterSpec.setValid(validated);
 
         if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
             LOGGER.warn("no app context?!");
             return;
         }
+
         BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig().get();
-        batchProcessConfig.setEmitter(emitter);
+        batchProcessConfig.setEmitter(jdbcEmitterSpec);
         //TODO -- do better than hard coding indices
         batchProcessConfig.setOutputSelectedTab(TAB_INDEX);
 
         APP_CONTEXT.saveState();
     }
 
+
+    @FXML
     public void validateJDBC(ActionEvent actionEvent) {
         VALIDITY validity = validate();
         switch (validity) {
             case VALID:
-                //TODO -- should we test this insert string against the db?
-                //recreate it every time
-                insertSql = createInsertString();
                 readyIcon.setVisible(true);
                 notReadyIcon.setVisible(false);
-                LOGGER.debug("insert sql: " + insertSql);
-                saveState();
+                saveState(true);
                 ((Stage) validateJDBC.getScene().getWindow()).close();
                 return;
             case METADATA_ANOMALY:
@@ -181,11 +167,11 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
                 alert(ALERT_TITLE, "No connection string?",
                         "Need to specify a jdbc connection string");
                 break;
-            case COLUMN_MISMATCH:
-                columnMismatchDialog();
-                break;
             case FAILED_TO_CONNECT:
                 alert("JDBC Emitter", "Failed to connect", "Couldn't open jdbc connection");
+                break;
+            case COLUMN_MISMATCH:
+                columnMismatchDialog();
                 break;
             case NEED_TO_CREATE_TABLE:
                 boolean success = tryToCreateTable();
@@ -195,12 +181,16 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
                 }
                 break;
             case TABLE_EXISTS_WITH_DATA:
-                existingDataDialog();
+                boolean toAppend = existingDataDialog();
+                if (toAppend) {
+                    validateJDBC(actionEvent);
+                    return;
+                }
                 break;
         }
         notReadyIcon.setVisible(true);
         readyIcon.setVisible(false);
-        saveState();
+        saveState(false);
         actionEvent.consume();
     }
 
@@ -216,12 +206,11 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             if (type.getText().startsWith("Drop")) {
                 dropTable();
             } else if (type.getText().startsWith("Cancel")) {
-                return;
             }
         });
     }
 
-    private void existingDataDialog() {
+    private boolean existingDataDialog() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(ALERT_TITLE);
         alert.setContentText("Data exists. Truncate table, append data or cancel?");
@@ -232,10 +221,12 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         alert.showAndWait().ifPresent(type -> {
             if (type.getText().startsWith("Truncate")) {
                 truncate();
+                append = false;
             } else if (type.getText().startsWith("Append")) {
-                return;
+                append = true;
             }
         });
+        return append;
 
     }
 
@@ -320,7 +311,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
                     //For now, assume table does not exist
                     return VALIDITY.NEED_TO_CREATE_TABLE;
                 }
-                if (rows == 0) {
+                if (rows == 0 || append) {
                     return VALIDITY.VALID;
                 }
                 return VALIDITY.TABLE_EXISTS_WITH_DATA;
@@ -332,8 +323,11 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
     }
 
     private boolean validateMetadata() {
-        return validateMetadataRows();
+        //vali
+        //TODO
+        return true;
     }
+
 
     private boolean validateColumns(ResultSetMetaData metaData) throws SQLException {
         //TODO -- check column types!
@@ -401,30 +395,12 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
             LOGGER.warn("failed to create table");
             LOGGER.warn(sb.toString());
             LOGGER.warn(e);
-            alertStackTrace("Failed to create table", "Failed to create table",
-                    "SQL:\n" + sb.toString(), e);
+            alertStackTrace("Failed to create table", "Failed to create table", "SQL:\n" + sb, e);
             return false;
         }
         return true;
     }
 
-    private String createInsertString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("insert into ").append(tableName.getText()).append(" (");
-        sb.append(PATH_COL_NAME).append(", ").append(ATTACHMENT_NUM_COL_NAME);
-        int colCount = 2;
-        for (MetadataRow r : getMetadataRows()) {
-            sb.append(", ");
-            sb.append(r.getOutput());
-            colCount++;
-        }
-        sb.append(") values (?");
-        for (int i = 1; i < colCount; i++) {
-            sb.append(",?");
-        }
-        sb.append(")");
-        return sb.toString();
-    }
 
     private enum VALIDITY {
         NO_CONNECTION_STRING, METADATA_NOT_CONFIGURED, METADATA_ANOMALY, FAILED_TO_CONNECT, VALID,

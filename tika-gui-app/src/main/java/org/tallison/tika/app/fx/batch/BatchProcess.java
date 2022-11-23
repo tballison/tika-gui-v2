@@ -37,7 +37,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.config.TikaConfigWriter;
-import org.tallison.tika.app.fx.csv.CSVEmitterHelper;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.status.MutableStatus;
 import org.tallison.tika.app.fx.status.StatusUpdater;
@@ -50,23 +49,23 @@ import org.apache.tika.utils.StringUtils;
 
 public class BatchProcess {
 
-    private static Logger LOGGER = LogManager.getLogger(BatchProcess.class);
+    private static final Logger LOGGER = LogManager.getLogger(BatchProcess.class);
     private final MutableStatus mutableStatus = new MutableStatus(STATUS.READY);
+    private final ObjectMapper objectMapper =
+            JsonMapper.builder().addModule(new JavaTimeModule()).build();
+    private final ExecutorService daemonExecutorService = Executors.newFixedThreadPool(2, r -> {
+        Thread t = Executors.defaultThreadFactory().newThread(r);
+        t.setDaemon(true);
+        return t;
+    });
+    private final ExecutorCompletionService<Integer> executorCompletionService =
+            new ExecutorCompletionService<>(daemonExecutorService);
     private long runningProcessId = -1;
     private Path configFile;
     private BatchRunner batchRunner = null;
     private BatchProcessConfig batchProcessConfig = null;
     private Optional<Exception> jvmException = Optional.empty();
     private Optional<String> jvmErrorMsg = Optional.empty();
-    private ObjectMapper objectMapper =
-            JsonMapper.builder().addModule(new JavaTimeModule()).build();
-    private ExecutorService daemonExecutorService = Executors.newFixedThreadPool(2, r -> {
-        Thread t = Executors.defaultThreadFactory().newThread(r);
-        t.setDaemon(true);
-        return t;
-    });
-    private ExecutorCompletionService<Integer> executorCompletionService =
-            new ExecutorCompletionService<>(daemonExecutorService);
 
     public synchronized void start(BatchProcessConfig batchProcessConfig,
                                    StatusUpdater statusUpdater) throws TikaException, IOException {
@@ -130,7 +129,9 @@ public class BatchProcess {
         }
         daemonExecutorService.shutdownNow();
         try {
-            CSVEmitterHelper.cleanCSVTempResources(batchProcessConfig.getEmitter().get());
+            if (batchProcessConfig.getEmitter().isPresent()) {
+                batchProcessConfig.getEmitter().get().close();
+            }
         } catch (IOException e) {
             LOGGER.warn("Failed to delete csv tmp");
         }
@@ -199,7 +200,7 @@ public class BatchProcess {
     }
 
     public enum STATUS {
-        READY, ERROR, RUNNING, COMPLETE, CANCELED;
+        READY, ERROR, RUNNING, COMPLETE, CANCELED
     }
 
     private enum PROCESS_ID {
@@ -219,6 +220,8 @@ public class BatchProcess {
         @Override
         public Integer call() throws Exception {
             List<String> commandLine = buildCommandLine();
+
+
             process = new ProcessBuilder(commandLine).inheritIO() //TODO -- for dev purposes only
                     .start();
             mutableStatus.set(STATUS.RUNNING);
@@ -261,7 +264,9 @@ public class BatchProcess {
                         jvmErrorMsg = Optional.of(msg);
                         mutableStatus.set(STATUS.ERROR);
                     } else {
-                        CSVEmitterHelper.writeCSV(AppContext.getInstance());
+                        if (batchProcessConfig.getEmitter().isPresent()) {
+                            batchProcessConfig.getEmitter().get().close();
+                        }
                         mutableStatus.set(STATUS.COMPLETE);
                     }
                     return PROCESS_ID.BATCH_PROCESS.ordinal();
@@ -295,9 +300,7 @@ public class BatchProcess {
             sb.append(File.pathSeparator);
             sb.append(ProcessUtils.escapeCommandLine(
                     AppContext.TIKA_EXTRAS_BIN_PATH.toAbsolutePath() + "/*"));
-            sb.append(File.pathSeparator);
-            //TODO refactor batch process config to generate class path
-            //for fetchers/emitters
+
             batchProcessConfig.appendPipesClasspath(sb);
             return sb.toString();
         }

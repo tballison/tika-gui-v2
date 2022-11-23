@@ -25,8 +25,15 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import org.tallison.tika.app.fx.emitters.ValidationResult;
 
 public class ControllerBase {
+
+    public static void alert(ValidationResult validationResult) {
+        alert(validationResult.getTitle().get(), validationResult.getHeader().get(),
+                validationResult.getMsg().get());
+    }
+
     public static void alert(String title, String header, String content) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(title);

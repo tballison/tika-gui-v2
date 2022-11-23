@@ -18,34 +18,33 @@ package org.tallison.tika.app.fx.emitters;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Accordion;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.batch.BatchProcessConfig;
-import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.ctx.AppContext;
-import org.tallison.tika.app.fx.metadata.MetadataRow;
-import org.tallison.tika.app.fx.metadata.MetadataTuple;
-
-import org.apache.tika.utils.StringUtils;
 
 public class FileSystemEmitterController extends AbstractEmitterController
         implements Initializable {
-    private static AppContext APP_CONTEXT = AppContext.getInstance();
-    private static Logger LOGGER = LogManager.getLogger(FileSystemEmitterController.class);
+    private static final AppContext APP_CONTEXT = AppContext.getInstance();
+    private static final Logger LOGGER = LogManager.getLogger(FileSystemEmitterController.class);
 
     @FXML
     private Button fsOutputButton;
@@ -54,6 +53,8 @@ public class FileSystemEmitterController extends AbstractEmitterController
     private Accordion fsAccordion;
 
     private Optional<Path> directory = Optional.empty();
+
+    private boolean overWriteNonEmptyDirectory = false;
 
 
     @Override
@@ -68,22 +69,20 @@ public class FileSystemEmitterController extends AbstractEmitterController
             return;
         }
 
-        ConfigItem emitter = APP_CONTEXT.getBatchProcessConfig().get().getEmitter().get();
-        if (!emitter.getClazz().equals(Constants.FS_EMITTER_CLASS)) {
+        EmitterSpec emitter = APP_CONTEXT.getBatchProcessConfig().get().getEmitter().get();
+        if (!(emitter instanceof FileSystemEmitterSpec)) {
             return;
         }
-        if (emitter.getMetadataTuples().isPresent() &&
-                emitter.getMetadataTuples().get().size() > 0) {
-            getMetadataRows().clear();
-            for (MetadataTuple t : emitter.getMetadataTuples().get()) {
-                getMetadataRows().add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
-            }
+        if (((FileSystemEmitterSpec) emitter).getBasePath().isPresent()) {
+            directory = Optional.of(((FileSystemEmitterSpec) emitter).getBasePath().get());
         }
+        updateMetadataRows(((FileSystemEmitterSpec) emitter).getMetadataTuples());
 
     }
 
     public void fileSystemOutputDirectorySelect(ActionEvent actionEvent) {
-
+        //every time someone selects a new directory, set this to false!
+        overWriteNonEmptyDirectory = false;
         final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
 
         DirectoryChooser directoryChooser = new DirectoryChooser();
@@ -96,13 +95,12 @@ public class FileSystemEmitterController extends AbstractEmitterController
             actionEvent.consume();
             return;
         }
-        Optional<ConfigItem> emitter = batchProcessConfig.getEmitter();
+        Optional<EmitterSpec> emitter = batchProcessConfig.getEmitter();
         if (emitter.isPresent()) {
-            if (emitter.get().getClazz() != null &&
-                    emitter.get().getClazz().equals(Constants.FS_EMITTER_CLASS)) {
-                String path = emitter.get().getAttributes().get(Constants.BASE_PATH);
-                if (!StringUtils.isBlank(path)) {
-                    File f = new File(path);
+            if (emitter.get() instanceof FileSystemEmitterSpec) {
+                Optional<Path> path = ((FileSystemEmitterSpec) emitter.get()).getBasePath();
+                if (path.isPresent()) {
+                    File f = path.get().toFile();
                     if (f.isDirectory()) {
                         directoryChooser.setInitialDirectory(f);
                     }
@@ -111,15 +109,38 @@ public class FileSystemEmitterController extends AbstractEmitterController
         }
         File directory = directoryChooser.showDialog(parent);
         if (directory == null) {
+            actionEvent.consume();
             return;
         }
         this.directory = Optional.of(directory.toPath());
-        saveState();
-        ((Stage) fsOutputButton.getScene().getWindow()).close();
+        boolean success = checkForEmptyDirectory(this.directory.get());
+        saveState(success);
+        if (success) {
+            ((Stage) fsOutputButton.getScene().getWindow()).close();
+        } else {
+            actionEvent.consume();
+        }
+    }
+
+    private boolean checkForEmptyDirectory(Path path) {
+        if (Files.isRegularFile(path)) {
+            alert("File System Emitter", "Output directory is a file?!",
+                    "Output directory is a file?! How in the world did you pull this off?!");
+            return false;
+        }
+        if (Files.isDirectory(path)) {
+            LOGGER.debug("fs emitter output directory exists {}", path);
+            File[] files = path.toFile().listFiles();
+            if (files.length > 0) {
+                overWriteNonEmptyDirectory = overWriteNonEmptyDirectoryDialog(path);
+                return overWriteNonEmptyDirectory;
+            }
+        }
+        return true;
     }
 
     @Override
-    protected void saveState() {
+    protected void saveState(boolean validated) {
         if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
             return;
         }
@@ -129,9 +150,13 @@ public class FileSystemEmitterController extends AbstractEmitterController
             Path p = directory.get();
             String shortLabel = "FileSystem: " + ellipsize(p.getFileName().toString(), 30);
             String fullLabel = "FileSystem: " + p.toAbsolutePath();
-            ConfigItem emitter = ConfigItem.build(shortLabel, fullLabel, Constants.FS_EMITTER_CLASS,
-                    Constants.BASE_PATH, p.toAbsolutePath().toString());
-            saveMetadataToEmitter(emitter);
+            EmitterSpec emitter = new FileSystemEmitterSpec(getMetadataTuples());
+            ((FileSystemEmitterSpec) emitter).setBasePath(p);
+            emitter.setShortLabel(shortLabel);
+            emitter.setFullLabel(fullLabel);
+            emitter.setValid(validated);
+            ((FileSystemEmitterSpec) emitter).setOverWriteNonEmptyDirectory(
+                    overWriteNonEmptyDirectory);
             bpc.setEmitter(emitter);
         }
         //TODO -- do better than hard coding indices
@@ -139,4 +164,23 @@ public class FileSystemEmitterController extends AbstractEmitterController
         APP_CONTEXT.saveState();
     }
 
+    private boolean overWriteNonEmptyDirectoryDialog(Path path) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("File System Emitter");
+        alert.setContentText("The output directory has contents. Do you want to " +
+                "potentially overwrite data in" + " that directory or cancel?");
+        ButtonType overwrite = new ButtonType("Overwrite", ButtonBar.ButtonData.YES);
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        alert.getButtonTypes().setAll(overwrite, cancelButton);
+        AtomicBoolean processAnyways = new AtomicBoolean(false);
+        alert.showAndWait().ifPresent(type -> {
+            if (type.getText().startsWith("Overwrite")) {
+                processAnyways.set(true);
+            } else if (type.getText().startsWith("Cancel")) {
+                processAnyways.set(false);
+            }
+        });
+        return processAnyways.get();
+    }
 }

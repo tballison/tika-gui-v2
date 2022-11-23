@@ -20,12 +20,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -46,12 +44,10 @@ import javafx.stage.Window;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kordamp.ikonli.javafx.FontIcon;
-import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.batch.BatchProcessConfig;
-import org.tallison.tika.app.fx.config.ConfigItem;
-import org.tallison.tika.app.fx.csv.CSVEmitterHelper;
 import org.tallison.tika.app.fx.metadata.MetadataRow;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
+import org.tallison.tika.app.fx.utils.OptionalUtil;
 
 import org.apache.tika.utils.StringUtils;
 
@@ -59,9 +55,9 @@ public class CSVEmitterController extends AbstractEmitterController implements I
 
     private final static int TAB_INDEX = 1;
 
-    private static String ALERT_TITLE = "JDBC Emitter";
+    private static final String ALERT_TITLE = "CSV Emitter";
 
-    private static Logger LOGGER = LogManager.getLogger(CSVEmitterController.class);
+    private static final Logger LOGGER = LogManager.getLogger(CSVEmitterController.class);
 
     @FXML
     private TextField csvFileName;
@@ -82,7 +78,7 @@ public class CSVEmitterController extends AbstractEmitterController implements I
     private TextField csvDirectory;
 
 
-    private Optional<File> csvWorkingDirectory = Optional.empty();
+    private Optional<Path> csvWorkingDirectory = Optional.empty();
 
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
@@ -94,34 +90,31 @@ public class CSVEmitterController extends AbstractEmitterController implements I
             return;
         }
         BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig().get();
-        Optional<ConfigItem> configItem = batchProcessConfig.getEmitter();
-        if (configItem.isEmpty()) {
+        Optional<EmitterSpec> optionalEmitterSpec = batchProcessConfig.getEmitter();
+        if (optionalEmitterSpec.isEmpty()) {
             return;
         }
-        ConfigItem emitter = configItem.get();
-        if (!emitter.getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
+        if (!(optionalEmitterSpec.get() instanceof CSVEmitterSpec emitter)) {
             return;
         }
-        if (emitter.getMetadataTuples().isPresent() &&
-                emitter.getMetadataTuples().get().size() > 0) {
+
+        if (emitter.getMetadataTuples().size() > 0) {
             getMetadataRows().clear();
-            for (MetadataTuple t : emitter.getMetadataTuples().get()) {
+            for (MetadataTuple t : emitter.getMetadataTuples()) {
                 getMetadataRows().add(new MetadataRow(t.getTika(), t.getOutput(), t.getProperty()));
             }
         }
-        if (emitter.getAttributes().containsKey(Constants.BASE_PATH)) {
-            File directory = new File(emitter.getAttributes().get(Constants.BASE_PATH));
+        if (emitter.getCsvDirectory().isPresent()) {
+            File directory = emitter.getCsvDirectory().get().toFile();
             if (directory.isDirectory()) {
-                this.csvWorkingDirectory = Optional.of(directory);
+                this.csvWorkingDirectory = Optional.of(directory.toPath());
                 this.csvDirectory.setText(directory.getName());
             }
         }
-        if (emitter.getAttributes().containsKey(Constants.CSV_FILE_NAME)) {
-            csvFileName.setText(emitter.getAttributes().get(Constants.CSV_FILE_NAME));
+        if (!OptionalUtil.isEmpty(emitter.getCsvFileName())) {
+            csvFileName.setText(emitter.getCsvFileName().get());
         }
-
-        safelySetCsvMetadataPath(emitter.getAttributes().get(Constants.CSV_METADATA_PATH));
-
+        //safelySetCsvMetadataPath(emitter.getAttributes().get(Constants.CSV_METADATA_PATH));
     }
 
     public void selectCSVOutputDirectory(ActionEvent actionEvent) {
@@ -136,16 +129,12 @@ public class CSVEmitterController extends AbstractEmitterController implements I
             actionEvent.consume();
             return;
         }
-        Optional<ConfigItem> emitter = batchProcessConfig.getEmitter();
-        if (emitter.isPresent()) {
-            if (emitter.get().getClazz() != null &&
-                    emitter.get().getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
-                String path = emitter.get().getAttributes().get("directory");
-                if (!StringUtils.isBlank(path)) {
-                    File f = new File(path);
-                    if (f.isDirectory()) {
-                        directoryChooser.setInitialDirectory(f);
-                    }
+        Optional<EmitterSpec> emitter = batchProcessConfig.getEmitter();
+        if (emitter.isPresent() && emitter.get() instanceof CSVEmitterSpec) {
+            if (((CSVEmitterSpec) emitter.get()).getCsvDirectory().isPresent()) {
+                File f = ((CSVEmitterSpec) emitter.get()).getCsvDirectory().get().toFile();
+                if (f.isDirectory()) {
+                    directoryChooser.setInitialDirectory(f);
                 }
             }
         }
@@ -153,52 +142,44 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         if (directory == null) {
             return;
         }
-        this.csvWorkingDirectory = Optional.of(directory);
+        this.csvWorkingDirectory = Optional.of(directory.toPath());
         this.csvDirectory.setText(directory.getName());
     }
 
 
     @Override
-    public void saveState() {
+    public void saveState(boolean isValidated) {
+        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
+            LOGGER.warn("no app context?!");
+            return;
+        }
         String shortLabel = StringUtils.EMPTY;
         String fullLabel = StringUtils.EMPTY;
-        String csvOutputFileString = StringUtils.EMPTY;
-        String directoryString = StringUtils.EMPTY;
-
-        if (csvWorkingDirectory.isPresent()) {
-            directoryString = csvWorkingDirectory.get().getAbsolutePath();
-        }
         if (csvFileName != null) {
             String fString = csvFileName.getText();
             if (!StringUtils.isBlank(fString)) {
                 shortLabel = "CSV file: " + ellipsize(fString, 30);
                 fullLabel = "CSV file: " + fString;
-                csvOutputFileString = fString;
             }
         }
 
-        Optional<Path> csvMetadataPath = getCsvMetadataPath();
-        String csvMetadataPathString =
-                csvMetadataPath.isPresent() ? csvMetadataPath.get().toAbsolutePath().toString() :
-                        StringUtils.EMPTY;
-
-        ConfigItem emitter = ConfigItem.build(shortLabel, fullLabel, Constants.CSV_EMITTER_CLASS,
-                Constants.BASE_PATH, directoryString, Constants.CSV_FILE_NAME, csvOutputFileString,
-                Constants.CSV_METADATA_PATH, csvMetadataPathString);
-
-        saveMetadataToEmitter(emitter);
-        List<MetadataTuple> metadataTuples = emitter.getMetadataTuples().get();
+        List<MetadataTuple> metadataTuples = getMetadataTuples();
         List<MetadataTuple> updatedTuples = new ArrayList<>();
         for (MetadataTuple t : metadataTuples) {
             updatedTuples.add(new MetadataTuple(t.getTika(), t.getOutput(), "VARCHAR(32000)"));
         }
-        emitter.setMetadataTuples(updatedTuples);
-        addInsertSQL(emitter);
+        CSVEmitterSpec emitter = new CSVEmitterSpec(updatedTuples);
 
-        if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
-            LOGGER.warn("no app context?!");
-            return;
+        emitter.setShortLabel(shortLabel);
+        emitter.setFullLabel(fullLabel);
+        if (csvWorkingDirectory.isPresent()) {
+            emitter.setCsvDirectory(csvWorkingDirectory.get());
         }
+        if (!StringUtils.isBlank(csvFileName.getText())) {
+            emitter.setCsvFileName(csvFileName.getText());
+        }
+        emitter.setValid(isValidated);
+
         BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig().get();
         batchProcessConfig.setEmitter(emitter);
         //TODO -- do better than hard coding indices
@@ -207,30 +188,8 @@ public class CSVEmitterController extends AbstractEmitterController implements I
     }
 
 
-    private void addInsertSQL(ConfigItem emitter) {
-        StringBuilder sb = new StringBuilder();
-        String tableName = Constants.CSV_DB_TABLE_NAME;
-        sb.append("insert into ").append(tableName);
-        sb.append(" (path, attachment_num");
-        int cols = 2;
-        for (MetadataTuple t : emitter.getMetadataTuples().get()) {
-            sb.append(", " + t.getOutput());
-            cols++;
-        }
-        sb.append(") values (");
-        for (int i = 0; i < cols; i++) {
-            if (i > 0) {
-                sb.append(",");
-            }
-            sb.append("?");
-        }
-        sb.append(")");
-        LOGGER.trace("insert sql: " + sb);
-        emitter.getAttributes().put(Constants.CSV_JDBC_INSERT_SQL, sb.toString());
-    }
-
-    public void updateCSV(ActionEvent actionEvent) {
-        saveState();
+    @FXML
+    public void validateCSV(ActionEvent actionEvent) {
 
         if (APP_CONTEXT.getBatchProcessConfig().isEmpty()) {
             return;
@@ -238,57 +197,49 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         if (APP_CONTEXT.getBatchProcessConfig().get().getEmitter().isEmpty()) {
             return;
         }
-        ConfigItem emitter = APP_CONTEXT.getBatchProcessConfig().get().getEmitter().get();
-        Map<String, String> attributes = emitter.getAttributes();
+        if (csvWorkingDirectory.isEmpty()) {
+            alert("CSV Configuration Problem", "Must set CSV Output Directory",
+                    "Must set CSV Output Directory");
+            return;
+        }
+
+        if (getMetadataRows().size() == 0) {
+            alert(ALERT_TITLE, "Metadata Not Configured", "Need to configure metadata");
+            csvAccordion.setExpandedPane(csvAccordion.getPanes().get(1));
+            return;
+        }
+        ValidationResult validationResult = validateMetadataRows();
+        if (validationResult != ValidationResult.OK) {
+            alert(validationResult);
+            return;
+        }
+
+        String thisCsvFileName = "tika-extracts.csv";
+        if (!StringUtils.isBlank(csvFileName.getText())) {
+            thisCsvFileName = csvFileName.getText();
+        }
+
+        Path csvFile = null;
         try {
-            CSVEmitterHelper.setUp(emitter);
-        } catch (IOException e) {
-            LOGGER.error("can't create tmp directory");
+            csvFile = csvWorkingDirectory.get().resolve(thisCsvFileName);
+        } catch (InvalidPathException e) {
+            alert("CSV Configuration Problem", "CSV file name is invalid",
+                    "CSV file name is invalid: " + thisCsvFileName);
             return;
         }
-        String csvDir = attributes.get(Constants.BASE_PATH);
-        if (StringUtils.isBlank(csvDir)) {
-            return;
-        }
-        Path basePath = Paths.get(csvDir);
-        if (!Files.isDirectory(basePath)) {
-            try {
-                Files.createDirectories(basePath);
-            } catch (IOException e) {
-                alertStackTrace("Can't create directory", "Can't create directory for csv",
-                        "Can't create " + basePath.toAbsolutePath(), e);
-                actionEvent.consume();
-                return;
-            }
-        }
-        String csvFileName = attributes.get(Constants.CSV_FILE_NAME);
-        if (StringUtils.isBlank(csvFileName)) {
-            LOGGER.debug("empty csv file name");
-            return;
-        }
-        Path csvFile = basePath.resolve(csvFileName);
+
         boolean success = true;
         if (Files.isRegularFile(csvFile)) {
             success = deleteCSVFileDialog(csvFile);
         }
         if (!success) {
-            LOGGER.warn("didn't delete csv file");
+            LOGGER.debug("didn't delete csv file");
             actionEvent.consume();
             return;
         }
-
-        try {
-            CSVEmitterHelper.createTable(emitter);
-        } catch (SQLException e) {
-            alertStackTrace("Couldn't create tmp table", "Couldn't create tmp table",
-                    "Couldn't create tmp table", e);
-            actionEvent.consume();
-            return;
-        }
-        LOGGER.debug("success, all good; close window");
+        saveState(true);
         readyIcon.setVisible(true);
         notReadyIcon.setVisible(false);
-
         ((Stage) updateCSV.getScene().getWindow()).close();
     }
 
@@ -311,7 +262,6 @@ public class CSVEmitterController extends AbstractEmitterController implements I
                             "Couldn't delete file: " + csvFile.toAbsolutePath());
                 }
             } else if (type.getText().startsWith("Cancel")) {
-                return;
             }
         });
         return success.get();

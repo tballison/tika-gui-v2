@@ -31,6 +31,11 @@ public class ConfigItem {
     private String clazz;
     private Map<String, String> attributes;
 
+
+    //TODO -- this is a hack for now...
+    private boolean valid = true;
+
+
     private Optional<List<MetadataTuple>> metadataTuples = Optional.empty();
 
     public ConfigItem() {
@@ -86,12 +91,13 @@ public class ConfigItem {
         this.attributes = attributes;
     }
 
-    public Optional<List<MetadataTuple>> getMetadataTuples() {
-        return metadataTuples;
+
+    public boolean isValid() {
+        return valid;
     }
 
-    public void setMetadataTuples(List<MetadataTuple> metadataTuples) {
-        this.metadataTuples = Optional.ofNullable(metadataTuples);
+    public void setValid(boolean valid) {
+        this.valid = valid;
     }
 
     @Override

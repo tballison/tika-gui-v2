@@ -14,33 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tallison.tika.gui.tools.deprecated;
+package org.tallison.tika.app.fx.utils;
 
-import java.util.Map;
+import java.util.Optional;
 
-public class SnapshotResult {
+import org.apache.tika.utils.StringUtils;
 
-    private final String version;
-    private final String jarUrl;
-    private final Map<String, String> digests;
+public class OptionalUtil {
 
-    public SnapshotResult(String version, String jarUrl, Map<String, String> digests) {
-        this.version = version;
-        this.jarUrl = jarUrl;
-        this.digests = digests;
-    }
-
-    public String getUrl() {
-        return jarUrl;
-    }
-
-    public Map<String, String> getDigests() {
-        return digests;
-    }
-
-    @Override
-    public String toString() {
-        return "SnapshotResult{" + "version='" + version + '\'' + ", jarUrl='" + jarUrl + '\'' +
-                ", digests=" + digests + '}';
+    public static boolean isEmpty(Optional<String> item) {
+        if (item.isEmpty()) {
+            return true;
+        }
+        return StringUtils.isBlank(item.get());
     }
 }

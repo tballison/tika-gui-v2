@@ -49,7 +49,7 @@
                 <Label layoutX="61.0" layoutY="93.0" text="Directory" />
                 <TextField fx:id="csvFileName" layoutX="142.0" layoutY="50.0" prefHeight="26.0" prefWidth="209.0" text="tika-extracts.csv" />
                 <Button layoutX="460.0" layoutY="89.0" mnemonicParsing="false" onAction="#selectCSVOutputDirectory" prefHeight="26.0" prefWidth="84.0" text="Choose" />
-                <Button fx:id="updateCSV" layoutX="377.0" layoutY="159.0" mnemonicParsing="false" onAction="#updateCSV" text="Validate" />
+                <Button fx:id="updateCSV" layoutX="377.0" layoutY="159.0" mnemonicParsing="false" onAction="#validateCSV" text="Validate" />
                         <TextField fx:id="csvDirectory" editable="false" layoutX="145.0" layoutY="89.0" prefHeight="26.0" prefWidth="294.0" />
                 <!-- https://kordamp.org/ikonli/cheat-sheet-antdesignicons.html -->
                 <FontIcon fx:id="readyIcon" iconColor="green" iconLiteral="anto-check-circle" iconSize="30" layoutX="461.0" layoutY="185.0" text="" visible="false" wrappingWidth="17.0" />

@@ -16,9 +16,6 @@
  */
 package org.tallison.tika.app.fx.batch;
 
-import static org.tallison.tika.app.fx.Constants.CSV_JDBC_CONNECTION_STRING;
-import static org.tallison.tika.app.fx.Constants.JDBC_CONNECTION_STRING;
-import static org.tallison.tika.app.fx.Constants.JDBC_EMITTER_CLASS;
 
 import java.io.File;
 import java.util.Optional;
@@ -27,30 +24,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.config.ConfigItem;
-import org.tallison.tika.app.fx.ctx.AppContext;
-
-import org.apache.tika.utils.ProcessUtils;
+import org.tallison.tika.app.fx.emitters.EmitterSpec;
 
 public class BatchProcessConfig {
 
+    @JsonIgnore
+    private final StringProperty fetcherLabel = new SimpleStringProperty("Unselected");
+    @JsonIgnore
+    private final StringProperty emitterLabel = new SimpleStringProperty("Unselected");
     private Optional<ConfigItem> pipesIterator = Optional.empty();
     private Optional<ConfigItem> fetcher = Optional.empty();
-    private Optional<ConfigItem> emitter = Optional.empty();
-
-
-    @JsonIgnore
-    private StringProperty fetcherLabel = new SimpleStringProperty("Unselected");
-
-    @JsonIgnore
-    private StringProperty emitterLabel = new SimpleStringProperty("Unselected");
-
+    private Optional<EmitterSpec> emitter = Optional.empty();
     private int outputSelectedTab = 0;
 
     private int inputSelectedTab = 0;
 
-    private Optional<String> digest = Optional.of("No Digest");
+    private Optional<String> digest = Optional.of("sha256");
 
     private int numProcesses = 5;
 
@@ -109,53 +99,27 @@ public class BatchProcessConfig {
         emitterLabel.setValue(label);
     }
 
-    public Optional<ConfigItem> getEmitter() {
+    public Optional<EmitterSpec> getEmitter() {
         return emitter;
     }
 
     @JsonSetter
-    public void setEmitter(ConfigItem emitter) {
+    public void setEmitter(EmitterSpec emitter) {
         this.emitter = Optional.ofNullable(emitter);
-        if (this.emitter.isPresent()) {
-            setEmitterLabel(this.emitter.get().getShortLabel());
+        if (this.emitter.isPresent() && this.emitter.get().getShortLabel().isPresent()) {
+            setEmitterLabel(this.emitter.get().getShortLabel().get());
         }
     }
 
-    public void setEmitter(String... args) {
-        setEmitter(ConfigItem.build(args));
-    }
 
-
+    //This add a path separator before it appends the class path
     public void appendPipesClasspath(StringBuilder sb) {
-        //TODO -- build this out for fetchers, emitters and pipes iterators.
-        //TODO -- this is a disaster
+        //TODO -- build this out for fetchers and pipes iterators.
         if (!getEmitter().isEmpty()) {
-            ConfigItem emitter = getEmitter().get();
-            if (emitter.getClazz().equals(Constants.FS_EMITTER_CLASS)) {
-                sb.append(ProcessUtils.escapeCommandLine(
-                        AppContext.TIKA_LIB_PATH.resolve("tika-emitter-fs").toAbsolutePath() +
-                                "/*"));
-            } else if (emitter.getClazz().equals(Constants.OPEN_SEARCH_EMITTER_CLASS)) {
-                sb.append(ProcessUtils.escapeCommandLine(
-                        AppContext.TIKA_LIB_PATH.resolve("tika-emitter-opensearch")
-                                .toAbsolutePath() + "/*"));
-            } else if (emitter.getClazz().equals(Constants.JDBC_EMITTER_CLASS) ||
-                    emitter.getClazz().equals(Constants.CSV_EMITTER_CLASS)) {
-                sb.append(AppContext.TIKA_LIB_PATH.resolve("tika-emitter-jdbc").toAbsolutePath() +
-                        "/*");
+            EmitterSpec emitter = getEmitter().get();
+            for (String resource : emitter.getClassPathDependencies()) {
                 sb.append(File.pathSeparator);
-                String connectString = emitter.getClazz().equals(JDBC_EMITTER_CLASS) ?
-                        getEmitter().get().getAttributes().get(JDBC_CONNECTION_STRING) :
-                        getEmitter().get().getAttributes().get(CSV_JDBC_CONNECTION_STRING);
-                if (connectString.startsWith("jdbc:sqlite")) {
-                    sb.append(
-                            AppContext.TIKA_LIB_PATH.resolve("db/sqlite").toAbsolutePath() + "/*");
-                } else if (connectString.startsWith("jdbc:h2")) {
-                    sb.append(AppContext.TIKA_LIB_PATH.resolve("db/h2").toAbsolutePath() + "/*");
-                } else if (connectString.startsWith("jdbc:postgres")) {
-                    sb.append(AppContext.TIKA_LIB_PATH.resolve("db/postgresql").toAbsolutePath() +
-                            "/*");
-                }
+                sb.append(resource);
             }
         }
     }

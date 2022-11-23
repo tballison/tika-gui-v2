@@ -51,9 +51,9 @@ import org.apache.tika.pipes.pipesiterator.TotalCountResult;
 
 public class BatchStatusController implements Initializable {
 
-    private static Map<String, PipesResult.STATUS> PIPES_STATUS_LOOKUP = new HashMap<>();
-    private static String UNPROCESSED_COLOR = "0066cc";
-    private static Map<PipesResult.STATUS, String> COLORS =
+    private static final Map<String, PipesResult.STATUS> PIPES_STATUS_LOOKUP = new HashMap<>();
+    private static final String UNPROCESSED_COLOR = "0066cc";
+    private static final Map<PipesResult.STATUS, String> COLORS =
             Map.of(PipesResult.STATUS.PARSE_SUCCESS, "009900",
                     PipesResult.STATUS.PARSE_SUCCESS_WITH_EXCEPTION, "ffff00",
                     PipesResult.STATUS.EMIT_SUCCESS, "009900", PipesResult.STATUS.TIMEOUT, "ff9900",
@@ -216,7 +216,7 @@ public class BatchStatusController implements Initializable {
                         public void handle(MouseEvent e) {
                             pieSliceCaption.setTranslateX(e.getSceneX());
                             pieSliceCaption.setTranslateY(e.getSceneY());
-                            pieSliceCaption.setText(String.valueOf(data.getPieValue()) + "%");
+                            pieSliceCaption.setText(data.getPieValue() + "%");
                         }
                     });
 
@@ -234,7 +234,7 @@ public class BatchStatusController implements Initializable {
         }
 
         private long countProcessed(AsyncStatus status) {
-            return status.getStatusCounts().values().stream().reduce(0l, Long::sum);
+            return status.getStatusCounts().values().stream().reduce(0L, Long::sum);
         }
     }
 

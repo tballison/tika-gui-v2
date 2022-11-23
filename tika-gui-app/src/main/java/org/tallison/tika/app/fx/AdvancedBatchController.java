@@ -35,9 +35,8 @@ import org.apache.tika.utils.StringUtils;
 
 public class AdvancedBatchController implements Initializable {
 
+    private static final Logger LOGGER = LogManager.getLogger(BatchInputController.class);
     static AppContext APP_CONTEXT = AppContext.getInstance();
-    private static Logger LOGGER = LogManager.getLogger(BatchInputController.class);
-
     @FXML
     private ComboBox<String> digestOptions;
 
