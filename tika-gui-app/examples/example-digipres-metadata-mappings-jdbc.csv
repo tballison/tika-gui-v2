@@ -5,6 +5,7 @@ X-TIKA:origResourceName,orig_name,VARCHAR(512)
 resourceName,name,VARCHAR(512)
 X-TIKA:embedded_depth,embedded_depth,INTEGER
 X-TIKA:embedded_resource_path,embedded_path,VARCHAR(512)
+embeddedResourceType,embedded_type,VARCHAR(64)
 Content-Length,length,BIGINT
 Content-Type,mime,VARCHAR(64)
 sf:pronom:mime,sf_mime,VARCHAR(64)
