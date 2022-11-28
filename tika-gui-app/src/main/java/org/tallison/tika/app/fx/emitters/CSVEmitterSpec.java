@@ -47,9 +47,9 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
 
     private static final Logger LOGGER = LogManager.getLogger(CSVEmitterSpec.class);
 
-    private Optional<Path> tmpDbDirectory;
-    private Optional<Path> csvDirectory;
-    private Optional<String> csvFileName;
+    private Optional<Path> tmpDbDirectory = Optional.empty();
+    private Optional<Path> csvDirectory = Optional.empty();
+    private Optional<String> csvFileName = Optional.empty();
 
     public CSVEmitterSpec(@JsonProperty("metadataTuples") List<MetadataTuple> metadataTuples) {
         super(metadataTuples);

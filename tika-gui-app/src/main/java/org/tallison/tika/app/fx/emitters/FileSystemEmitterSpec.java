@@ -43,7 +43,7 @@ public class FileSystemEmitterSpec extends BaseEmitterSpec {
             "org.apache.tika.pipes.emitter.fs.FileSystemEmitter";
 
     private static final Logger LOGGER = LogManager.getLogger(FileSystemEmitterSpec.class);
-    private Optional<Path> basePath;
+    private Optional<Path> basePath = Optional.empty();
     private boolean overWriteNonEmptyDirectory = false;
 
     public FileSystemEmitterSpec(

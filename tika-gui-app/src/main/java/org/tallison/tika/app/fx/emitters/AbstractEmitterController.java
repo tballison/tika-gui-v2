@@ -116,6 +116,7 @@ public abstract class AbstractEmitterController extends ControllerBase {
         csvMetadataPath = Optional.of(csvFile.toPath());
         //TODO -- warn about deleting existing data
         loadMetadataCSV(csvFile);
+        //TODO -- bounce user back to the main fold if successful?
     }
 
     private void loadMetadataCSV(File csvFile) throws IOException {
