@@ -38,3 +38,5 @@ pdfa:PDFVersion,pdfa_version,VARCHAR(32)
 pdfaid:conformance,pdfaid_conformance,VARCHAR(12)
 pdfx:conformance,pdfx_conformance,VARCHAR(12)
 xmp:CreatorTool,xmp_creator_tool,VARCHAR(128)
+csv:num_rows,csv_rows,INTEGER
+csv:num_columns,csv_columns,INTEGER

@@ -50,26 +50,18 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
     private Optional<Path> tmpDbDirectory = Optional.empty();
     private Optional<Path> csvDirectory = Optional.empty();
     private Optional<String> csvFileName = Optional.empty();
+    private volatile boolean closed = false;
 
     public CSVEmitterSpec(@JsonProperty("metadataTuples") List<MetadataTuple> metadataTuples) {
         super(metadataTuples);
         setTableName(CSV_DB_TABLE_NAME);
     }
 
-    private static void writeRow(ResultSet rs, CSVPrinter printer, List<String> cells,
-                                 int columnCount) throws SQLException, IOException {
-        for (int i = 1; i <= columnCount; i++) {
-            String val = rs.getString(i);
-            if (rs.wasNull()) {
-                val = StringUtils.EMPTY;
-            }
-            cells.add(val);
-        }
-        printer.printRecord(cells);
-    }
-
     @Override
     public ValidationResult initialize() throws IOException {
+        if (closed) {
+            throw new IOException("This csv emitter has been closed");
+        }
         tmpDbDirectory = Optional.of(Files.createTempDirectory("tika-app-csv-tmp"));
         LOGGER.debug("tmp db directory: {}", tmpDbDirectory.get().toAbsolutePath());
         setConnectionString("jdbc:sqlite:" + tmpDbDirectory.get().toAbsolutePath() +
@@ -92,7 +84,7 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
     }
 
     public void setCsvDirectory(Path csvDirectory) {
-        this.csvDirectory = Optional.of(csvDirectory);
+        this.csvDirectory = Optional.ofNullable(csvDirectory);
     }
 
     private void createTable() throws SQLException {
@@ -122,12 +114,17 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
 
     @Override
     public void close() throws IOException {
+        //avoid double closures -- TODO figure out a more elegant way of handling this
+        if (closed) {
+            return;
+        }
         try {
             writeCSV();
         } catch (IOException e) {
             LOGGER.warn("problem writing csv", e);
         } finally {
             cleanCSVTempResources();
+            closed = true;
         }
     }
 
@@ -234,5 +231,17 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
             return;
         }
         FileUtils.deleteDirectory(tmpDbDirectory.get().toFile());
+    }
+
+    private static void writeRow(ResultSet rs, CSVPrinter printer, List<String> cells,
+                                 int columnCount) throws SQLException, IOException {
+        for (int i = 1; i <= columnCount; i++) {
+            String val = rs.getString(i);
+            if (rs.wasNull()) {
+                val = StringUtils.EMPTY;
+            }
+            cells.add(val);
+        }
+        printer.printRecord(cells);
     }
 }

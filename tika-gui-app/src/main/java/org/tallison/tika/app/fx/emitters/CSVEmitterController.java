@@ -144,6 +144,7 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         }
         this.csvWorkingDirectory = Optional.of(directory.toPath());
         this.csvDirectory.setText(directory.getName());
+        saveState(false);
     }
 
 
@@ -204,9 +205,15 @@ public class CSVEmitterController extends AbstractEmitterController implements I
         }
 
         if (getMetadataRows().size() == 0) {
-            alert(ALERT_TITLE, "Metadata Not Configured", "Need to configure metadata");
-            csvAccordion.setExpandedPane(csvAccordion.getPanes().get(1));
-            return;
+            LOGGER.debug("metadata rows size == 0");
+            tryToLoadDefaultMetadataMappings();
+            LOGGER.debug("after trying default metadata mappings: {}", getMetadataRows().size());
+            if (getMetadataRows().size() == 0) {
+                LOGGER.debug("metadata rows size still == 0");
+                alert(ALERT_TITLE, "Metadata Not Configured", "Need to configure metadata");
+                csvAccordion.setExpandedPane(csvAccordion.getPanes().get(1));
+                return;
+            }
         }
         ValidationResult validationResult = validateMetadataRows();
         if (validationResult != ValidationResult.OK) {

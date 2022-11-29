@@ -27,5 +27,7 @@ public class Constants {
     //used as working directory for csv emitter
     public static final String BASE_PATH = "basePath";
 
+    public static final String DEFAULT_METADATA_MAPPINGS = "default-metadata-mappings.csv";
+
 
 }

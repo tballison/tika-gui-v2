@@ -45,6 +45,11 @@
   </fileSets>
   <files>
     <file>
+      <source>${project.basedir}/examples/example-digipres-metadata-mappings-jdbc.csv</source>
+      <destName>default-metadata-mappings.csv</destName>
+      <outputDirectory>config</outputDirectory>
+    </file>
+    <file>
       <source>${project.basedir}/bin/tika-gui.bat</source>
       <outputDirectory></outputDirectory>
     </file>

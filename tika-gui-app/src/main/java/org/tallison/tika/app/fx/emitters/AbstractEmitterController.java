@@ -41,6 +41,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tallison.tika.app.fx.Constants;
 import org.tallison.tika.app.fx.ControllerBase;
 import org.tallison.tika.app.fx.batch.BatchProcessConfig;
 import org.tallison.tika.app.fx.ctx.AppContext;
@@ -84,6 +85,24 @@ public abstract class AbstractEmitterController extends ControllerBase {
         if (Files.isRegularFile(p)) {
             csvMetadataPath = Optional.of(p);
         }
+    }
+
+    protected void tryToLoadDefaultMetadataMappings() {
+        Path defaultMetadataMappingCSV =
+                AppContext.CONFIG_PATH.resolve(Constants.DEFAULT_METADATA_MAPPINGS);
+        if (! Files.exists(defaultMetadataMappingCSV)) {
+            LOGGER.debug("Can't find default metadata mappings path: {}",
+                    defaultMetadataMappingCSV.toAbsolutePath().toString());
+            return;
+        }
+        try {
+            LOGGER.debug("loading default csv");
+            loadMetadataCSV(defaultMetadataMappingCSV.toFile());
+        } catch (IOException e) {
+            LOGGER.warn("couldn't load default metadata mappings file "
+                    + defaultMetadataMappingCSV.toAbsolutePath(), e);
+        }
+
     }
 
     protected Optional<Path> getCsvMetadataPath() {
