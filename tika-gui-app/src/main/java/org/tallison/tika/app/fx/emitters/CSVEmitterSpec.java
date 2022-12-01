@@ -208,16 +208,23 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
         String tikaTable = CSV_DB_TABLE_NAME;
         StringBuilder sb = new StringBuilder();
         sb.append("select ");
-        sb.append("t.").append(PATH_COL_NAME).append(" as Path, s.status as Status, ");
-        sb.append(ATTACHMENT_NUM_COL_NAME);
+        sb.append("s.").append(PATH_COL_NAME).append(" as Path, s.status as Status, ");
+        sb.append("case when ").append(ATTACHMENT_NUM_COL_NAME).append(" is null then 0");
+        sb.append(" else ").append(ATTACHMENT_NUM_COL_NAME).append(" end");
         for (MetadataTuple t : getMetadataTuples()) {
             sb.append(", ");
+            String out = t.getOutput();
+            //if there's a column in tika_extracts
+            if (out.equals(PATH_COL_NAME) || out.equals("status")) {
+                sb.append("t.");
+            }
             sb.append(t.getOutput());
         }
 
-        sb.append(" from ").append(tikaTable)
-                .append(" t left join tika_status s on t.path = s.path")
-                .append(" order by t.path asc, attachment_num asc");
+        sb.append(" from tika_status s left join ").append(tikaTable)
+                .append(" t on s.path = t.path")
+                .append(" order by s.status, t.path asc, t.attachment_num asc");
+
         return sb.toString();
     }
 
