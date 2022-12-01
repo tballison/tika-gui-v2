@@ -150,7 +150,10 @@ public class BatchProcess {
             }
             return Optional.of(asyncStatus);
         } catch (IOException e) {
-            LOGGER.warn("couldn't read status file", e);
+            //this is debug because we expect this to happen
+            //under regular cirumstances -- forked process hasn't written
+            //the file yet or if there's a race condition mid-write, etc.
+            LOGGER.debug("couldn't read status file", e);
             return Optional.empty();
         }
     }
