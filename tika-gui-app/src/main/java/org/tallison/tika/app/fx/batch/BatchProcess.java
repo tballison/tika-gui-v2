@@ -46,6 +46,7 @@ import org.apache.tika.pipes.async.AsyncStatus;
 import org.apache.tika.utils.ProcessUtils;
 import org.apache.tika.utils.StreamGobbler;
 import org.apache.tika.utils.StringUtils;
+import org.apache.tika.utils.SystemUtils;
 
 public class BatchProcess {
 
@@ -221,9 +222,12 @@ public class BatchProcess {
         public Integer call() throws Exception {
             List<String> commandLine = buildCommandLine();
 
-
-            process = new ProcessBuilder(commandLine).inheritIO() //TODO -- for dev purposes only
-                    .start();
+            ProcessBuilder pb = new ProcessBuilder(commandLine);
+            if (SystemUtils.IS_OS_UNIX) {
+                //Make sure that file names are read as utf-8
+                pb.environment().put("LC_CTYPE", "C.UTF-8");
+            }
+            process = pb.inheritIO().start();
             mutableStatus.set(STATUS.RUNNING);
             if (LOGGER.isTraceEnabled()) {
                 LOGGER.trace("process {}", process.isAlive());
