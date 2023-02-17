@@ -14,6 +14,8 @@
     <maximumDepth>100</maximumDepth>
     <!-- maximum embedded file depth -->
     <maximumPackageEntryDepth>100</maximumPackageEntryDepth>
+    <!-- throw an exception if a file has zero bytes -->
+    <throwOnZeroBytes>false</throwOnZeroBytes>
   </params>
   <!-- as of Tika 2.5.x, this is the preferred way to configure digests -->
   <digesterFactory class="org.apache.tika.parser.digestutils.CommonsDigesterFactory">
