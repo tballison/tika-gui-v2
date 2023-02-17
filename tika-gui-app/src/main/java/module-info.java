@@ -22,7 +22,7 @@ module org.tallison.tika.app.fx {
     requires com.fasterxml.jackson.annotation;
     requires javafx.controls;
     requires javafx.fxml;
-    requires commons.csv;
+    requires org.apache.commons.csv;
     requires org.apache.logging.log4j;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
