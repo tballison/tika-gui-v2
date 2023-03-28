@@ -228,10 +228,8 @@ public class TikaConfigWriter {
     private void appendPipesReporters(DomWriter writer, Element async, BatchProcessConfig bpc) {
         Element compositePipesReporter = writer.createAndGetElement(async, "pipesReporter", "class",
                 "org.apache.tika.pipes.CompositePipesReporter");
-        Element params = writer.createAndGetElement(compositePipesReporter, "params");
-        Element pipesReporters = writer.createAndGetElement(params, "pipesReporters", "class",
-                "org.apache.tika.pipes.PipesReporter");
-        Element fsReporter = writer.createAndGetElement(pipesReporters, "pipesReporter", "class",
+        //Element params = writer.createAndGetElement(compositePipesReporter, "params");
+        Element fsReporter = writer.createAndGetElement(compositePipesReporter, "pipesReporter", "class",
                 "org.apache.tika.pipes.reporters.fs.FileSystemStatusReporter");
         Element fsReporterParams = writer.createAndGetElement(fsReporter, "params");
         writer.appendTextElement(fsReporterParams, "statusFile",
@@ -250,7 +248,7 @@ public class TikaConfigWriter {
         Optional<String> connectionString = ((JDBCEmitterSpec) emitter).getConnectionString();
 
         if (connectionString.isPresent()) {
-            Element jdbc = writer.createAndGetElement(pipesReporters, "pipesReporter", "class",
+            Element jdbc = writer.createAndGetElement(compositePipesReporter, "pipesReporter", "class",
                     "org.apache.tika.pipes.reporters.jdbc.JDBCPipesReporter");
 
             Element jdbcParams = writer.createAndGetElement(jdbc, "params");

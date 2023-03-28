@@ -52,6 +52,8 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
     private Optional<String> csvFileName = Optional.empty();
     private volatile boolean closed = false;
 
+    private Connection connection = null;
+
     public CSVEmitterSpec(@JsonProperty("metadataTuples") List<MetadataTuple> metadataTuples) {
         super(metadataTuples);
         setTableName(CSV_DB_TABLE_NAME);
@@ -64,8 +66,8 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
         }
         tmpDbDirectory = Optional.of(Files.createTempDirectory("tika-app-csv-tmp"));
         LOGGER.debug("tmp db directory: {}", tmpDbDirectory.get().toAbsolutePath());
-        setConnectionString("jdbc:sqlite:" + tmpDbDirectory.get().toAbsolutePath() +
-                "/tika-gui-v2-tmp-csv-db.db");
+        setConnectionString("jdbc:h2:" + tmpDbDirectory.get().toAbsolutePath() +
+                "/tika-gui-v2-tmp-csv-db;AUTO_SERVER=TRUE");
         try {
             createTable();
         } catch (SQLException e) {
@@ -104,11 +106,10 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
             LOGGER.warn("connection string is empty?!");
             return;
         }
-        try (Connection connection = DriverManager.getConnection(getConnectionString().get())) {
-            try (Statement st = connection.createStatement()) {
-                st.execute(dropTable);
-                st.execute(createTable.toString());
-            }
+        connection = DriverManager.getConnection(getConnectionString().get());
+        try (Statement st = connection.createStatement()) {
+            st.execute(dropTable);
+            st.execute(createTable.toString());
         }
     }
 
@@ -146,26 +147,25 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
         LOGGER.debug("about to write " + csvPath.get().toAbsolutePath());
         int rows = 0;
         try (OutputStream os = Files.newOutputStream(csvPath.get());
-                CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(os, UTF_8),
-                        CSVFormat.EXCEL)) {
+                CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(os, UTF_8), CSVFormat.EXCEL)) {
             writeHeaders(printer);
 
-            try (Connection connection = DriverManager.getConnection(getConnectionString().get())) {
-                try (Statement st = connection.createStatement()) {
-                    List<String> cells = new ArrayList<>();
-                    Integer columnCount = null;
-                    try (ResultSet rs = st.executeQuery(select)) {
-                        while (rs.next()) {
-                            if (columnCount == null) {
-                                columnCount = rs.getMetaData().getColumnCount();
-                            }
-                            writeRow(rs, printer, cells, columnCount);
-                            cells.clear();
-                            rows++;
+
+            try (Statement st = connection.createStatement()) {
+                List<String> cells = new ArrayList<>();
+                Integer columnCount = null;
+                try (ResultSet rs = st.executeQuery(select)) {
+                    while (rs.next()) {
+                        if (columnCount == null) {
+                            columnCount = rs.getMetaData().getColumnCount();
                         }
+                        writeRow(rs, printer, cells, columnCount);
+                        cells.clear();
+                        rows++;
                     }
                 }
             }
+
         } catch (SQLException e) {
             LOGGER.warn("Failed to write CSV", e);
         } catch (IOException e) {
@@ -229,6 +229,11 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
     }
 
     private void cleanCSVTempResources() throws IOException {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            LOGGER.warn("problem closing db?!", e);
+        }
         if (tmpDbDirectory.isEmpty()) {
             LOGGER.warn("tmpdb has not been set ?!");
             return;
