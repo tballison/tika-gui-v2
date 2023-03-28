@@ -52,6 +52,8 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
     private Optional<String> csvFileName = Optional.empty();
     private volatile boolean closed = false;
 
+    private Connection connection = null;
+
     public CSVEmitterSpec(@JsonProperty("metadataTuples") List<MetadataTuple> metadataTuples) {
         super(metadataTuples);
         setTableName(CSV_DB_TABLE_NAME);
@@ -64,8 +66,8 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
         }
         tmpDbDirectory = Optional.of(Files.createTempDirectory("tika-app-csv-tmp"));
         LOGGER.debug("tmp db directory: {}", tmpDbDirectory.get().toAbsolutePath());
-        setConnectionString("jdbc:sqlite:" + tmpDbDirectory.get().toAbsolutePath() +
-                "/tika-gui-v2-tmp-csv-db.db");
+        setConnectionString("jdbc:h2:" + tmpDbDirectory.get().toAbsolutePath() +
+                "/tika-gui-v2-tmp-csv-db;AUTO_SERVER=TRUE");
         try {
             createTable();
         } catch (SQLException e) {
@@ -104,12 +106,11 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
             LOGGER.warn("connection string is empty?!");
             return;
         }
-        try (Connection connection = DriverManager.getConnection(getConnectionString().get())) {
+        connection = DriverManager.getConnection(getConnectionString().get());
             try (Statement st = connection.createStatement()) {
                 st.execute(dropTable);
                 st.execute(createTable.toString());
             }
-        }
     }
 
     @Override
@@ -150,7 +151,7 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
                         CSVFormat.EXCEL)) {
             writeHeaders(printer);
 
-            try (Connection connection = DriverManager.getConnection(getConnectionString().get())) {
+
                 try (Statement st = connection.createStatement()) {
                     List<String> cells = new ArrayList<>();
                     Integer columnCount = null;
@@ -165,7 +166,7 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
                         }
                     }
                 }
-            }
+
         } catch (SQLException e) {
             LOGGER.warn("Failed to write CSV", e);
         } catch (IOException e) {
@@ -229,6 +230,11 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
     }
 
     private void cleanCSVTempResources() throws IOException {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            LOGGER.warn("problem closing db?!", e);
+        }
         if (tmpDbDirectory.isEmpty()) {
             LOGGER.warn("tmpdb has not been set ?!");
             return;
