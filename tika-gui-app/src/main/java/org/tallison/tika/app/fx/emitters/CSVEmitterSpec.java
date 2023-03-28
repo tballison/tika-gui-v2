@@ -107,10 +107,10 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
             return;
         }
         connection = DriverManager.getConnection(getConnectionString().get());
-            try (Statement st = connection.createStatement()) {
-                st.execute(dropTable);
-                st.execute(createTable.toString());
-            }
+        try (Statement st = connection.createStatement()) {
+            st.execute(dropTable);
+            st.execute(createTable.toString());
+        }
     }
 
     @Override
@@ -147,25 +147,24 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
         LOGGER.debug("about to write " + csvPath.get().toAbsolutePath());
         int rows = 0;
         try (OutputStream os = Files.newOutputStream(csvPath.get());
-                CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(os, UTF_8),
-                        CSVFormat.EXCEL)) {
+                CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(os, UTF_8), CSVFormat.EXCEL)) {
             writeHeaders(printer);
 
 
-                try (Statement st = connection.createStatement()) {
-                    List<String> cells = new ArrayList<>();
-                    Integer columnCount = null;
-                    try (ResultSet rs = st.executeQuery(select)) {
-                        while (rs.next()) {
-                            if (columnCount == null) {
-                                columnCount = rs.getMetaData().getColumnCount();
-                            }
-                            writeRow(rs, printer, cells, columnCount);
-                            cells.clear();
-                            rows++;
+            try (Statement st = connection.createStatement()) {
+                List<String> cells = new ArrayList<>();
+                Integer columnCount = null;
+                try (ResultSet rs = st.executeQuery(select)) {
+                    while (rs.next()) {
+                        if (columnCount == null) {
+                            columnCount = rs.getMetaData().getColumnCount();
                         }
+                        writeRow(rs, printer, cells, columnCount);
+                        cells.clear();
+                        rows++;
                     }
                 }
+            }
 
         } catch (SQLException e) {
             LOGGER.warn("Failed to write CSV", e);
