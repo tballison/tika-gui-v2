@@ -41,7 +41,7 @@ public class PackageBinaries {
     //and the apache repo for tika artifacts
 
     //Further, we should parameterize all dependencies.
-    private static final String TIKA_VERSION = "2.7.1-SNAPSHOT";
+    private static final String TIKA_VERSION = "2.8.1-SNAPSHOT";
     private static final Map<String, String> JARS_TO_PATH = new HashMap<>();
 
     private static final Path LOCAL_M2 = Paths.get(System.getProperty("user.home")).resolve(".m2" +
@@ -101,7 +101,7 @@ public class PackageBinaries {
                 "com/h2database/h2/2.1.214/h2-2.1.214.jar",
                 "lib/db/h2");
         JARS_TO_PATH.put(
-                "org/xerial/sqlite-jdbc/3.40.1.0/sqlite-jdbc-3.40.1.0.jar", "lib/db/sqlite");
+                "org/xerial/sqlite-jdbc/3.41.2.1/sqlite-jdbc-3.41.2.1.jar", "lib/db/sqlite");
         JARS_TO_PATH.put(
                 "org/apache/tika/tika-pipes-iterator-s3/" +
                         TIKA_VERSION + "/tika-pipes-iterator-s3-" + TIKA_VERSION + ".jar",
@@ -119,7 +119,7 @@ public class PackageBinaries {
                         TIKA_VERSION + "/tika-fetcher-s3-" + TIKA_VERSION + ".jar",
                 "lib/tika-fetcher-s3");
         JARS_TO_PATH.put(
-                "org/postgresql/postgresql/42.5.4/postgresql-42.5.4.jar",
+                "org/postgresql/postgresql/42.6.0/postgresql-42.6.0.jar",
                 "lib/db/postgresql");
 
 
