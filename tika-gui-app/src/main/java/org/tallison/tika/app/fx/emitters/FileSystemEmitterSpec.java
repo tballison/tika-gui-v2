@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
@@ -44,6 +45,9 @@ public class FileSystemEmitterSpec extends BaseEmitterSpec {
 
     private static final Logger LOGGER = LogManager.getLogger(FileSystemEmitterSpec.class);
     private Optional<Path> basePath = Optional.empty();
+
+    private Optional<Boolean> prettyPrint = Optional.empty();
+
     private boolean overWriteNonEmptyDirectory = false;
 
     public FileSystemEmitterSpec(
@@ -89,11 +93,14 @@ public class FileSystemEmitterSpec extends BaseEmitterSpec {
 
     @Override
     public void write(DomWriter writer, Element properties) {
+        boolean isPrettyPrint = prettyPrint.isPresent() ? prettyPrint.get() : false;
         Element emitters = writer.createAndGetElement(properties, "emitters");
         Element emitterElement =
                 writer.createAndGetElement(emitters, "emitter", "class", EMITTER_CLASS);
         Element params = writer.createAndGetElement(emitterElement, "params");
         writer.appendTextElement(params, "name", "emitter");
+        writer.appendTextElement(params, "prettyPrint",
+                Boolean.toString(isPrettyPrint).toLowerCase(Locale.US));
         writer.appendTextElement(params, BASE_PATH,
                 getBasePath().get().toAbsolutePath().toString());
     }
