@@ -26,9 +26,12 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import javafx.application.Platform;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -39,7 +42,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 import org.tallison.tika.app.fx.batch.BatchProcess;
 import org.tallison.tika.app.fx.ctx.AppContext;
@@ -71,7 +76,11 @@ public class BatchStatusController implements Initializable {
 
     @FXML
     private final ObservableList<StatusCount> statusCounts = FXCollections.observableArrayList();
+
     private final Label pieSliceCaption = new Label("");
+
+    @FXML
+    Pane statusPane;
     @FXML
     PieChart statusPieChart;
     @FXML
@@ -85,7 +94,19 @@ public class BatchStatusController implements Initializable {
     @FXML
     TableView statusTable;
     ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
-    private Thread updaterThread;
+
+    private final Timeline timeline;
+
+    public BatchStatusController() {
+        timeline = new Timeline(new KeyFrame(Duration.millis(100), new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                updateWindow();
+            }
+
+        }));
+        timeline.setCycleCount(Animation.INDEFINITE);
+    }
 
     public ObservableList<StatusCount> getStatusCounts() {
         return statusCounts;
@@ -93,6 +114,8 @@ public class BatchStatusController implements Initializable {
 
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
+        //TODO: some of this can't be in the constructor because
+        //the objects are created at fxml load time
         pieSliceCaption.setTextFill(Color.DARKORANGE);
         pieSliceCaption.setStyle("-fx-font: 24 arial;");
 
@@ -100,15 +123,44 @@ public class BatchStatusController implements Initializable {
         countColumn.setSortType(TableColumn.SortType.DESCENDING);
         countColumn.setCellFactory(
                 TextFieldTableCell.forTableColumn(new MyDoubleStringConverter()));
-        updaterThread = new Thread(new Updater());
-        updaterThread.setDaemon(true);
-        updaterThread.start();
+
         statusPieChart.setLegendVisible(false);
+        statusPieChart.setData(pieChartData);
+        statusPieChart.setLabelsVisible(true);
+        statusPieChart.setAnimated(true);
+        overallStatus.setText("Running");
+        statusPane.getChildren().add(pieSliceCaption);
+        timeline.play();
     }
+
 
     public void stop() {
         updateStatusTable();
-        updaterThread.interrupt();
+        timeline.stop();
+    }
+
+    public void updateWindow() {
+        AppContext appContext = AppContext.getInstance();
+        if (appContext == null) {
+            return;
+        }
+
+        Optional<BatchProcess> batchProcess = appContext.getBatchProcess();
+
+        if (batchProcess.isPresent()) {
+            final Optional<AsyncStatus> status = batchProcess.get().checkAsyncStatus();
+
+            if (!status.isEmpty()) {
+                updatePieChart(status.get());
+                updateTotalToProcess(status.get());
+                updateStatusTable();
+            }
+            BatchProcess.STATUS batchProcessStatus = batchProcess.get().getMutableStatus().get();
+            overallStatus.setText(batchProcessStatus.name());
+            if (batchProcessStatus != BatchProcess.STATUS.RUNNING) {
+                stop();
+            }
+        }
     }
 
     private void updateStatusTable() {
@@ -118,125 +170,97 @@ public class BatchStatusController implements Initializable {
         statusTable.refresh();
     }
 
-    private class Updater implements Runnable {
-        @Override
-        public void run() {
-            statusPieChart.setData(pieChartData);
-            AppContext appContext = AppContext.getInstance();
-            overallStatus.setText("Running");
-            while (true) {
-                Optional<BatchProcess> batchProcess = appContext.getBatchProcess();
 
-                if (batchProcess.isPresent()) {
-                    final Optional<AsyncStatus> status = batchProcess.get().checkAsyncStatus();
-
-                    if (!status.isEmpty()) {
-                        Platform.runLater(() -> {
-                            updatePieChart(status.get());
-                            updateTotalToProcess(status.get());
-                            updateStatusTable();
-                        });
-                    }
-                    BatchProcess.STATUS batchProcessStatus =
-                            batchProcess.get().getMutableStatus().get();
-                    overallStatus.setText(batchProcessStatus.name());
-                    if (batchProcessStatus != BatchProcess.STATUS.RUNNING) {
-                        return;
-                    }
-                }
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    return;
-                }
-            }
+    private void updateTotalToProcess(AsyncStatus status) {
+        TotalCountResult r = status.getTotalCountResult();
+        String cntString = Long.toString(r.getTotalCount());
+        if (r.getStatus() == TotalCountResult.STATUS.NOT_COMPLETED) {
+            cntString += " (so far)";
         }
-
-
-        private void updateTotalToProcess(AsyncStatus status) {
-            TotalCountResult r = status.getTotalCountResult();
-            String cntString = Long.toString(r.getTotalCount());
-            if (r.getStatus() == TotalCountResult.STATUS.NOT_COMPLETED) {
-                cntString += " (so far)";
-            }
-            totalToProcess.setText(cntString);
-        }
-
-        private void updatePieChart(AsyncStatus status) {
-
-            long totalCount = status.getTotalCountResult().getTotalCount();
-            long processed = countProcessed(status);
-            long unprocessed = 0;
-            if (totalCount > processed) {
-                unprocessed = totalCount - processed;
-            }
-            if (pieChartData.size() == 0) {
-                addData("UNPROCESSED", unprocessed);
-            }
-            Set<PipesResult.STATUS> seen = new HashSet<>();
-            for (PieChart.Data d : pieChartData) {
-                String name = d.nameProperty().get();
-                if (name.equals("UNPROCESSED")) {
-                    d.setPieValue(unprocessed);
-                } else {
-                    PipesResult.STATUS s = lookup(name);
-                    if (s != null) {
-                        Long value = status.getStatusCounts().get(s);
-                        if (value != null) {
-                            d.setPieValue(value);
-                        }
-                        seen.add(s);
-                    }
-                }
-            }
-            for (Map.Entry<PipesResult.STATUS, Long> e : status.getStatusCounts().entrySet()) {
-                if (!seen.contains(e.getKey())) {
-                    addData(e.getKey().name(), e.getValue());
-                }
-            }
-            totalProcessed.setText(Long.toString(processed));
-        }
-
-        private void addData(String name, double value) {
-            PieChart.Data data = new PieChart.Data(name, value);
-            pieChartData.add(data);
-            if (name.equals("UNPROCESSED")) {
-                data.getNode().setStyle("-fx-pie-color: #" + UNPROCESSED_COLOR + ";");
-            } else {
-                PipesResult.STATUS status = lookup(name);
-                String color = COLORS.getOrDefault(status, "");
-                if (color.length() > 0) {
-                    data.getNode().setStyle("-fx-pie-color: #" + color + ";");
-                }
-            }
-
-            data.getNode()
-                    .addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
-                        @Override
-                        public void handle(MouseEvent e) {
-                            pieSliceCaption.setTranslateX(e.getSceneX());
-                            pieSliceCaption.setTranslateY(e.getSceneY());
-                            pieSliceCaption.setText(data.getPieValue() + "%");
-                        }
-                    });
-
-            StatusCount statusCount = new StatusCount(name, value);
-            statusCount.countProperty().bind(data.pieValueProperty());
-            statusCounts.add(statusCount);
-        }
-
-        private PipesResult.STATUS lookup(String name) {
-
-            if (!PIPES_STATUS_LOOKUP.containsKey(name)) {
-                return null;
-            }
-            return PIPES_STATUS_LOOKUP.get(name);
-        }
-
-        private long countProcessed(AsyncStatus status) {
-            return status.getStatusCounts().values().stream().reduce(0L, Long::sum);
-        }
+        totalToProcess.setText(cntString);
     }
+
+    private void updatePieChart(AsyncStatus status) {
+
+        long totalCount = status.getTotalCountResult().getTotalCount();
+        long processed = countProcessed(status);
+        long unprocessed = 0;
+        if (totalCount > processed) {
+            unprocessed = totalCount - processed;
+        }
+        if (pieChartData.size() == 0) {
+            addData("UNPROCESSED", unprocessed);
+        }
+        Set<PipesResult.STATUS> seen = new HashSet<>();
+        for (PieChart.Data d : pieChartData) {
+            String name = d.nameProperty().get();
+            if (name.equals("UNPROCESSED")) {
+                d.setPieValue(unprocessed);
+            } else {
+                PipesResult.STATUS s = lookup(name);
+                if (s != null) {
+                    Long value = status.getStatusCounts().get(s);
+                    if (value != null) {
+                        d.setPieValue(value);
+                    }
+                    seen.add(s);
+                }
+            }
+        }
+        for (Map.Entry<PipesResult.STATUS, Long> e : status.getStatusCounts().entrySet()) {
+            if (!seen.contains(e.getKey())) {
+                addData(e.getKey().name(), e.getValue());
+            }
+        }
+        totalProcessed.setText(Long.toString(processed));
+    }
+
+    private void addData(String name, double value) {
+        PieChart.Data data = new PieChart.Data(name, value);
+        pieChartData.add(data);
+        if (name.equals("UNPROCESSED")) {
+            data.getNode().setStyle("-fx-pie-color: #" + UNPROCESSED_COLOR + "; -fx-pie-label-visible: true;");
+        } else {
+            PipesResult.STATUS status = lookup(name);
+            String color = COLORS.getOrDefault(status, "");
+            if (color.length() > 0) {
+                data.getNode().setStyle("-fx-pie-color: #" + color + "; -fx-pie-label-visible: true;");
+            }
+        }
+
+        data.getNode().addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent e) {
+                double sum = 0.0;
+                for (PieChart.Data d : pieChartData) {
+                    sum += d.pieValueProperty().getValue();
+                }
+                if (sum > 0) {
+                    pieSliceCaption.setTranslateX(e.getSceneX());
+                    pieSliceCaption.setTranslateY(e.getSceneY());
+                    pieSliceCaption.setText(String.format(Locale.US,
+                            "%.0f%%", 100 * data.getPieValue() / sum));
+                }
+            }
+        });
+
+        StatusCount statusCount = new StatusCount(name, value);
+        statusCount.countProperty().bind(data.pieValueProperty());
+        statusCounts.add(statusCount);
+    }
+
+    private PipesResult.STATUS lookup(String name) {
+
+        if (!PIPES_STATUS_LOOKUP.containsKey(name)) {
+            return null;
+        }
+        return PIPES_STATUS_LOOKUP.get(name);
+    }
+
+    private long countProcessed(AsyncStatus status) {
+        return status.getStatusCounts().values().stream().reduce(0L, Long::sum);
+    }
+
 
     private class MyDoubleStringConverter extends StringConverter<Double> {
 
