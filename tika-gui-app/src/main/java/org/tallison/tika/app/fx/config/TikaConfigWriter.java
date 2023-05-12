@@ -322,7 +322,8 @@ public class TikaConfigWriter {
         }
     }
 
-    private void appendFSPipesIterator(BatchProcessConfig batchProcessConfig, ConfigItem pipesIterator, DomWriter writer, Element parent)
+    private void appendFSPipesIterator(BatchProcessConfig batchProcessConfig,
+                                       ConfigItem pipesIterator, DomWriter writer, Element parent)
             throws IOException {
         Element pipesIteratorElement = writer.createAndGetElement(parent, "pipesIterator", "class",
                 "org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator");
