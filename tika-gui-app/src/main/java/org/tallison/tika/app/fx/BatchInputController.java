@@ -37,7 +37,6 @@ import org.tallison.tika.app.fx.batch.BatchProcessConfig;
 import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.ctx.AppContext;
 
-import org.apache.tika.pipes.fetcher.Fetcher;
 import org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator;
 import org.apache.tika.utils.StringUtils;
 
