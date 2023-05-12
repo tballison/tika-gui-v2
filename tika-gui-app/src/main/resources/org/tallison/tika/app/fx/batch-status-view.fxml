@@ -29,7 +29,7 @@
 <?import javafx.scene.control.cell.TextFieldTableCell?>
 <?import javafx.scene.layout.Pane?>
 
-<Pane maxHeight="800.0" maxWidth="1200.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.BatchStatusController">
+<Pane fx:id="statusPane" maxHeight="800.0" maxWidth="1200.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tallison.tika.app.fx.BatchStatusController">
    <children>
       <TextField fx:id="totalToProcess" editable="false" layoutX="146.0" layoutY="318.0" prefHeight="26.0" prefWidth="107.0" />
       <TextField fx:id="totalProcessed" editable="false" layoutX="146.0" layoutY="281.0" prefHeight="26.0" prefWidth="107.0" />
