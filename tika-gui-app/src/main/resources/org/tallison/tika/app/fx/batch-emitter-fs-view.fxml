@@ -23,6 +23,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -40,12 +41,12 @@
   <children>
     <Accordion fx:id="fsAccordion" layoutX="1.0" layoutY="5.0" prefHeight="359.0" prefWidth="586.0">
       <panes>
-        <TitledPane fx:id="files" expanded="true" animated="false" prefHeight="100.0" prefWidth="586.0" text="File System">
+        <TitledPane fx:id="files" animated="false" expanded="true" prefHeight="100.0" prefWidth="586.0" text="File System">
           <content>
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="200.0">
               <children>
-                <Label layoutX="76.0" layoutY="70.0" text="Output Directory"/>
-                <Button fx:id="fsOutputButton" layoutX="338.0" layoutY="66.0" mnemonicParsing="false" onAction="#fileSystemOutputDirectorySelect" text="Select"/>
+                <Label layoutX="76.0" layoutY="70.0" text="Output Directory" />
+                <Button fx:id="fsOutputButton" layoutX="338.0" layoutY="66.0" mnemonicParsing="false" onAction="#fileSystemOutputDirectorySelect" text="Select" />
               </children>
             </AnchorPane>
           </content>
@@ -107,16 +108,18 @@
                 <RowConstraints />
                 <RowConstraints maxHeight="36.0" minHeight="22.0" prefHeight="30.0" />
                 <RowConstraints maxHeight="30.0" minHeight="16.0" prefHeight="30.0" />
+                        <RowConstraints />
                 <!--<RowConstraints maxHeight="0.0" minHeight="0.0" prefHeight="0.0" />-->
               </rowConstraints>
             </GridPane>
           </content>
         </TitledPane>
-        <TitledPane fx:id="advanced" animated="false" disable="true" prefHeight="100.0" prefWidth="586.0" text="Advanced Options">
+        <TitledPane fx:id="advanced" animated="false" prefHeight="100.0" prefWidth="586.0" text="Advanced Options">
           <content>
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="200.0">
-              <children>
-              </children>
+                     <children>
+                        <CheckBox fx:id="prettyPrintJson" layoutX="88.0" layoutY="67.0" mnemonicParsing="false" selected="true" text="PrettyPrint Json" />
+                     </children>
             </AnchorPane>
           </content>
         </TitledPane>

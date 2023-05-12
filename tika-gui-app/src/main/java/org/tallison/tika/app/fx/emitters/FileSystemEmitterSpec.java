@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
@@ -44,6 +45,9 @@ public class FileSystemEmitterSpec extends BaseEmitterSpec {
 
     private static final Logger LOGGER = LogManager.getLogger(FileSystemEmitterSpec.class);
     private Optional<Path> basePath = Optional.empty();
+
+    private boolean prettyPrint = true;
+
     private boolean overWriteNonEmptyDirectory = false;
 
     public FileSystemEmitterSpec(
@@ -94,6 +98,8 @@ public class FileSystemEmitterSpec extends BaseEmitterSpec {
                 writer.createAndGetElement(emitters, "emitter", "class", EMITTER_CLASS);
         Element params = writer.createAndGetElement(emitterElement, "params");
         writer.appendTextElement(params, "name", "emitter");
+        writer.appendTextElement(params, "prettyPrint",
+                Boolean.toString(prettyPrint).toLowerCase(Locale.US));
         writer.appendTextElement(params, BASE_PATH,
                 getBasePath().get().toAbsolutePath().toString());
     }
@@ -112,5 +118,13 @@ public class FileSystemEmitterSpec extends BaseEmitterSpec {
 
     public void setBasePath(Path basePath) {
         this.basePath = Optional.of(basePath);
+    }
+
+    public void setPrettyPrint(boolean prettyPrint) {
+        this.prettyPrint = prettyPrint;
+    }
+
+    public boolean isPrettyPrint() {
+        return prettyPrint;
     }
 }

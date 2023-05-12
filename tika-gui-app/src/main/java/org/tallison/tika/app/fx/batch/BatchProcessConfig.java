@@ -54,6 +54,8 @@ public class BatchProcessConfig {
 
     private long emitWithinMs = 10000;
 
+    private long writeLimit = -1;
+
     public Optional<ConfigItem> getPipesIterator() {
         return pipesIterator;
     }
@@ -194,5 +196,13 @@ public class BatchProcessConfig {
 
     public void setEmitWithinMs(long emitWithinMs) {
         this.emitWithinMs = emitWithinMs;
+    }
+
+    public long getWriteLimit() {
+        return writeLimit;
+    }
+
+    public void setWriteLimit(long writeLimit) {
+        this.writeLimit = writeLimit;
     }
 }
