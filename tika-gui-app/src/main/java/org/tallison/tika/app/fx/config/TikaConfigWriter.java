@@ -316,13 +316,13 @@ public class TikaConfigWriter {
         ConfigItem pipesIterator = optionalPipesIterator.get();
         if ("org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator".equals(
                 pipesIterator.getClazz())) {
-            appendFSPipesIterator(pipesIterator, writer, properties);
+            appendFSPipesIterator(batchProcessConfig, pipesIterator, writer, properties);
         } else {
             throw new RuntimeException("I regret I don't yet support " + pipesIterator.getClazz());
         }
     }
 
-    private void appendFSPipesIterator(ConfigItem pipesIterator, DomWriter writer, Element parent)
+    private void appendFSPipesIterator(BatchProcessConfig batchProcessConfig, ConfigItem pipesIterator, DomWriter writer, Element parent)
             throws IOException {
         Element pipesIteratorElement = writer.createAndGetElement(parent, "pipesIterator", "class",
                 "org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator");
@@ -331,6 +331,9 @@ public class TikaConfigWriter {
         writer.appendTextElement(params, "emitterName", "emitter");
         writer.appendTextElement(params, "basePath", pipesIterator.getAttributes().get(BASE_PATH));
         writer.appendTextElement(params, "countTotal", "true");
+        if (batchProcessConfig.getWriteLimit() > 0) {
+            writer.appendTextElement(params, "writeLimit", Long.toString(batchProcessConfig.getWriteLimit()));
+        }
     }
 
     private void appendMetadataFilter(BatchProcessConfig batchProcessConfig, DomWriter writer,

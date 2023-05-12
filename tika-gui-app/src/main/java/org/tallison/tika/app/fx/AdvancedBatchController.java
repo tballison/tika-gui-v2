@@ -16,6 +16,7 @@
  */
 package org.tallison.tika.app.fx;
 
+import java.math.BigInteger;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -33,7 +34,12 @@ import org.tallison.tika.app.fx.ctx.AppContext;
 
 import org.apache.tika.utils.StringUtils;
 
-public class AdvancedBatchController implements Initializable {
+public class AdvancedBatchController extends ControllerBase implements Initializable {
+    /**
+     * TODO -- we should add immediate responses if someone enters
+     * a value that isn't parseable as an int or a long.
+     * We're currently silently ignoring problems.  This is bad.
+     */
 
     private static final Logger LOGGER = LogManager.getLogger(BatchInputController.class);
     static AppContext APP_CONTEXT = AppContext.getInstance();
@@ -56,6 +62,9 @@ public class AdvancedBatchController implements Initializable {
     @FXML
     private TextField emitWithinMs;
 
+    @FXML
+    private TextField writeLimit;
+
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
 
@@ -76,6 +85,9 @@ public class AdvancedBatchController implements Initializable {
 
         totalEmitThresholdMb.setText(Integer.toString(batchProcessConfig.getTotalEmitThesholdMb()));
         emitWithinMs.setText(Long.toString(batchProcessConfig.getEmitWithinMs()));
+        if (batchProcessConfig.getWriteLimit() > -1) {
+            writeLimit.setText(Long.toString(batchProcessConfig.getWriteLimit()));
+        }
     }
 
 
@@ -91,6 +103,33 @@ public class AdvancedBatchController implements Initializable {
         //NO-OP for now
     }
 
+    public void setWriteLimit(ActionEvent actionEvent) {
+        long writeLimitVal = -1l;
+        if (! StringUtils.isBlank(writeLimit.getText())) {
+            try {
+                String txt = writeLimit.getText();
+                txt = txt.replaceAll(",", "");
+                BigInteger bigInt = new BigInteger(txt);
+                writeLimitVal = bigInt.longValueExact();
+                writeLimit.setText(txt);
+            } catch (NumberFormatException e) {
+                alert("Value needs to be a number", "Not a number",
+                        ">" + writeLimit.getText() + "< is not parseable as number");
+                writeLimit.setText("");
+                actionEvent.consume();
+                return;
+            } catch (ArithmeticException e) {
+                alert("Value out of range", "Value out of range",
+                        "\"" + writeLimit.getText() +
+                                "\" must be less than 9,223,372,036,854,775,807");
+                actionEvent.consume();
+                return;
+            }
+        }
+        writeLimitVal = writeLimitVal < -1 ? -1 : writeLimitVal;
+        APP_CONTEXT.getBatchProcessConfig().get().setWriteLimit(writeLimitVal);
+        APP_CONTEXT.saveState();
+    }
 
     public void saveAdvanced(ActionEvent actionEvent) {
         Optional<BatchProcessConfig> optionalBpc = APP_CONTEXT.getBatchProcessConfig();
@@ -132,8 +171,9 @@ public class AdvancedBatchController implements Initializable {
                 bpc.getTotalEmitThesholdMb());
         bpc.setTotalEmitThesholdMb(val);
 
-        long longVal = getLong("emitWithinMs", emitWithinMs, 0, 1000000000, bpc.getEmitWithinMs());
-        bpc.setEmitWithinMs(longVal);
+        long emitWithin = getLong("emitWithinMs", emitWithinMs, 0, 1000000000,
+                bpc.getEmitWithinMs());
+        bpc.setEmitWithinMs(emitWithin);
 
         APP_CONTEXT.saveState();
     }
@@ -179,7 +219,7 @@ public class AdvancedBatchController implements Initializable {
             //TODO -- alert
             return defaultVal;
         }
-        if (num > 1_000_000_000) {
+        if (num > max) {
             //TODO -- alert
             return defaultVal;
         }
