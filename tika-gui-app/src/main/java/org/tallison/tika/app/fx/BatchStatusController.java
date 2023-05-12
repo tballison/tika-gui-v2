@@ -117,7 +117,7 @@ public class BatchStatusController implements Initializable {
         //TODO: some of this can't be in the constructor because
         //the objects are created at fxml load time
         pieSliceCaption.setTextFill(Color.DARKORANGE);
-        pieSliceCaption.setStyle("-fx-font: 24 arial;");
+        pieSliceCaption.setStyle("-fx-font: 16 arial;");
 
         statusTable.getSortOrder().add(countColumn);
         countColumn.setSortType(TableColumn.SortType.DESCENDING);
@@ -239,6 +239,7 @@ public class BatchStatusController implements Initializable {
                     pieSliceCaption.setTranslateX(e.getSceneX());
                     pieSliceCaption.setTranslateY(e.getSceneY());
                     pieSliceCaption.setText(String.format(Locale.US,
+                            data.getName() + ": " +
                             "%.0f%%", 100 * data.getPieValue() / sum));
                 }
             }
