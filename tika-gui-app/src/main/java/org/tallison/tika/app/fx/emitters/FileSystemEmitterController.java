@@ -33,6 +33,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -51,6 +52,9 @@ public class FileSystemEmitterController extends AbstractEmitterController
 
     @FXML
     private Accordion fsAccordion;
+
+    @FXML
+    CheckBox prettyPrintJson;
 
     private Optional<Path> directory = Optional.empty();
 
@@ -76,6 +80,8 @@ public class FileSystemEmitterController extends AbstractEmitterController
         if (((FileSystemEmitterSpec) emitter).getBasePath().isPresent()) {
             directory = Optional.of(((FileSystemEmitterSpec) emitter).getBasePath().get());
         }
+
+        prettyPrintJson.setSelected(((FileSystemEmitterSpec)emitter).isPrettyPrint());
         updateMetadataRows(((FileSystemEmitterSpec) emitter).getMetadataTuples());
 
     }
@@ -157,8 +163,10 @@ public class FileSystemEmitterController extends AbstractEmitterController
             emitter.setValid(validated);
             ((FileSystemEmitterSpec) emitter).setOverWriteNonEmptyDirectory(
                     overWriteNonEmptyDirectory);
+            ((FileSystemEmitterSpec) emitter).setPrettyPrint(prettyPrintJson.isSelected());
             bpc.setEmitter(emitter);
         }
+
         //TODO -- do better than hard coding indices
         bpc.setOutputSelectedTab(0);
         APP_CONTEXT.saveState();

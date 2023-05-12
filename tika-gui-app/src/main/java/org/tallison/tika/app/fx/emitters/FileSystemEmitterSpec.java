@@ -30,6 +30,9 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tallison.tika.app.fx.ctx.AppContext;
@@ -46,7 +49,7 @@ public class FileSystemEmitterSpec extends BaseEmitterSpec {
     private static final Logger LOGGER = LogManager.getLogger(FileSystemEmitterSpec.class);
     private Optional<Path> basePath = Optional.empty();
 
-    private Optional<Boolean> prettyPrint = Optional.empty();
+    private boolean prettyPrint = true;
 
     private boolean overWriteNonEmptyDirectory = false;
 
@@ -93,14 +96,13 @@ public class FileSystemEmitterSpec extends BaseEmitterSpec {
 
     @Override
     public void write(DomWriter writer, Element properties) {
-        boolean isPrettyPrint = prettyPrint.isPresent() ? prettyPrint.get() : false;
         Element emitters = writer.createAndGetElement(properties, "emitters");
         Element emitterElement =
                 writer.createAndGetElement(emitters, "emitter", "class", EMITTER_CLASS);
         Element params = writer.createAndGetElement(emitterElement, "params");
         writer.appendTextElement(params, "name", "emitter");
         writer.appendTextElement(params, "prettyPrint",
-                Boolean.toString(isPrettyPrint).toLowerCase(Locale.US));
+                Boolean.toString(prettyPrint).toLowerCase(Locale.US));
         writer.appendTextElement(params, BASE_PATH,
                 getBasePath().get().toAbsolutePath().toString());
     }
@@ -119,5 +121,13 @@ public class FileSystemEmitterSpec extends BaseEmitterSpec {
 
     public void setBasePath(Path basePath) {
         this.basePath = Optional.of(basePath);
+    }
+
+    public void setPrettyPrint(boolean prettyPrint) {
+        this.prettyPrint = prettyPrint;
+    }
+
+    public boolean isPrettyPrint() {
+        return prettyPrint;
     }
 }
