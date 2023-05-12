@@ -29,5 +29,6 @@ public class Constants {
 
     public static final String DEFAULT_METADATA_MAPPINGS = "default-metadata-mappings.csv";
 
-
+    // TODO -- put this into the fs fetcher class once we refactor to add that
+    public static final String EXTRACT_FILE_SYSTEM_METADATA = "extractFileSystemMetadata";
 }

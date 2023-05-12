@@ -17,12 +17,17 @@
 package org.tallison.tika.app.fx;
 
 import java.io.File;
+import java.net.URL;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -35,13 +40,34 @@ import org.tallison.tika.app.fx.ctx.AppContext;
 import org.apache.tika.pipes.pipesiterator.fs.FileSystemPipesIterator;
 import org.apache.tika.utils.StringUtils;
 
-public class BatchInputController extends ControllerBase {
+public class BatchInputController extends ControllerBase implements Initializable {
 
     private static final AppContext APP_CONTEXT = AppContext.getInstance();
     private static final Logger LOGGER = LogManager.getLogger(BatchInputController.class);
 
     @FXML
     private Button fsInputButton;
+
+    @FXML
+    private CheckBox extractFSMetadata;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        if (!APP_CONTEXT.getBatchProcessConfig().isPresent()) {
+            return;
+        }
+        BatchProcessConfig batchProcessConfig = APP_CONTEXT.getBatchProcessConfig().get();
+        if (batchProcessConfig.getFetcher().isEmpty()) {
+            return;
+        }
+        ConfigItem fetcher = batchProcessConfig.getFetcher().get();
+        if (fetcher.getAttributes().containsKey(Constants.EXTRACT_FILE_SYSTEM_METADATA)) {
+            boolean extractFSMetadataVal =
+                    Boolean.parseBoolean(
+                            fetcher.getAttributes().get(Constants.EXTRACT_FILE_SYSTEM_METADATA));
+            extractFSMetadata.setSelected(extractFSMetadataVal);
+        }
+    }
 
     public void fileSystemInputDirectorySelect(ActionEvent actionEvent) {
         final Window parent = ((Node) actionEvent.getTarget()).getScene().getWindow();
@@ -72,7 +98,9 @@ public class BatchInputController extends ControllerBase {
         String fullLabel = "FileSystem: " + directory.getAbsolutePath();
 
         batchProcessConfig.setFetcher(shortLabel, fullLabel, Constants.FS_FETCHER_CLASS, "basePath",
-                directory.toPath().toAbsolutePath().toString());
+                directory.toPath().toAbsolutePath().toString(),
+                Constants.EXTRACT_FILE_SYSTEM_METADATA,
+                Boolean.toString(extractFSMetadata.isSelected()).toLowerCase(Locale.US));
         batchProcessConfig.setPipesIterator(shortLabel, fullLabel,
                 FileSystemPipesIterator.class.getName(), "basePath",
                 directory.toPath().toAbsolutePath().toString());
@@ -80,6 +108,5 @@ public class BatchInputController extends ControllerBase {
         APP_CONTEXT.saveState();
         ((Stage) fsInputButton.getScene().getWindow()).close();
     }
-
 
 }

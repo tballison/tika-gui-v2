@@ -17,6 +17,7 @@
 package org.tallison.tika.app.fx.config;
 
 import static org.tallison.tika.app.fx.Constants.BASE_PATH;
+import static org.tallison.tika.app.fx.Constants.EXTRACT_FILE_SYSTEM_METADATA;
 import static org.tallison.tika.app.fx.Constants.FS_FETCHER_CLASS;
 import static org.tallison.tika.app.fx.Constants.NO_DIGEST;
 
@@ -303,7 +304,8 @@ public class TikaConfigWriter {
         Element params = writer.createAndGetElement(fetcherElement, "params");
         writer.appendTextElement(params, "name", "fetcher");
         writer.appendTextElement(params, BASE_PATH, fetcher.getAttributes().get(BASE_PATH));
-
+        writer.appendTextElement(params, EXTRACT_FILE_SYSTEM_METADATA,
+                fetcher.getAttributes().get("extractFileSystemMetadata"));
     }
 
     private void appendPipesIterator(BatchProcessConfig batchProcessConfig, DomWriter writer,
