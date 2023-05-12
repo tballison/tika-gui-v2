@@ -61,6 +61,9 @@ Before running this, change the version to the version you intend to release.
 
 Change the version back to the development/SNAPSHOT version.
 
+If you need to re-release, delete the tag:
+```git push --delete origin v1.0.0-BETA1 && git tag --delete v1.0.0-BETA1```
+
 We should figure out how to sign artifacts and offer sha256s.  Again, see jreleaser above.
 
 Further, short of going the full jreleaser route, we should start using: appassembler-maven-plugin.
