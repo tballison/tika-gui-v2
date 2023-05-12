@@ -55,7 +55,11 @@ To generate the download sections of the pom, run DownloadPluginUpdater and Zulu
 
 The release is currently triggered by pushing a tag starting with 'v'.
 
+Before running this, change the version to the version you intend to release.
+
 ```git tag -a "v1.0.0-BETA1" -m "v1.0.0-BETA1 release" && git push origin v1.0.0-BETA1```
+
+Change the version back to the development/SNAPSHOT version.
 
 We should figure out how to sign artifacts and offer sha256s.  Again, see jreleaser above.
 
