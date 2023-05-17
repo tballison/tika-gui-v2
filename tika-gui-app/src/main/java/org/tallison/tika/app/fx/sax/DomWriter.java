@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 public class DomWriter {
 
@@ -29,12 +30,18 @@ public class DomWriter {
         this.document = document;
     }
 
+    public void appendChild(Element rootElement, Element child) {
+        Node newNode = document.importNode(child, true);
+        rootElement.appendChild(newNode);
+    }
+
     public void appendMap(Element parent, String mappingsElementName, String mappingElementName,
                           Map<String, String> map, String... attrs) {
         Element mappings = createAndGetElement(parent, mappingsElementName, attrs);
         for (Map.Entry<String, String> e : map.entrySet()) {
             appendLeafElement(mappings, mappingElementName, "from", e.getKey(), "to", e.getValue());
         }
+
     }
 
     public void appendTextElement(Element parent, String itemName, String text, String... attrs) {

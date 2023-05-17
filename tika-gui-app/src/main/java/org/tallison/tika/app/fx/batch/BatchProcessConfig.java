@@ -24,6 +24,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import org.tallison.tika.app.fx.advanced.DetectorConfig;
+import org.tallison.tika.app.fx.advanced.ParserConfig;
 import org.tallison.tika.app.fx.config.ConfigItem;
 import org.tallison.tika.app.fx.emitters.EmitterSpec;
 
@@ -36,6 +38,9 @@ public class BatchProcessConfig {
     private Optional<ConfigItem> pipesIterator = Optional.empty();
     private Optional<ConfigItem> fetcher = Optional.empty();
     private Optional<EmitterSpec> emitter = Optional.empty();
+
+    private ParserConfig parserConfig = null;
+    private DetectorConfig detectorConfig = null;
     private int outputSelectedTab = 0;
 
     private int inputSelectedTab = 0;
@@ -204,5 +209,27 @@ public class BatchProcessConfig {
 
     public void setWriteLimit(long writeLimit) {
         this.writeLimit = writeLimit;
+    }
+
+    public void setParserConfig(ParserConfig parserConfig) {
+        this.parserConfig = parserConfig;
+    }
+
+    public Optional<ParserConfig> getParserConfig() {
+        if (parserConfig == null) {
+            return Optional.empty();
+        }
+        return Optional.of(parserConfig);
+    }
+
+    public void setDetectorConfig(DetectorConfig detectorConfig) {
+        this.detectorConfig = detectorConfig;
+    }
+
+    public Optional<DetectorConfig> getDetectorConfig() {
+        if (detectorConfig == null) {
+            return Optional.empty();
+        }
+        return Optional.of(detectorConfig);
     }
 }

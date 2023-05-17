@@ -54,9 +54,12 @@ import org.tallison.tika.app.fx.emitters.EmitterSpec;
 import org.tallison.tika.app.fx.emitters.JDBCEmitterSpec;
 import org.tallison.tika.app.fx.metadata.MetadataTuple;
 import org.tallison.tika.app.fx.sax.DomWriter;
+import org.tallison.tika.app.fx.sax.XMLStringToDOM;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
+import org.apache.tika.exception.TikaException;
 import org.apache.tika.utils.ProcessUtils;
 
 /**
@@ -107,6 +110,7 @@ public class TikaConfigWriter {
             DomWriter domWriter = new DomWriter(document);
             Element properties = document.createElement("properties");
             document.appendChild(properties);
+            appendDetectors(batchProcessConfig, domWriter, properties);
             appendParsers(batchProcessConfig, domWriter, properties);
             //sb.append(getTemplate("parsers.xml")).append("\n");
             appendMetadataFilter(batchProcessConfig, domWriter, properties);
@@ -131,28 +135,52 @@ public class TikaConfigWriter {
         return tmp;
     }
 
+    private void appendDetectors(BatchProcessConfig batchProcessConfig, DomWriter writer,
+                               Element properties) throws XMLStreamException {
+        if (batchProcessConfig.getParserConfig().isEmpty() ||
+                batchProcessConfig.getParserConfig().get().getPath().isEmpty()) {
+            //don't do anything, right(?)
+        } else {
+            //this is a total hack.
+            try {
+                XMLStringToDOM.write(writer, properties,
+                        batchProcessConfig.getDetectorConfig().get().getPath());
+            } catch (TikaException | IOException | SAXException e) {
+                LOGGER.warn("couldn't write dom");
+            }
+        }
+    }
 
     private void appendParsers(BatchProcessConfig batchProcessConfig, DomWriter writer,
                                Element properties) throws XMLStreamException {
-        Element parsers = writer.createAndGetElement(properties, "parsers");
-        Element dflt = writer.createAndGetElement(parsers, "parser");
+        if (batchProcessConfig.getParserConfig().isEmpty() ||
+                batchProcessConfig.getParserConfig().get().getPath().isEmpty()) {
+            Element parsers = writer.createAndGetElement(properties, "parsers");
+            Element defaultParser = writer.createAndGetElement(parsers, "parser");
+            defaultParser.setAttribute("class", "org.apache.tika.parser.DefaultParser");
+            excludeParsers(writer, defaultParser, "org.apache.tika.parser.ocr.TesseractOCRParser",
+                    "org.apache.tika.parser.pdf.PDFParser",
+                    "org.apache.tika.parser.microsoft.ooxml.OOXMLParser",
+                    "org.apache.tika.parser.microsoft.OfficeParser");
+            addLegacyParams(writer, parsers, "parser", "org.apache.tika.parser.pdf.PDFParser",
+                    "extractActions", "bool", "true");
 
-        dflt.setAttribute("class", "org.apache.tika.parser.DefaultParser");
-        excludeParsers(writer, dflt, "org.apache.tika.parser.ocr.TesseractOCRParser",
-                "org.apache.tika.parser.pdf.PDFParser",
-                "org.apache.tika.parser.microsoft.ooxml.OOXMLParser",
-                "org.apache.tika.parser.microsoft.OfficeParser");
-        addLegacyParams(writer, parsers, "parser", "org.apache.tika.parser.pdf.PDFParser",
-                "extractActions", "bool", "true");
+            addLegacyParams(writer, parsers, "parser",
+                    "org.apache.tika.parser.microsoft.ooxml.OOXMLParser", "extractMacros", "bool",
+                    "true", "includeDeletedContent", "bool", "true", "includeMoveFromContent",
+                    "bool", "true");
 
-        addLegacyParams(writer, parsers, "parser",
-                "org.apache.tika.parser.microsoft.ooxml.OOXMLParser", "extractMacros", "bool",
-                "true", "includeDeletedContent", "bool", "true", "includeMoveFromContent", "bool",
-                "true");
-
-        addLegacyParams(writer, parsers, "parser", "org.apache.tika.parser.microsoft.OfficeParser",
-                "extractMacros", "bool", "true");
-
+            addLegacyParams(writer, parsers, "parser",
+                    "org.apache.tika.parser.microsoft.OfficeParser", "extractMacros", "bool", "true");
+        } else {
+            //this is a total hack.
+            try {
+                XMLStringToDOM.write(writer, properties,
+                        batchProcessConfig.getParserConfig().get().getPath());
+            } catch (TikaException | IOException | SAXException e) {
+                LOGGER.warn("couldn't write dom");
+            }
+        }
     }
 
     private void addLegacyParams(DomWriter writer, Element parent, String nodeName, String clz,
