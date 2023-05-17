@@ -137,8 +137,8 @@ public class TikaConfigWriter {
 
     private void appendDetectors(BatchProcessConfig batchProcessConfig, DomWriter writer,
                                Element properties) throws XMLStreamException {
-        if (batchProcessConfig.getParserConfig().isEmpty() ||
-                batchProcessConfig.getParserConfig().get().getPath().isEmpty()) {
+        if (batchProcessConfig.getDetectorConfig().isEmpty() ||
+                batchProcessConfig.getDetectorConfig().get().getPath().isEmpty()) {
             //don't do anything, right(?)
         } else {
             //this is a total hack.

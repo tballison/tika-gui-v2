@@ -1,0 +1,58 @@
+<parsers>
+  <parser class="org.apache.tika.parser.DefaultParser">
+    <parser-exclude class="org.apache.tika.parser.ocr.TesseractOCRParser"/>
+    <parser-exclude class="org.apache.tika.parser.pdf.PDFParser"/>
+    <parser-exclude class="org.apache.tika.parser.microsoft.ooxml.OOXMLParser"/>
+    <parser-exclude class="org.apache.tika.parser.microsoft.OfficeParser"/>
+  </parser>
+  <parser class="org.apache.tika.parser.pdf.PDFParser">
+    <params>
+      <!-- see https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=109454066
+           for the most recent settings for the PDF Parser -->
+      <param name="allowExtractionForAccessibility" type="bool">true</param>
+      <param name="averageCharTolerance" type="float">0.3</param>
+      <param name="detectAngles" type="bool">true</param>
+      <param name="extractAcroFormContent" type="bool">true</param>
+      <param name="extractActions" type="bool">false</param>
+      <!-- as of 2.8.0 -->
+      <param name="extractIncrementalUpdateInfo" type="bool">true</param>
+      <param name="catchIntermediateIOExceptions" type="bool">true</param>
+      <param name="dropThreshold" type="float">2.5</param>
+      <param name="enableAutoSpace" type="bool">true</param>
+      <param name="extractAnnotationText" type="bool">false</param>
+      <param name="extractBookmarksText" type="bool">true</param>
+      <param name="extractFontNames" type="bool">false</param>
+      <param name="extractInlineImages" type="bool">false</param>
+      <param name="extractUniqueInlineImagesOnly" type="bool">true</param>
+      <param name="ifXFAExtractOnlyXFA" type="bool">false</param>
+      <param name="maxMainMemoryBytes" type="long">-1</param>
+      <!-- as of 2.8.0 -->
+      <param name="maxIncrementalUpdates" type="int">10000</param>
+      <param name="ocrDPI" type="int">300</param>
+      <param name="ocrImageFormatName" type="string">png</param>
+      <param name="ocrImageQuality" type="float">1.0</param>
+      <param name="ocrRenderingStrategy" type="string">ALL</param>
+      <param name="ocrStrategy" type="string">auto</param>
+      <param name="ocrStrategyAuto" type="string">better</param>
+      <param name="ocrImageType" type="string">gray</param>
+      <!-- as of 2.8.0 -->
+      <param name="parseIncrementalUpdates" type="bool">false</param>
+      <param name="setKCMS" type="bool">false</param>
+      <param name="sortByPosition" type="bool">false</param>
+      <param name="spacingTolerance" type="float">0.5</param>
+      <param name="suppressDuplicateOverlappingText" type="bool">false</param>
+    </params>
+  </parser>
+  <parser class="org.apache.tika.parser.microsoft.ooxml.OOXMLParser">
+    <params>
+      <param name="includeDeletedContent" type="bool">true</param>
+      <param name="includeMoveFromContent" type="bool">true</param>
+      <param name="extractMacros" type="bool">true</param>
+    </params>
+  </parser>
+  <parser class="org.apache.tika.parser.microsoft.OfficeParser">
+    <params>
+      <param name="extractMacros" type="bool">true</param>
+    </params>
+  </parser>
+</parsers>
