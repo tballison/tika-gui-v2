@@ -22,6 +22,8 @@ tika-eval:numAlphaTokens,num_alpha_tokens,BIGINT
 tika-eval:lang,detected_lang,VARCHAR(12)
 tika-eval:oov,oov,FLOAT
 xmpTPg:NPages,num_pages,INTEGER
+pdf:incrementalUpdateCount,pdf_incremental_updates,INTEGER
+X-TIKA:versionNumber,version_number,INTEGER
 pdf:totalUnmappedUnicodeChars,pdf_num_unmapped_unicode,INTEGER
 pdf:overallPercentageUnmappedUnicodeChars,pdf_percent_unmapped_unicode,FLOAT
 pdf:containsNonEmbeddedFont,pdf_non_embedded_font,BOOLEAN

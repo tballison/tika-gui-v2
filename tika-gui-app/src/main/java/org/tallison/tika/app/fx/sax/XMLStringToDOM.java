@@ -17,8 +17,7 @@
 package org.tallison.tika.app.fx.sax;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Optional;
+import java.io.InputStream;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -29,9 +28,9 @@ import org.apache.tika.utils.XMLReaderUtils;
 
 public class XMLStringToDOM {
 
-    public static void write(DomWriter writer, Element writerRoot, Optional<Path> path)
+    public static void write(DomWriter writer, Element writerRoot, InputStream is)
             throws TikaException, IOException, SAXException {
-        Document document = XMLReaderUtils.buildDOM(path.get());
+        Document document = XMLReaderUtils.buildDOM(is);
         Element documentRoot = document.getDocumentElement();
         writer.appendChild(writerRoot, documentRoot);
     }

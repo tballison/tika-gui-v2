@@ -142,9 +142,9 @@ public class TikaConfigWriter {
             //don't do anything, right(?)
         } else {
             //this is a total hack.
-            try {
-                XMLStringToDOM.write(writer, properties,
-                        batchProcessConfig.getDetectorConfig().get().getPath());
+            try (InputStream is = Files.newInputStream(
+                    batchProcessConfig.getDetectorConfig().get().getPath().get())) {
+                XMLStringToDOM.write(writer, properties, is);
             } catch (TikaException | IOException | SAXException e) {
                 LOGGER.warn("couldn't write dom");
             }
@@ -155,28 +155,20 @@ public class TikaConfigWriter {
                                Element properties) throws XMLStreamException {
         if (batchProcessConfig.getParserConfig().isEmpty() ||
                 batchProcessConfig.getParserConfig().get().getPath().isEmpty()) {
-            Element parsers = writer.createAndGetElement(properties, "parsers");
-            Element defaultParser = writer.createAndGetElement(parsers, "parser");
-            defaultParser.setAttribute("class", "org.apache.tika.parser.DefaultParser");
-            excludeParsers(writer, defaultParser, "org.apache.tika.parser.ocr.TesseractOCRParser",
-                    "org.apache.tika.parser.pdf.PDFParser",
-                    "org.apache.tika.parser.microsoft.ooxml.OOXMLParser",
-                    "org.apache.tika.parser.microsoft.OfficeParser");
-            addLegacyParams(writer, parsers, "parser", "org.apache.tika.parser.pdf.PDFParser",
-                    "extractActions", "bool", "true");
-
-            addLegacyParams(writer, parsers, "parser",
-                    "org.apache.tika.parser.microsoft.ooxml.OOXMLParser", "extractMacros", "bool",
-                    "true", "includeDeletedContent", "bool", "true", "includeMoveFromContent",
-                    "bool", "true");
-
-            addLegacyParams(writer, parsers, "parser",
-                    "org.apache.tika.parser.microsoft.OfficeParser", "extractMacros", "bool", "true");
+            //this is a total hack.
+            try (InputStream is =
+                         TikaConfigWriter.class.getResourceAsStream("/default_parsers.xml")) {
+                XMLStringToDOM.write(writer, properties, is);
+            } catch (TikaException | IOException | SAXException e) {
+                LOGGER.warn("couldn't write dom");
+            }
         } else {
             //this is a total hack.
-            try {
-                XMLStringToDOM.write(writer, properties,
-                        batchProcessConfig.getParserConfig().get().getPath());
+            try (InputStream is =
+                         Files.newInputStream(
+                                 batchProcessConfig.getParserConfig().get().getPath().get())) {
+
+                XMLStringToDOM.write(writer, properties, is);
             } catch (TikaException | IOException | SAXException e) {
                 LOGGER.warn("couldn't write dom");
             }
