@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -18,7 +17,6 @@
   specific language governing permissions and limitations
   under the License.
 -->
-
 <?import java.lang.String?>
 <?import javafx.collections.FXCollections?>
 <?import javafx.scene.control.ComboBox?>
@@ -35,9 +33,14 @@
          <children>
             <TabPane layoutX="-1.0" layoutY="-1.0" prefHeight="375.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
-                <Tab closable="false" disable="true" text="Parsers">
+                <Tab closable="false" disable="false" text="Detectors">
                   <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                    <fx:include fx:id="detector_config" source="detector-view.fxml"/>
+                  </content>
+                </Tab>
+                <Tab closable="false" disable="false" text="Parsers">
+                  <content>
+                    <fx:include fx:id="parser_config" source="parser-view.fxml"/>
                   </content>
                 </Tab>
                   <Tab closable="false" text="Parse Options">
@@ -55,7 +58,7 @@
                                 </items>
                               </ComboBox>
                               <Label layoutX="54.0" layoutY="110.0" prefHeight="21.0" prefWidth="121.0" text="Write Limit (bytes)" />
-                              <TextField fx:id="writeLimit" layoutX="188.0" layoutY="108.0" onAction="#setWriteLimit" alignment="CENTER_RIGHT" />
+                              <TextField fx:id="writeLimit" alignment="CENTER_RIGHT" layoutX="188.0" layoutY="108.0" onAction="#setWriteLimit" />
                            </children>
                         </AnchorPane>
                      </content>
