@@ -173,7 +173,14 @@ public class BatchStatusController implements Initializable {
 
     private void updateTotalToProcess(AsyncStatus status) {
         TotalCountResult r = status.getTotalCountResult();
-        String cntString = Long.toString(r.getTotalCount());
+        long total = r.getTotalCount();
+        long processed = countProcessed(status);
+        //if someone is adding files to a directory after the total count
+        //has been calculated
+        if (total < processed) {
+            total = processed;
+        }
+        String cntString = Long.toString(total);
         if (r.getStatus() == TotalCountResult.STATUS.NOT_COMPLETED) {
             cntString += " (so far)";
         }
@@ -184,6 +191,11 @@ public class BatchStatusController implements Initializable {
 
         long totalCount = status.getTotalCountResult().getTotalCount();
         long processed = countProcessed(status);
+        //if someone is adding files to a directory after the total count
+        //has been calculated
+        if (totalCount < processed) {
+            totalCount = processed;
+        }
         long unprocessed = 0;
         if (totalCount > processed) {
             unprocessed = totalCount - processed;

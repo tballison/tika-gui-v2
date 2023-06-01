@@ -73,6 +73,9 @@ public class StatusUpdater implements Callable<Integer> {
                         TotalCountResult.STATUS.COMPLETED && processed > total) {
                     total = 4 * processed;
                 }
+                if (processed > total) {
+                    total = processed;
+                }
                 if (total > 0) {
                     float percentage = ((float) processed / (float) total);
                     LOGGER.trace("setting {} :: {} / {}", percentage, processed, total);
