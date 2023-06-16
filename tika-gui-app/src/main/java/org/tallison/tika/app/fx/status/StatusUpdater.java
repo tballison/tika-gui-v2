@@ -54,7 +54,7 @@ public class StatusUpdater implements Callable<Integer> {
 
         while (true) {
             Optional<AsyncStatus> asyncStatusOptional = batchProcess.checkAsyncStatus();
-            LOGGER.debug(asyncStatusOptional);
+
             if (asyncStatusOptional.isPresent()) {
                 AsyncStatus asyncStatus = asyncStatusOptional.get();
                 long processed = 0;
