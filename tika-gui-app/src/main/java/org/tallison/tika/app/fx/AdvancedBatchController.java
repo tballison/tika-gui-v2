@@ -88,22 +88,14 @@ public class AdvancedBatchController extends ControllerBase implements Initializ
         if (batchProcessConfig.getWriteLimit() > -1) {
             writeLimit.setText(Long.toString(batchProcessConfig.getWriteLimit()));
         }
+        writeLimit.focusedProperty().addListener((ov, oldV, newV) -> {
+            if (! newV) {
+                setWriteLimit();
+            }
+        });
     }
 
-
-    public void showConfig(MouseEvent mouseEvent) {
-        //NO-OP for now
-    }
-
-    public void configureParsers(ActionEvent actionEvent) {
-        //NO-OP for now
-    }
-
-    public void configurePipesIterator(ActionEvent actionEvent) {
-        //NO-OP for now
-    }
-
-    public void setWriteLimit(ActionEvent actionEvent) {
+    public void setWriteLimit() {
         long writeLimitVal = -1l;
         if (! StringUtils.isBlank(writeLimit.getText())) {
             try {
@@ -116,13 +108,11 @@ public class AdvancedBatchController extends ControllerBase implements Initializ
                 alert("Value needs to be a number", "Not a number",
                         ">" + writeLimit.getText() + "< is not parseable as number");
                 writeLimit.setText("");
-                actionEvent.consume();
                 return;
             } catch (ArithmeticException e) {
                 alert("Value out of range", "Value out of range",
                         "\"" + writeLimit.getText() +
                                 "\" must be less than 9,223,372,036,854,775,807");
-                actionEvent.consume();
                 return;
             }
         }

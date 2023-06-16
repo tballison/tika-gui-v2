@@ -355,7 +355,8 @@ public class TikaConfigWriter {
         writer.appendTextElement(params, "emitterName", "emitter");
         writer.appendTextElement(params, "basePath", pipesIterator.getAttributes().get(BASE_PATH));
         writer.appendTextElement(params, "countTotal", "true");
-        if (batchProcessConfig.getWriteLimit() > 0) {
+
+        if (batchProcessConfig.getWriteLimit() >= 0) {
             writer.appendTextElement(params, "writeLimit", Long.toString(batchProcessConfig.getWriteLimit()));
         }
     }
