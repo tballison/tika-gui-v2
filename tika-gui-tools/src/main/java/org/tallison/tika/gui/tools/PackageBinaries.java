@@ -101,7 +101,7 @@ public class PackageBinaries {
                 "com/h2database/h2/2.1.214/h2-2.1.214.jar",
                 "lib/db/h2");
         JARS_TO_PATH.put(
-                "org/xerial/sqlite-jdbc/3.41.2.1/sqlite-jdbc-3.41.2.1.jar", "lib/db/sqlite");
+                "org/xerial/sqlite-jdbc/3.42.0.0/sqlite-jdbc-3.42.0.0.jar", "lib/db/sqlite");
         JARS_TO_PATH.put(
                 "org/apache/tika/tika-pipes-iterator-s3/" +
                         TIKA_VERSION + "/tika-pipes-iterator-s3-" + TIKA_VERSION + ".jar",

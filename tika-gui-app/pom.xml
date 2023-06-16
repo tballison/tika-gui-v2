@@ -194,16 +194,16 @@
             <artifactId>download-maven-plugin</artifactId>
             <executions>
               <execution>
-                <id>tika-async-cli-2.8.1-20230512.103146-14</id>
+                <id>tika-async-cli-2.8.1-20230616.123148-44</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-async-cli/2.8.1-SNAPSHOT/tika-async-cli-2.8.1-20230512.103146-14.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-async-cli/2.8.1-SNAPSHOT/tika-async-cli-2.8.1-20230616.123148-44.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/tika-core</outputDirectory>
-                  <md5>d8252139c97e762a55ed838f1c328654</md5>
+                  <md5>845bb36bbca060dc0f592652159a3b7d</md5>
                 </configuration>
               </execution>
               <execution>
@@ -220,42 +220,42 @@
                 </configuration>
               </execution>
               <execution>
-                <id>tika-fetcher-s3-2.8.1-20230512.103146-14</id>
+                <id>tika-fetcher-s3-2.8.1-20230616.123148-44</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-fetcher-s3/2.8.1-SNAPSHOT/tika-fetcher-s3-2.8.1-20230512.103146-14.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-fetcher-s3/2.8.1-SNAPSHOT/tika-fetcher-s3-2.8.1-20230616.123148-44.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/tika-fetcher-s3</outputDirectory>
-                  <md5>ddd2ed95a92019873d249a20ba8c0e62</md5>
+                  <md5>bfca731d895458fc24f347cbce13ea1c</md5>
                 </configuration>
               </execution>
               <execution>
-                <id>tika-parser-sqlite3-package-2.8.1-20230512.103146-14</id>
+                <id>tika-parser-sqlite3-package-2.8.1-20230616.123148-44</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-parser-sqlite3-package/2.8.1-SNAPSHOT/tika-parser-sqlite3-package-2.8.1-20230512.103146-14.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-parser-sqlite3-package/2.8.1-SNAPSHOT/tika-parser-sqlite3-package-2.8.1-20230616.123148-44.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/tika-app</outputDirectory>
-                  <md5>2a9928126d29d7baa7e14dcc16f66379</md5>
+                  <md5>f8d8d23121188f1208c580d49a866609</md5>
                 </configuration>
               </execution>
               <execution>
-                <id>tika-pipes-reporter-fs-status-2.8.1-20230512.103146-14</id>
+                <id>tika-pipes-reporter-fs-status-2.8.1-20230616.123148-44</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-pipes-reporter-fs-status/2.8.1-SNAPSHOT/tika-pipes-reporter-fs-status-2.8.1-20230512.103146-14.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-pipes-reporter-fs-status/2.8.1-SNAPSHOT/tika-pipes-reporter-fs-status-2.8.1-20230616.123148-44.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/tika-core</outputDirectory>
-                  <md5>87f58928e53ab93cc11e803c767615bf</md5>
+                  <md5>ad7066a9f561065cae2de5e746606a3b</md5>
                 </configuration>
               </execution>
               <execution>
@@ -272,146 +272,146 @@
                 </configuration>
               </execution>
               <execution>
-                <id>tika-emitter-fs-2.8.1-20230512.103146-14</id>
+                <id>tika-emitter-fs-2.8.1-20230616.123148-44</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-emitter-fs/2.8.1-SNAPSHOT/tika-emitter-fs-2.8.1-20230512.103146-14.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-emitter-fs/2.8.1-SNAPSHOT/tika-emitter-fs-2.8.1-20230616.123148-44.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/tika-emitter-fs</outputDirectory>
-                  <md5>8004e41268cded03cbca612bd7db079e</md5>
+                  <md5>f6f40a7bfe485c0bb29a60f2ceb435f6</md5>
                 </configuration>
               </execution>
               <execution>
-                <id>tika-emitter-jdbc-2.8.1-20230512.103146-14</id>
+                <id>tika-emitter-jdbc-2.8.1-20230616.123148-44</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-emitter-jdbc/2.8.1-SNAPSHOT/tika-emitter-jdbc-2.8.1-20230512.103146-14.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-emitter-jdbc/2.8.1-SNAPSHOT/tika-emitter-jdbc-2.8.1-20230616.123148-44.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/tika-emitter-jdbc</outputDirectory>
-                  <md5>6fed564d54c6d51fa3090383a8aa79cb</md5>
+                  <md5>954a7ae5821497f1edabe139f0414a48</md5>
                 </configuration>
               </execution>
               <execution>
-                <id>sqlite-jdbc-3.41.2.1</id>
+                <id>tika-pipes-reporter-jdbc-2.8.1-20230616.123148-44</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.41.2.1/sqlite-jdbc-3.41.2.1.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-pipes-reporter-jdbc/2.8.1-SNAPSHOT/tika-pipes-reporter-jdbc-2.8.1-20230616.123148-44.jar</url>
+                  <unpack>false</unpack>
+                  <outputDirectory>${project.build.directory}/lib/tika-core</outputDirectory>
+                  <md5>ead857585a01562c0258cc441b0ede7d</md5>
+                </configuration>
+              </execution>
+              <execution>
+                <id>sqlite-jdbc-3.42.0.0</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>wget</goal>
+                </goals>
+                <configuration>
+                  <url>https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.42.0.0/sqlite-jdbc-3.42.0.0.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/db/sqlite</outputDirectory>
-                  <md5>5741bf88fbbde9660139f0b0e032c498</md5>
+                  <md5>6a46db3a6f38043ffb7e6782708cd401</md5>
                 </configuration>
               </execution>
               <execution>
-                <id>tika-pipes-reporter-jdbc-2.8.1-20230512.103146-14</id>
+                <id>tika-eval-core-2.8.1-20230616.123148-44</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-pipes-reporter-jdbc/2.8.1-SNAPSHOT/tika-pipes-reporter-jdbc-2.8.1-20230512.103146-14.jar</url>
-                  <unpack>false</unpack>
-                  <outputDirectory>${project.build.directory}/lib/tika-core</outputDirectory>
-                  <md5>578264bcf7b07718df1ad4ea3480757f</md5>
-                </configuration>
-              </execution>
-              <execution>
-                <id>tika-eval-core-2.8.1-20230512.103146-14</id>
-                <phase>prepare-package</phase>
-                <goals>
-                  <goal>wget</goal>
-                </goals>
-                <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-eval-core/2.8.1-SNAPSHOT/tika-eval-core-2.8.1-20230512.103146-14.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-eval-core/2.8.1-SNAPSHOT/tika-eval-core-2.8.1-20230616.123148-44.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/tika-extras</outputDirectory>
-                  <md5>017e568b7530a826fcb5d5640454848d</md5>
+                  <md5>f868b1e345782b3d5dc49d3a3c5fb619</md5>
                 </configuration>
               </execution>
               <execution>
-                <id>tika-pipes-iterator-s3-2.8.1-20230512.103146-14</id>
+                <id>tika-pipes-iterator-s3-2.8.1-20230616.123148-44</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-pipes-iterator-s3/2.8.1-SNAPSHOT/tika-pipes-iterator-s3-2.8.1-20230512.103146-14.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-pipes-iterator-s3/2.8.1-SNAPSHOT/tika-pipes-iterator-s3-2.8.1-20230616.123148-44.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/tika-pipes-iterator-s3</outputDirectory>
-                  <md5>dcd224a2e58462b5741ed0d227970b51</md5>
+                  <md5>32ecdb8b12a67e79387b3eb1f7afee2e</md5>
                 </configuration>
               </execution>
               <execution>
-                <id>tika-serialization-2.8.1-20230512.103146-14</id>
+                <id>tika-serialization-2.8.1-20230616.123148-45</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-serialization/2.8.1-SNAPSHOT/tika-serialization-2.8.1-20230512.103146-14.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-serialization/2.8.1-SNAPSHOT/tika-serialization-2.8.1-20230616.123148-45.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/tika-core</outputDirectory>
-                  <md5>e809968262d4b649850fab034ac7d5e7</md5>
+                  <md5>7d2e021015354628578cf6e171ca447a</md5>
                 </configuration>
               </execution>
               <execution>
-                <id>tika-detector-siegfried-2.8.1-20230512.103146-14</id>
+                <id>tika-detector-siegfried-2.8.1-20230616.123148-44</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-detector-siegfried/2.8.1-SNAPSHOT/tika-detector-siegfried-2.8.1-20230512.103146-14.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-detector-siegfried/2.8.1-SNAPSHOT/tika-detector-siegfried-2.8.1-20230616.123148-44.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/tika-extras</outputDirectory>
-                  <md5>5ecd0a0a09059dfdcb0fb18fbfa30c4b</md5>
+                  <md5>93c46073b85ca916b820a8f0a931961c</md5>
                 </configuration>
               </execution>
               <execution>
-                <id>tika-emitter-opensearch-2.8.1-20230512.103146-14</id>
+                <id>tika-emitter-opensearch-2.8.1-20230616.123148-44</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-emitter-opensearch/2.8.1-SNAPSHOT/tika-emitter-opensearch-2.8.1-20230512.103146-14.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-emitter-opensearch/2.8.1-SNAPSHOT/tika-emitter-opensearch-2.8.1-20230616.123148-44.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/tika-emitter-opensearch</outputDirectory>
-                  <md5>a45822ef2cf7c304f302430069c12cdb</md5>
+                  <md5>dbbb772b329ddd6135cd77c86a020a07</md5>
                 </configuration>
               </execution>
               <execution>
-                <id>tika-emitter-s3-2.8.1-20230512.103146-14</id>
+                <id>tika-emitter-s3-2.8.1-20230616.123148-44</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-emitter-s3/2.8.1-SNAPSHOT/tika-emitter-s3-2.8.1-20230512.103146-14.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-emitter-s3/2.8.1-SNAPSHOT/tika-emitter-s3-2.8.1-20230616.123148-44.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/tika-emitter-s3</outputDirectory>
-                  <md5>8af2cab20c281031d1bd097468eef9e1</md5>
+                  <md5>d522b97931a295af2d6d4f3dac67fe18</md5>
                 </configuration>
               </execution>
               <execution>
-                <id>tika-app-2.8.1-20230512.103146-14</id>
+                <id>tika-app-2.8.1-20230616.123148-44</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-app/2.8.1-SNAPSHOT/tika-app-2.8.1-20230512.103146-14.jar</url>
+                  <url>https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-app/2.8.1-SNAPSHOT/tika-app-2.8.1-20230616.123148-44.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/tika-app</outputDirectory>
-                  <md5>069cdbfff204e813422810d69b77d8f8</md5>
+                  <md5>36fcb252f110d2514078282fd982f0bd</md5>
                 </configuration>
               </execution>
               <execution>
