@@ -231,6 +231,7 @@ public class TikaConfigWriter {
                 AppContext.getInstance().getJavaHome().resolve("java").toString());
         writer.appendTextElement(params, "numClients", Integer.toString(bpc.getNumProcesses()));
         writer.appendTextElement(params, "numEmitters", "1");
+        writer.appendTextElement(params, "emitIntermediateResults", "true");
         writer.appendListElement(params, "forkedJvmArgs", "arg", "-Xmx" + bpc.getMaxMemMb() + "m",
                 "-Dlog4j.configurationFile=" + AppContext.ASYNC_LOG4J2_PATH.toAbsolutePath(), "-cp",
                 buildClassPath(bpc));
