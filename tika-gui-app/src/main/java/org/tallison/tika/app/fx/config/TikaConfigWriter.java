@@ -377,20 +377,30 @@ public class TikaConfigWriter {
         writer.appendLeafElement(metadataFilters, "metadataFilter", "class",
                 "org.apache.tika.eval.core.metadata.TikaEvalMetadataFilter");
 
+
+        Element captureGroupFilter = writer.createAndGetElement(metadataFilters,
+                "metadataFilter", "class",
+                "org.apache.tika.metadata.filter.CaptureGroupMetadataFilter");
+        Element captureGroupParams = writer.createAndGetElement(captureGroupFilter, "params");
+        writer.appendTextElement(captureGroupParams, "sourceField", "Content-Type");
+        writer.appendTextElement(captureGroupParams, "targetField", "mime-short");
+        writer.appendTextElement(captureGroupParams, "regex", "\\A([^;]+)");
+
         BaseEmitterSpec emitter = (BaseEmitterSpec) emitterSpec.get();
+
         List<MetadataTuple> metadataTuples = emitter.getMetadataTuples();
         if (metadataTuples.size() == 0) {
             return;
         }
-        Element filter = writer.createAndGetElement(metadataFilters, "metadataFilter", "class",
+        Element fieldNameMappingFilter = writer.createAndGetElement(metadataFilters, "metadataFilter", "class",
                 "org.apache.tika.metadata.filter.FieldNameMappingFilter");
-        Element params = writer.createAndGetElement(filter, "params");
-        writer.appendTextElement(params, "excludeUnmapped", "true");
+        Element fieldNameMappingParams = writer.createAndGetElement(fieldNameMappingFilter, "params");
+        writer.appendTextElement(fieldNameMappingParams, "excludeUnmapped", "true");
 
         Map<String, String> map = new LinkedHashMap<>();
         metadataTuples.stream().forEach(e -> map.put(e.getTika(), e.getOutput()));
 
-        writer.appendMap(params, "mappings", "mapping", map);
+        writer.appendMap(fieldNameMappingParams, "mappings", "mapping", map);
     }
 
 
