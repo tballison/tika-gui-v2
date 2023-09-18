@@ -51,18 +51,18 @@ a run of Tika via tika-eval.
 # Release Notes
 At some point, we should use jreleaser.  We aren't yet doing that.
 
-To generate the download sections of the pom, run DownloadPluginUpdater and ZuluDownloader.
+To generate the download sections of the pom, run DownloadPluginUpdater and PackageBinaries.
 
 The release is currently triggered by pushing a tag starting with 'v'.
 
 Before running this, change the version to the version you intend to release.
 
-```git tag -a "v1.0.0-BETA2" -m "v1.0.0-BETA2 release" && git push origin v1.0.0-BETA2```
+```git tag -a "v1.0.0-BETA3" -m "v1.0.0-BETA3 release" && git push origin v1.0.0-BETA3```
 
 Change the version back to the development/SNAPSHOT version.
 
 If you need to re-release, delete the tag:
-```git push --delete origin v1.0.0-BETA2 && git tag --delete v1.0.0-BETA2```
+```git push --delete origin v1.0.0-BETA3 && git tag --delete v1.0.0-BETA3```
 
 We should figure out how to sign artifacts and offer sha256s.  Again, see jreleaser above.
 
