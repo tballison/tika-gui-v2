@@ -31,7 +31,7 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>${project.basedir}/target/jres/win_x64/zulu17.42.19-ca-fx-jre17.0.7-win_x64</directory>
+      <directory>${project.basedir}/target/jres/win_x64/zulu17.44.53-ca-fx-jre17.0.7-win_x64</directory>
       <outputDirectory>jre</outputDirectory>
     </fileSet>
     <fileSet>

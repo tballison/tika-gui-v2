@@ -7,7 +7,8 @@ X-TIKA:embedded_depth,embedded_depth,INTEGER
 embeddedResourceType,embedded_type,VARCHAR(64)
 X-TIKA:embedded_resource_path,embedded_path,VARCHAR(512)
 Content-Length,length,BIGINT
-Content-Type,mime,VARCHAR(64)
+mime-short,mime,VARCHAR(64)
+Content-Type,mime_detailed,VARCHAR(64)
 dcterms:created,created,TIMESTAMP
 dcterms:modified,modified,TIMESTAMP
 location,location,VARCHAR(64)
