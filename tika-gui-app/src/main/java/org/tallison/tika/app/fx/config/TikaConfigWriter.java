@@ -83,12 +83,12 @@ public class TikaConfigWriter {
             Files.createDirectories(AppContext.ASYNC_LOG4J2_PATH.getParent());
         }
         Files.writeString(AppContext.ASYNC_LOG4J2_PATH, template, StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE);
+                StandardOpenOption.TRUNCATE_EXISTING);
 
         //not actually a template
         String xml = getTemplateLog4j2("log4j2-async-cli.xml");
         Files.writeString(AppContext.CONFIG_PATH.resolve("log4j2-async-cli.xml"), xml,
-                StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+                StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
 
     }
 
