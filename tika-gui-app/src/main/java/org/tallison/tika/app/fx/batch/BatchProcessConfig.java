@@ -61,6 +61,8 @@ public class BatchProcessConfig {
 
     private long writeLimit = -1;
 
+    private boolean throwOnWriteLimitReached = false;
+
     public Optional<ConfigItem> getPipesIterator() {
         return pipesIterator;
     }
@@ -209,6 +211,14 @@ public class BatchProcessConfig {
 
     public void setWriteLimit(long writeLimit) {
         this.writeLimit = writeLimit;
+    }
+
+    public void setThrowOnWriteLimitReached(boolean throwOnWriteLimitReached) {
+        this.throwOnWriteLimitReached = throwOnWriteLimitReached;
+    }
+
+    public boolean isThrowOnWriteLimitReached() {
+        return throwOnWriteLimitReached;
     }
 
     public void setParserConfig(ParserConfig parserConfig) {

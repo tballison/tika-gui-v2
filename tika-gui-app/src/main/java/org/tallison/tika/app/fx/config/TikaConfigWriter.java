@@ -358,6 +358,8 @@ public class TikaConfigWriter {
 
         if (batchProcessConfig.getWriteLimit() >= 0) {
             writer.appendTextElement(params, "writeLimit", Long.toString(batchProcessConfig.getWriteLimit()));
+            writer.appendTextElement(params, "throwOnWriteLimitReached",
+                    Boolean.toString(batchProcessConfig.isThrowOnWriteLimitReached()));
         }
     }
 

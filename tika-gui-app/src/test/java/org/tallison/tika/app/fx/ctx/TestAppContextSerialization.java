@@ -17,12 +17,15 @@
 package org.tallison.tika.app.fx.ctx;
 
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -41,9 +44,10 @@ public class TestAppContextSerialization {
 
     @Test
     public void testBasic() throws Exception {
+        String emitterPath = "somthing123456789";
         AppContext appContext = new AppContext();
         EmitterSpec emitterSpec = new FileSystemEmitterSpec(Collections.EMPTY_LIST);
-        ((FileSystemEmitterSpec)emitterSpec).setBasePath(Paths.get("something"));
+        ((FileSystemEmitterSpec)emitterSpec).setBasePath(Paths.get(emitterPath));
         emitterSpec.setShortLabel("short label");
         emitterSpec.setFullLabel("full label");
         emitterSpec.initialize();
@@ -58,6 +62,12 @@ public class TestAppContextSerialization {
         StringWriter writer = new StringWriter();
         objectMapper.writeValue(writer, appContext);
         AppContext deserialized = objectMapper.readValue(writer.toString(), AppContext.class);
+
+        //cleanup
+        Path something = Paths.get(emitterPath);
+        if (Files.isDirectory(something)) {
+            FileUtils.deleteDirectory(something.toFile());
+        }
     }
 
     @Test

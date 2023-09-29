@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import org.apache.logging.log4j.LogManager;
@@ -64,6 +65,9 @@ public class AdvancedBatchController extends ControllerBase implements Initializ
     @FXML
     private TextField writeLimit;
 
+    @FXML
+    private CheckBox throwOnWriteLimitReached;
+
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
 
@@ -87,11 +91,17 @@ public class AdvancedBatchController extends ControllerBase implements Initializ
         if (batchProcessConfig.getWriteLimit() > -1) {
             writeLimit.setText(Long.toString(batchProcessConfig.getWriteLimit()));
         }
+        //add a listener so that we can validate input
+        //when the user enters it
         writeLimit.focusedProperty().addListener((ov, oldV, newV) -> {
             if (! newV) {
                 setWriteLimit();
             }
         });
+
+        if (batchProcessConfig.isThrowOnWriteLimitReached()) {
+            throwOnWriteLimitReached.setSelected(true);
+        }
     }
 
     public void setWriteLimit() {
@@ -163,6 +173,8 @@ public class AdvancedBatchController extends ControllerBase implements Initializ
         long emitWithin = getLong("emitWithinMs", emitWithinMs, 0, 1000000000,
                 bpc.getEmitWithinMs());
         bpc.setEmitWithinMs(emitWithin);
+
+        bpc.setThrowOnWriteLimitReached(throwOnWriteLimitReached.isSelected());
 
         APP_CONTEXT.saveState();
     }

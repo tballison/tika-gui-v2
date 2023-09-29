@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -17,8 +18,10 @@
   specific language governing permissions and limitations
   under the License.
 -->
+
 <?import java.lang.String?>
 <?import javafx.collections.FXCollections?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Tab?>
@@ -35,12 +38,12 @@
               <tabs>
                 <Tab closable="false" disable="false" text="Detectors">
                   <content>
-                    <fx:include fx:id="detector_config" source="detector-view.fxml"/>
+                    <fx:include fx:id="detector_config" source="detector-view.fxml" />
                   </content>
                 </Tab>
                 <Tab closable="false" disable="false" text="Parsers">
                   <content>
-                    <fx:include fx:id="parser_config" source="parser-view.fxml"/>
+                    <fx:include fx:id="parser_config" source="parser-view.fxml" />
                   </content>
                 </Tab>
                   <Tab closable="false" text="Parse Options">
@@ -59,6 +62,7 @@
                               </ComboBox>
                               <Label layoutX="54.0" layoutY="110.0" prefHeight="21.0" prefWidth="121.0" text="Write Limit (bytes)" />
                               <TextField fx:id="writeLimit" alignment="CENTER_RIGHT" layoutX="188.0" layoutY="108.0" onAction="#setWriteLimit" />
+                              <CheckBox fx:id="throwOnWriteLimitReached" layoutX="388.0" layoutY="112.0" mnemonicParsing="false" text="Stop if limit reached" />
                            </children>
                         </AnchorPane>
                      </content>
