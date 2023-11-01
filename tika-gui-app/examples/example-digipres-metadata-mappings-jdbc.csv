@@ -15,6 +15,7 @@ sf:pronom:version,sf_version,VARCHAR(64)
 sf:pronom:id,sf_id,VARCHAR(12)
 sf:pronom:basis,sf_basis,VARCHAR(64)
 sf:errors,sf_errors,VARCHAR(512)
+dcterms:created,created,TIMESTAMP
 dcterms:modified,modified,TIMESTAMP
 location,location,VARCHAR(64)
 X-TIKA:EXCEPTION:container_exception,exception,VARCHAR(512)
