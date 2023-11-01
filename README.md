@@ -57,12 +57,12 @@ The release is currently triggered by pushing a tag starting with 'v'.
 
 Before running this, change the version to the version you intend to release.
 
-```git tag -a "v1.0.0-BETA3" -m "v1.0.0-BETA3 release" && git push origin v1.0.0-BETA3```
+```git tag -a "v1.0.0-BETA4" -m "v1.0.0-BETA4 release" && git push origin v1.0.0-BETA4```
 
 Change the version back to the development/SNAPSHOT version.
 
 If you need to re-release, delete the tag:
-```git push --delete origin v1.0.0-BETA3 && git tag --delete v1.0.0-BETA3```
+```git push --delete origin v1.0.0-BETA4 && git tag --delete v1.0.0-BETA4```
 
 We should figure out how to sign artifacts and offer sha256s.  Again, see jreleaser above.
 
