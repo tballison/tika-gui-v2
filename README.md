@@ -8,16 +8,15 @@ This is an initial draft of the next generation user interface application for A
 This is not part of the Apache Tika project.
 
 # Getting Started
-Download the .zip file in the releases section for your operating system.
+Download the .zip file in the [releases section](https://github.com/tballison/tika-gui-v2/releases) for your operating system.
 
 ## Windows
  * Unzip then run `tika-gui.bat`
 
 ## Mac
- * Unzip then run `./tika-gui-mac.sh`
+ * Unzip then run `./tika-gui-mac-x86.sh` or `./tika-gui-mac-aarch64.sh`
 
 *NOTE* I've been able to run the mac distro on a mac aarch64.  There's a warning about javafx stuff, but it seems to work
-
 
 ## Linux
  * Unzip then `./tika-gui.sh`
@@ -26,7 +25,8 @@ Download the .zip file in the releases section for your operating system.
 This project requires a Java 17 jdk/jre with java-fx built in! We use Azul's Zulu jdk-fx for development, and we bundle Zulu jre-fx with the release artifacts.  To download: [www.azul.com](https://www.azul.com/downloads/?version=java-17-lts&package=jdk-fx#download-openjdk).
 
 # Program Maturity
-This is just the beginning.  Everything is still in a state of flux and is subject to change. 
+This is just the beginning. Everything is still in a state of flux and is subject to change. We may abandon
+the whole thing and do something in Electron...
 
 ***HELP WANTED!!!***
 
@@ -57,12 +57,12 @@ The release is currently triggered by pushing a tag starting with 'v'.
 
 Before running this, change the version to the version you intend to release.
 
-```git tag -a "v1.0.0-BETA4" -m "v1.0.0-BETA4 release" && git push origin v1.0.0-BETA4```
+```git tag -a "v1.0.0-SNAPSHOT" -m "v1.0.0-SNAPSHOT release" && git push origin v1.0.0-SNAPSHOT```
 
 Change the version back to the development/SNAPSHOT version.
 
 If you need to re-release, delete the tag:
-```git push --delete origin v1.0.0-BETA4 && git tag --delete v1.0.0-BETA4```
+```git push --delete origin v1.0.0-SNAPSHOT && git tag --delete v1.0.0-SNAPSHOT```
 
 We should figure out how to sign artifacts and offer sha256s.  Again, see jreleaser above.
 
