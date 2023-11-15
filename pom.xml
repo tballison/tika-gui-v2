@@ -39,7 +39,7 @@
     <junit.version>5.10.0</junit.version>
     <jackson.version>2.15.3</jackson.version>
     <log4j2.version>2.20.0</log4j2.version>
-    <puppycrawl.version>10.12.4</puppycrawl.version>
+    <puppycrawl.version>10.12.5</puppycrawl.version>
   </properties>
 
   <modules>
