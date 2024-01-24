@@ -38,7 +38,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <junit.version>5.10.1</junit.version>
     <jackson.version>2.16.0</jackson.version>
-    <log4j2.version>2.20.0</log4j2.version>
+    <log4j2.version>2.22.1</log4j2.version>
     <puppycrawl.version>10.12.7</puppycrawl.version>
   </properties>
 
