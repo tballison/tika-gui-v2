@@ -22,8 +22,8 @@ if [ ! -d "jre/zulu17.46.19-ca-fx-jre17.0.9-linux_x64" ]
 then
   echo "Unpacking zipped jre."
   cd jre
-  tar -xzvf zulu17.46.19-ca-fx-jre17.0.9-linux_x64.tar.gz
-  cd .. && mv jre/zulu17.46.19-ca-fx-jre17.0.9-linux_x64/* jre
+  tar -xzvf zulu17.48.15-ca-fx-jre17.0.10-linux_x64.tar.gz
+  cd .. && mv jre/zulu17.48.15-ca-fx-jre17.0.10-linux_x64/* jre
 fi
 
 JAVA_HOME="jre"

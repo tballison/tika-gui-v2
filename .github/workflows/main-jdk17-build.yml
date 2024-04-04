@@ -29,10 +29,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 17.0.5
+      - name: Set up JDK 17.0.10
         uses: actions/setup-java@v2
         with:
-          java-version: 17.0.5
+          java-version: 17.0.10
           distribution: 'zulu'#may need to move to liberica
           java-package: jdk+fx
           cache: 'maven'
