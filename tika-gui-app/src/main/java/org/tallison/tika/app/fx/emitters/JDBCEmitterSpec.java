@@ -39,7 +39,7 @@ public class JDBCEmitterSpec extends BaseEmitterSpec {
 
     private static final Logger LOGGER = LogManager.getLogger(JDBCEmitterSpec.class);
 
-    static String PATH_COL_NAME = "path";
+    static String ID_COLUMN_NAME = "id";
 
     static String ATTACHMENT_NUM_COL_NAME = "attachment_num";
 
@@ -108,7 +108,7 @@ public class JDBCEmitterSpec extends BaseEmitterSpec {
     void createAndSetInsertString(String tableName) {
         StringBuilder sb = new StringBuilder();
         sb.append("insert into ").append(tableName).append(" (");
-        sb.append(PATH_COL_NAME).append(", ").append(ATTACHMENT_NUM_COL_NAME);
+        sb.append(ID_COLUMN_NAME).append(", ").append(ATTACHMENT_NUM_COL_NAME);
         int colCount = 2;
         for (MetadataTuple t : getMetadataTuples()) {
             sb.append(", ");

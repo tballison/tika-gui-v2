@@ -17,7 +17,7 @@
 package org.tallison.tika.app.fx.emitters;
 
 import static org.tallison.tika.app.fx.emitters.JDBCEmitterSpec.ATTACHMENT_NUM_COL_NAME;
-import static org.tallison.tika.app.fx.emitters.JDBCEmitterSpec.PATH_COL_NAME;
+import static org.tallison.tika.app.fx.emitters.JDBCEmitterSpec.ID_COLUMN_NAME;
 
 import java.net.URL;
 import java.sql.Connection;
@@ -333,9 +333,9 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
         //TODO -- check column types!
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
             if (i == 1) {
-                if (!PATH_COL_NAME.equalsIgnoreCase(metaData.getColumnName(i))) {
+                if (!ID_COLUMN_NAME.equalsIgnoreCase(metaData.getColumnName(i))) {
                     alert(ALERT_TITLE, "Unexpected column name",
-                            "First column should be: " + PATH_COL_NAME);
+                            "First column should be: " + ID_COLUMN_NAME);
                     return false;
                 }
             }
@@ -376,7 +376,7 @@ public class JDBCEmitterController extends AbstractEmitterController implements 
     private boolean tryToCreateTable() {
         StringBuilder sb = new StringBuilder();
         sb.append("create table ").append(tableName.getText()).append(" (");
-        sb.append(PATH_COL_NAME).append(" VARCHAR(1024),\n");
+        sb.append(ID_COLUMN_NAME).append(" VARCHAR(1024),\n");
         sb.append(ATTACHMENT_NUM_COL_NAME).append(" INTEGER");
         for (MetadataRow r : getMetadataRows()) {
             sb.append(",\n");

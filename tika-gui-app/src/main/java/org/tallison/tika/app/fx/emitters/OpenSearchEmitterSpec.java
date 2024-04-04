@@ -81,8 +81,8 @@ public class OpenSearchEmitterSpec extends BaseEmitterSpec {
     public Set<String> getClassPathDependencies() {
         Set<String> items = new HashSet<>();
         items.add(ProcessUtils.escapeCommandLine(
-                AppContext.TIKA_LIB_PATH.resolve("tika-emitter-opensearch").toAbsolutePath() +
-                        "/*"));
+                AppContext.TIKA_LIB_PATH.resolve("tika-emitter-opensearch")
+                        .toAbsolutePath() + "/*"));
 
         return items;
     }

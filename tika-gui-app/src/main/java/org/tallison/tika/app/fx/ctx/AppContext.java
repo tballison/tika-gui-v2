@@ -63,11 +63,19 @@ public class AppContext {
     }
 
     static {
+        System.out.println(System.getProperties());
         if (!StringUtils.isBlank(System.getProperty("TIKA_GUI_JAVA_HOME"))) {
             LOGGER.debug("setting TIKA_GUI_JAVA_HOME {}", System.getProperty("TIKA_GUI_JAVA_HOME"));
             TIKA_GUI_JAVA_HOME = Paths.get(System.getProperty("TIKA_GUI_JAVA_HOME"));
         } else if (!StringUtils.isBlank(System.getProperty("java.home"))) {
             TIKA_GUI_JAVA_HOME = Paths.get(System.getProperty("java.home"));
+            //TODO -- java_home should not include the bin directory.
+            //the "if" branch above is normally triggered through the .sh scripts,
+            //which incorrectly set java_home to java_home/bin
+            //Clean this up.
+            if (Files.isDirectory(TIKA_GUI_JAVA_HOME.resolve("bin"))) {
+                TIKA_GUI_JAVA_HOME = TIKA_GUI_JAVA_HOME.resolve("bin");
+            }
             LOGGER.debug("setting TIKA_GUI_JAVA_HOME {} from java.home",
                     System.getProperty("java.home"));
         }

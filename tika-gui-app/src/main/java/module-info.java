@@ -28,6 +28,7 @@ module org.tallison.tika.app.fx {
     requires com.fasterxml.jackson.datatype.jsr310;
     requires com.fasterxml.jackson.datatype.jdk8;
     requires org.kordamp.ikonli.javafx;
+    requires com.h2database;
 
     exports org.tallison.tika.app.fx;
 

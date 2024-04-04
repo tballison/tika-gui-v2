@@ -94,7 +94,7 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
         String dropTable = "drop table if exists " + tableName;
         StringBuilder createTable = new StringBuilder();
         createTable.append("create table ").append(tableName);
-        createTable.append("( ").append(PATH_COL_NAME).append(" varchar(1024), ");
+        createTable.append("( ").append(ID_COLUMN_NAME).append(" varchar(1024), ");
         createTable.append(ATTACHMENT_NUM_COL_NAME).append(" int");
         for (MetadataTuple t : getMetadataTuples()) {
             createTable.append(", ").append(t.getOutput()).append(" ").append(t.getProperty());
@@ -191,7 +191,7 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
 
     private void writeHeaders(CSVPrinter printer) throws IOException {
         List<String> headers = new ArrayList<>();
-        headers.add("path");
+        headers.add("id");
         headers.add("status");
         headers.add("attachment_num");
         if (getMetadataTuples().size() == 0) {
@@ -208,22 +208,22 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
         String tikaTable = CSV_DB_TABLE_NAME;
         StringBuilder sb = new StringBuilder();
         sb.append("select ");
-        sb.append("s.").append(PATH_COL_NAME).append(" as Path, s.status as Status, ");
+        sb.append("s.").append(ID_COLUMN_NAME).append(" as id, s.status as Status, ");
         sb.append("case when ").append(ATTACHMENT_NUM_COL_NAME).append(" is null then 0");
         sb.append(" else ").append(ATTACHMENT_NUM_COL_NAME).append(" end");
         for (MetadataTuple t : getMetadataTuples()) {
             sb.append(", ");
             String out = t.getOutput();
             //if there's a column in tika_extracts
-            if (out.equals(PATH_COL_NAME) || out.equals("status")) {
+            if (out.equals(ID_COLUMN_NAME) || out.equals("status")) {
                 sb.append("t.");
             }
             sb.append(t.getOutput());
         }
 
         sb.append(" from tika_status s left join ").append(tikaTable)
-                .append(" t on s.path = t.path")
-                .append(" order by s.status, t.path asc, t.attachment_num asc");
+                .append(" t on s.id = t.id")
+                .append(" order by s.status, t.id asc, t.attachment_num asc");
 
         return sb.toString();
     }
