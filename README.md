@@ -49,6 +49,8 @@ Ideally, there will be some user interface to visualize information from
 a run of Tika via tika-eval.
 
 # Version Notes
+* 
+* 1.0.0-BETA6 -- same warning as BETA5 -- only use this as a demo until commons-compress regressions have been fixed.
 
 * 1.0.0-BETA5 -- this has known regressions in commons-compress and should be used for demo purposes only.
 
