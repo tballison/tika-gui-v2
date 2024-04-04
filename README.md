@@ -48,6 +48,10 @@ jackson-databind, for example...
 Ideally, there will be some user interface to visualize information from
 a run of Tika via tika-eval.
 
+# Version Notes
+
+* 1.0.0-BETA5 -- this has known regressions in commons-compress and should be used for demo purposes only.
+
 # Release Notes
 At some point, we should use jreleaser.  We aren't yet doing that.
 
@@ -57,12 +61,12 @@ The release is currently triggered by pushing a tag starting with 'v'.
 
 Before running this, change the version to the version you intend to release.
 
-```git tag -a "v1.0.0-SNAPSHOT" -m "v1.0.0-SNAPSHOT release" && git push origin v1.0.0-SNAPSHOT```
+```git tag -a "v1.0.0-BETA5" -m "v1.0.0-BETA5 release" && git push origin v1.0.0-BETA5```
 
 Change the version back to the development/SNAPSHOT version.
 
 If you need to re-release, delete the tag:
-```git push --delete origin v1.0.0-SNAPSHOT && git tag --delete v1.0.0-SNAPSHOT```
+```git push --delete origin v1.0.0-BETA5 && git tag --delete v1.0.0-BETA5```
 
 We should figure out how to sign artifacts and offer sha256s.  Again, see jreleaser above.
 
