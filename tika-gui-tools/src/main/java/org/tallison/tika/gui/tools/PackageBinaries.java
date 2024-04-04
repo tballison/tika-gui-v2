@@ -101,7 +101,7 @@ public class PackageBinaries {
                 "com/h2database/h2/2.2.224/h2-2.2.224.jar",
                 "lib/db/h2");
         JARS_TO_PATH.put(
-                "org/xerial/sqlite-jdbc/3.43.2.2/sqlite-jdbc-3.43.2.2.jar", "lib/db/sqlite");
+                "org/xerial/sqlite-jdbc/3.45.2.0/sqlite-jdbc-3.45.2.0.jar", "lib/db/sqlite");
         JARS_TO_PATH.put(
                 "org/apache/tika/tika-pipes-iterator-s3/" +
                         TIKA_VERSION + "/tika-pipes-iterator-s3-" + TIKA_VERSION + ".jar",
@@ -119,7 +119,7 @@ public class PackageBinaries {
                         TIKA_VERSION + "/tika-fetcher-s3-" + TIKA_VERSION + ".jar",
                 "lib/tika-fetcher-s3");
         JARS_TO_PATH.put(
-                "org/postgresql/postgresql/42.6.0/postgresql-42.6.0.jar",
+                "org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar",
                 "lib/db/postgresql");
 
 
