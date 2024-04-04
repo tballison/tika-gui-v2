@@ -18,7 +18,7 @@
 #TODO: update the script to find the executable, whether it
 # is under the jdk name or the aarch Contents/Home/ stuff.
 # Can we do anything better than chmod?
-if [ ! -d "jre/zulu17.46.19-ca-fx-jre17.0.9-linux_x64" ]
+if [ ! -d "jre/zulu17.48.15-ca-fx-jre17.0.10-linux_x64" ]
 then
   echo "Unpacking zipped jre."
   cd jre
