@@ -30,7 +30,7 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: 21.0.5
+          java-version: 21
           distribution: 'zulu'#may need to move to liberica
           java-package: jdk+fx
           cache: 'maven'
