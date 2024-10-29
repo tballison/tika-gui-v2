@@ -26,11 +26,11 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 17
-        uses: actions/setup-java@v2
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
         with:
-          java-version: 17.0.10
+          java-version: 21.0.5
           distribution: 'zulu'#may need to move to liberica
           java-package: jdk+fx
           cache: 'maven'

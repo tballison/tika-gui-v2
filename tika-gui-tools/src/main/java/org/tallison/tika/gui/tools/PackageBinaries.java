@@ -19,7 +19,7 @@ package org.tallison.tika.gui.tools;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,7 +41,7 @@ public class PackageBinaries {
     //and the apache repo for tika artifacts
 
     //Further, we should parameterize all dependencies.
-    private static final String TIKA_VERSION = "3.0.0-SNAPSHOT";
+    private static final String TIKA_VERSION = "4.0.0-SNAPSHOT";
     private static final Map<String, String> JARS_TO_PATH = new HashMap<>();
 
     private static final Path LOCAL_M2 = Paths.get(System.getProperty("user.home")).resolve(".m2" +
@@ -98,10 +98,10 @@ public class PackageBinaries {
                         TIKA_VERSION + "/tika-emitter-opensearch-" + TIKA_VERSION + ".jar",
                 "lib/tika-emitter-opensearch");
         JARS_TO_PATH.put(
-                "com/h2database/h2/2.2.224/h2-2.2.224.jar",
+                "com/h2database/h2/2.3.232/h2-2.3.232.jar",
                 "lib/db/h2");
         JARS_TO_PATH.put(
-                "org/xerial/sqlite-jdbc/3.45.2.0/sqlite-jdbc-3.45.2.0.jar", "lib/db/sqlite");
+                "org/xerial/sqlite-jdbc/3.47.0.0/sqlite-jdbc-3.47.0.0.jar", "lib/db/sqlite");
         JARS_TO_PATH.put(
                 "org/apache/tika/tika-pipes-iterator-s3/" +
                         TIKA_VERSION + "/tika-pipes-iterator-s3-" + TIKA_VERSION + ".jar",
@@ -119,7 +119,7 @@ public class PackageBinaries {
                         TIKA_VERSION + "/tika-fetcher-s3-" + TIKA_VERSION + ".jar",
                 "lib/tika-fetcher-s3");
         JARS_TO_PATH.put(
-                "org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar",
+                "org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar",
                 "lib/db/postgresql");
 
 
@@ -175,7 +175,7 @@ public class PackageBinaries {
             Files.createDirectories(jarTarget.getParent());
         }
 
-        try (InputStream is = new URL(url).openStream()) {
+        try (InputStream is = new URI(url).toURL().openStream()) {
             Files.copy(is, jarTarget, StandardCopyOption.REPLACE_EXISTING);
         }
     }

@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.Set;
@@ -49,7 +48,7 @@ public class DownloadPluginUpdater {
 
     private static final String FOOJAY_ZULU_URL =
             "https://api.foojay.io/disco/v3.0/packages?package_type=jre&latest=available&version" +
-                    "=17&javafx_bundled=true&distro=zulu";
+                    "=21&javafx_bundled=true&distro=zulu";
 
     private static final Set<String> OS_ARCH_PKG_ZULU = Set.of(
             "macosx_aarch64.zip",
@@ -140,7 +139,7 @@ public class DownloadPluginUpdater {
     private static void getZulu(StringBuilder sb) throws Exception {
         JsonNode root = null;
         try (InputStream is =
-                     new URL(FOOJAY_ZULU_URL).openStream()) {
+                     new URI(FOOJAY_ZULU_URL).toURL().openStream()) {
             ObjectMapper mapper = new ObjectMapper();
             root = mapper.readTree(is);
         }
@@ -175,7 +174,7 @@ public class DownloadPluginUpdater {
     private static UrlShaPair getUrlShaPair(String pkgUrl) throws Exception {
         JsonNode root = null;
         try (InputStream is =
-                     new URL(pkgUrl).openStream()) {
+                     new URI(pkgUrl).toURL().openStream()) {
             ObjectMapper mapper = new ObjectMapper();
             root = mapper.readTree(is);
         }

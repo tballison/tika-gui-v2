@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-name: main jdk17 build
+name: main jdk21 build
 
 on:
   push:
@@ -28,11 +28,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 17.0.10
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21.0.10
         uses: actions/setup-java@v2
         with:
-          java-version: 17.0.10
+          java-version: 21.0.05
           distribution: 'zulu'#may need to move to liberica
           java-package: jdk+fx
           cache: 'maven'

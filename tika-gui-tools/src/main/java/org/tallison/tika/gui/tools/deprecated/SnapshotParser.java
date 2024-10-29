@@ -16,8 +16,7 @@
  */
 package org.tallison.tika.gui.tools.deprecated;
 
-import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,20 +28,20 @@ import org.apache.commons.io.IOUtils;
 //this is a horror show.  Don't do this.
 public class SnapshotParser {
 
-    public SnapshotResult parse(String moduleUrl) throws IOException {
+    public SnapshotResult parse(String moduleUrl) throws Exception {
         if (moduleUrl.endsWith("/")) {
             moduleUrl = moduleUrl.substring(0, moduleUrl.length() - 1);
         }
         //https://repository.apache.org/content/groups/snapshots/org/apache/tika/tika-core
         String moduleMetadataUrl = moduleUrl + "/maven-metadata.xml";
-        String moduleXML = IOUtils.toString(new URL(moduleMetadataUrl), StandardCharsets.UTF_8);
+        String moduleXML = IOUtils.toString(new URI(moduleMetadataUrl).toURL(), StandardCharsets.UTF_8);
         Matcher m = Pattern.compile("<latest>(.*?)</latest>").matcher(moduleXML);
         String version = "";
         if (m.find()) {
             version = m.group(1);
         }
         String moduleVersionUrl = moduleUrl + "/" + version + "/" + "maven-metadata.xml";
-        String moduleVersionXML = IOUtils.toString(new URL(moduleVersionUrl),
+        String moduleVersionXML = IOUtils.toString(new URI(moduleVersionUrl).toURL(),
                 StandardCharsets.UTF_8);
         m = Pattern.compile("(?si)<(artifactId)>(.*?)</\\1>")
                         .matcher(moduleVersionXML);
@@ -58,7 +57,7 @@ public class SnapshotParser {
         }
         String nonSnapshotVersion = version.replace("-SNAPSHOT", "");
 
-        String indexHtml = IOUtils.toString(new URL(moduleUrl + "/" + version + "/"),
+        String indexHtml = IOUtils.toString(new URI(moduleUrl + "/" + version + "/").toURL(),
                 StandardCharsets.UTF_8);
         String jarUrl = "";
         //moduleUrl + "/" + version + "/" + artifactId + "-" + nonSnapshotVersion + "-" +
@@ -80,7 +79,7 @@ public class SnapshotParser {
                 String digest = url.substring(jarUrl.length());
                 if (digest.startsWith(".")) {
                     digest = digest.substring(1);
-                    String digestString = IOUtils.toString(new URL(url), StandardCharsets.UTF_8);
+                    String digestString = IOUtils.toString(new URI(url).toURL(), StandardCharsets.UTF_8);
                     digests.put(digest, digestString);
                 }
             }

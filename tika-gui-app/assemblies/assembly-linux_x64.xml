@@ -46,7 +46,7 @@
       <outputDirectory>config</outputDirectory>
     </file>
     <file>
-      <source>${project.basedir}/target/jres/linux_x64/zulu17.48.15-ca-fx-jre17.0.10-linux_x64.tar.gz</source>
+      <source>${project.basedir}/target/jres/linux_x64/zulu21.38.21-ca-fx-jre21.0.5-linux_x64.tar.gz</source>
       <outputDirectory>jre</outputDirectory>
     </file>
     <file>
