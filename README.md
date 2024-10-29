@@ -22,7 +22,8 @@ Download the .zip file in the [releases section](https://github.com/tballison/ti
  * Unzip then `./tika-gui.sh`
 
 # Requirements
-This project requires a Java 17 jdk/jre with java-fx built in! We use Azul's Zulu jdk-fx for development, and we bundle Zulu jre-fx with the release artifacts.  To download: [www.azul.com](https://www.azul.com/downloads/?version=java-17-lts&package=jdk-fx#download-openjdk).
+This project requires a Java 21 jdk/jre with java-fx built in! We use Azul's Zulu jdk-fx for development, and we bundle Zulu jre-fx with the release artifacts.  To download: 
+[www.azul.com](https://www.azul.com/downloads/?version=java-21-lts&package=jdk-fx#download-openjdk).
 
 # Program Maturity
 This is just the beginning. Everything is still in a state of flux and is subject to change. We may abandon
@@ -37,10 +38,8 @@ This will make use of the tika-pipes modules to enable fetching files from
 local file shares, S3 and other resources and then emitting the parsed output
 to local file shares, S3, OpenSearch, Apache Solr, jdbc, etc.
 
-This requires Java 17 (with built-in java-fx) and will not run Tika "in process", but rather 
+This requires Java 21 (with built-in java-fx) and will not run Tika "in process", but rather 
 it will rely on forking Tika. 
-
-My intention is to start with Java 17 and keep Java 17 for a good long while. 
 
 There's quite a bit of work to streamline the releases so that we don't have 16 copies of
 jackson-databind, for example...
@@ -49,9 +48,8 @@ Ideally, there will be some user interface to visualize information from
 a run of Tika via tika-eval.
 
 # Version Notes
-* 
+* 1.0.0-BETA7 -- updated dependencies. Now requires Java 21.
 * 1.0.0-BETA6 -- same warning as BETA5 -- only use this as a demo until commons-compress regressions have been fixed.
-
 * 1.0.0-BETA5 -- this has known regressions in commons-compress and should be used for demo purposes only.
 
 # Release Notes
