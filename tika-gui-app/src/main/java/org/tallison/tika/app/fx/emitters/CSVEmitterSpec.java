@@ -230,7 +230,9 @@ public class CSVEmitterSpec extends JDBCEmitterSpec {
 
     private void cleanCSVTempResources() throws IOException {
         try {
-            connection.close();
+            if (connection != null) {
+                connection.close();
+            }
         } catch (SQLException e) {
             LOGGER.warn("problem closing db?!", e);
         }
