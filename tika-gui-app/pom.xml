@@ -350,13 +350,13 @@
                 </configuration>
               </execution>
               <execution>
-                <id>postgresql-42.7.4</id>
+                <id>postgresql-42.7.5</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar</url>
+                  <url>https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/db/postgresql</outputDirectory>
                   <md5>ef7e9be503b5c6243697d628fb196cad</md5>
