@@ -246,13 +246,13 @@
                 </configuration>
               </execution>
               <execution>
-                <id>sqlite-jdbc-3.48.0.0</id>
+                <id>sqlite-jdbc-3.49.0.0</id>
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <url>https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.48.0.0/sqlite-jdbc-3.48.0.0.jar</url>
+                  <url>https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.49.0.0/sqlite-jdbc-3.49.0.0.jar</url>
                   <unpack>false</unpack>
                   <outputDirectory>${project.build.directory}/lib/db/sqlite</outputDirectory>
                   <md5>eeb1fbfb18ef4430f0dd512ba2730de2</md5>
