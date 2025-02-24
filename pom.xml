@@ -42,7 +42,7 @@
     <junit.version>5.11.4</junit.version>
     <jackson.version>2.18.2</jackson.version>
     <log4j2.version>2.24.3</log4j2.version>
-    <puppycrawl.version>10.21.2</puppycrawl.version>
+    <puppycrawl.version>10.21.3</puppycrawl.version>
   </properties>
 
   <modules>
