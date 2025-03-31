@@ -7,6 +7,19 @@ Unofficial next gen user interface for Apache Tika
 This is an initial draft of the next generation user interface application for Apache Tika.
 This is not part of the Apache Tika project.
 
+# Background
+This project offers a user interface to help with generating the XML configuration file that
+is used by the standard tika-app jar. After configuring a job in the GUI, the latest tika-config.xml
+will be written as, for example `tika-gui-app-1.0.0-BETA7-bin/config/tika-config-xyz.xml`. 
+To run tika-app on the commandline with this config file, you'll need to add the relevant extra dependencies and specify this config file like so:
+
+Commandline on a linux based system:
+```commandline
+jre/bin/java -Dlog4j.configurationFile=config/log4j2-async-cli.xml -cp "tika-gui-app-1.0.0-BETA7-bin/lib/tika-core/*:tika-gui-app-1.0.0-BETA7-bin/lib/tika-extras/*:tika-gui-app-1.0.0-BETA7-bin/lib/db/h2/*:tika-gui-app-1.0.0-BETA7-bin/lib/tika-emitter-jdbc/*" org.apache.tika.async.cli.TikaAsyncCLI tika-gui-app-1.0.0-BETA7-bin/config/tika-config-5449427994870420796.xml"
+```
+
+When you run a batch job, the Tika gui will output the full commandline after `org.tallison.tika.app.fx.batch.BatchProcess built commandline`
+
 # Getting Started
 Download the .zip file in the [releases section](https://github.com/tballison/tika-gui-v2/releases) for your operating system.
 
