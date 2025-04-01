@@ -43,6 +43,10 @@ Download the .zip file in the [releases section](https://github.com/tballison/ti
 This project requires a Java 21 jdk/jre with java-fx built in! We use Azul's Zulu jdk-fx for development, and we bundle Zulu jre-fx with the release artifacts.  To download: 
 [www.azul.com](https://www.azul.com/downloads/?version=java-21-lts&package=jdk-fx#download-openjdk).
 
+# Building
+As of org.apache's parent v 35, you'll need to turn on the apache-snapshots profile:
+`mvn clean install -P use-apache-snapshots`
+
 # Program Maturity
 This is just the beginning. Everything is still in a state of flux and is subject to change. We may abandon
 the whole thing and do something in Electron...
