@@ -14,11 +14,11 @@
 # limitations under the License.
 
 
-if [ ! -d "jre/zulu21.38.21-ca-fx-jre21.0.5.0.10-macosx_x64" ]
+if [ ! -d "jre/zulu21.44.17-ca-fx-jre21.0.8.0.10-macosx_x64" ]
 then
   echo "Unpacking zipped jre."
-  ditto -xk jre/zulu21.38.21-ca-fx-jre21.0.5-macosx_x64.zip jre
-  mv jre/zulu21.38.21-ca-fx-jre21.0.5-macosx_x64/* jre
+  ditto -xk jre/zulu21.44.17-ca-fx-jre21.0.8-macosx_x64.zip jre
+  mv jre/zulu21.44.17-ca-fx-jre21.0.8-macosx_x64/* jre
 fi
 
 #this is barely a start. Initially targeting linux
