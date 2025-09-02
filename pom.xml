@@ -98,6 +98,11 @@
         <version>11.2.2</version>
       </dependency>
       <dependency>
+        <groupId>org.kordamp.ikonli</groupId>
+        <artifactId>ikonli-core</artifactId>
+        <version>12.4.0</version>
+      </dependency>
+      <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
         <version>${junit.version}</version>
