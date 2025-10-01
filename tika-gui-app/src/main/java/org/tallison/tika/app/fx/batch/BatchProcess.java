@@ -42,7 +42,7 @@ import org.tallison.tika.app.fx.status.MutableStatus;
 import org.tallison.tika.app.fx.status.StatusUpdater;
 
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.pipes.async.AsyncStatus;
+import org.apache.tika.pipes.core.async.AsyncStatus;
 import org.apache.tika.utils.ProcessUtils;
 import org.apache.tika.utils.StreamGobbler;
 import org.apache.tika.utils.StringUtils;

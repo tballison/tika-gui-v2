@@ -33,7 +33,7 @@ import org.tallison.tika.app.fx.batch.BatchProcessConfig;
 import org.tallison.tika.app.fx.emitters.EmitterSpec;
 import org.tallison.tika.app.fx.emitters.FileSystemEmitterSpec;
 
-import org.apache.tika.pipes.PipesResult;
+import org.apache.tika.pipes.core.PipesResult;
 
 public class TestAppContextSerialization {
 

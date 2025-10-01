@@ -18,6 +18,7 @@ module org.tallison.tika.app.fx {
     requires java.sql;
     requires javafx.graphics;
     requires org.apache.tika.core;
+    requires org.apache.tika.pipes.core;
     requires org.apache.commons.io;
     requires com.fasterxml.jackson.annotation;
     requires javafx.controls;

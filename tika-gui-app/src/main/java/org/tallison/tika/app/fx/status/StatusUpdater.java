@@ -28,9 +28,9 @@ import org.tallison.tika.app.fx.ControllerBase;
 import org.tallison.tika.app.fx.TikaController;
 import org.tallison.tika.app.fx.batch.BatchProcess;
 
-import org.apache.tika.pipes.PipesResult;
-import org.apache.tika.pipes.async.AsyncStatus;
-import org.apache.tika.pipes.pipesiterator.TotalCountResult;
+import org.apache.tika.pipes.core.PipesResult;
+import org.apache.tika.pipes.core.async.AsyncStatus;
+import org.apache.tika.pipes.core.pipesiterator.TotalCountResult;
 
 public class StatusUpdater implements Callable<Integer> {
     private static final Logger LOGGER = LogManager.getLogger(StatusUpdater.class);

@@ -50,9 +50,10 @@ import org.tallison.tika.app.fx.batch.BatchProcess;
 import org.tallison.tika.app.fx.ctx.AppContext;
 import org.tallison.tika.app.fx.status.StatusCount;
 
-import org.apache.tika.pipes.PipesResult;
-import org.apache.tika.pipes.async.AsyncStatus;
-import org.apache.tika.pipes.pipesiterator.TotalCountResult;
+import org.apache.tika.pipes.core.PipesResult;
+import org.apache.tika.pipes.core.async.AsyncStatus;
+import org.apache.tika.pipes.core.pipesiterator.TotalCountResult;
+
 
 public class BatchStatusController implements Initializable {
 

@@ -250,7 +250,7 @@ public class TikaConfigWriter {
 
     private void appendPipesReporters(DomWriter writer, Element async, BatchProcessConfig bpc) {
         Element compositePipesReporter = writer.createAndGetElement(async, "pipesReporter", "class",
-                "org.apache.tika.pipes.CompositePipesReporter");
+                "org.apache.tika.pipes.core.CompositePipesReporter");
         //Element params = writer.createAndGetElement(compositePipesReporter, "params");
         Element fsReporter = writer.createAndGetElement(compositePipesReporter, "pipesReporter", "class",
                 "org.apache.tika.pipes.reporters.fs.FileSystemStatusReporter");
