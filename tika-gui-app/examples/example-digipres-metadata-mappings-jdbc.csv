@@ -2,7 +2,7 @@
 X-TIKA:digest:SHA256,sha256,VARCHAR(64)
 X-TIKA:encrypted,encrypted,BOOLEAN
 X-TIKA:origResourceName,orig_name,VARCHAR(512)
-resourceName,name,VARCHAR(512)
+X-TIKA:resourceName,name,VARCHAR(512)
 X-TIKA:embedded_depth,embedded_depth,INTEGER
 X-TIKA:embedded_resource_path,embedded_path,VARCHAR(512)
 embeddedResourceType,embedded_type,VARCHAR(64)

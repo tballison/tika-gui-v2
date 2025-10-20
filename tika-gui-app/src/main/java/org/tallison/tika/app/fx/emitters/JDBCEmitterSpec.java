@@ -17,7 +17,11 @@
 package org.tallison.tika.app.fx.emitters;
 
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -132,13 +136,51 @@ public class JDBCEmitterSpec extends BaseEmitterSpec {
             return Collections.EMPTY_SET;
         }
         String connectionString = getConnectionString().get();
+        Path[] jdbcJars = getJDBCJars();
         if (connectionString.startsWith("jdbc:sqlite")) {
-            items.add(AppContext.TIKA_LIB_PATH.resolve("db/sqlite").toAbsolutePath() + "/*");
+            Path jar = findjar("sqlite", jdbcJars);
+            if (jar == null) {
+                LOGGER.error("Couldn't find jar for sqlite");
+            } else {
+                items.add(jar.toAbsolutePath().toString());
+            }
         } else if (connectionString.startsWith("jdbc:h2")) {
-            items.add(AppContext.TIKA_LIB_PATH.resolve("db/h2").toAbsolutePath() + "/*");
+            Path jar = findjar("h2", jdbcJars);
+            if (jar == null) {
+                LOGGER.error("Couldn't find jar for h2");
+            } else {
+                items.add(jar.toAbsolutePath().toString());
+            }
         } else if (connectionString.startsWith("jdbc:postgres")) {
-            items.add(AppContext.TIKA_LIB_PATH.resolve("db/postgresql").toAbsolutePath() + "/*");
+            Path jar = findjar("postgres", jdbcJars);
+            if (jar == null) {
+                LOGGER.error("Couldn't find jar for postgres");
+            } else {
+                items.add(jar.toAbsolutePath().toString());
+            }
         }
         return items;
+    }
+
+    private Path findjar(String name, Path[] jdbcJars) {
+        for (Path p : jdbcJars) {
+            if (p.getFileName().toString().startsWith(name)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    private Path[] getJDBCJars() {
+        List<Path> jars = new ArrayList<>();
+        Path jdbc = AppContext.TIKA_LIB_PATH.resolve("jdbc");
+        if (!Files.isDirectory(jdbc)) {
+            LOGGER.warn("Couldn't find jdbc directory?! " + jdbc.toAbsolutePath());
+            return new Path[0];
+        }
+        for (File f : AppContext.TIKA_LIB_PATH.resolve("jdbc").toFile().listFiles()) {
+            jars.add(f.toPath());
+        }
+        return jars.toArray(new Path[0]);
     }
 }

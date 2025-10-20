@@ -21,36 +21,48 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>tika-gui-v2</artifactId>
+    <artifactId>tika-gui-plugins</artifactId>
     <groupId>org.tallison</groupId>
     <version>1.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>tika-gui-tools</artifactId>
-  <name>Apache Tika gui tools</name>
+  <artifactId>tika-app-wrapper</artifactId>
+  <name>Apache Tika app wrapper</name>
 
   <dependencies>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
+      <groupId>org.apache.tika</groupId>
+      <artifactId>tika-app</artifactId>
+      <version>${tika.version}</version>
     </dependency>
   </dependencies>
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>/src/test/resources/*.html</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-dependency-plugin</artifactId>
+      <version>3.9.0</version>
+      <executions>
+        <execution>
+          <id>copy-dependencies</id>
+          <phase>package</phase> <!-- run automatically during package -->
+          <goals>
+            <goal>copy-dependencies</goal>
+          </goals>
+          <configuration>
+            <outputDirectory>${project.build.directory}/tika-app</outputDirectory>
+            <includeScope>runtime</includeScope>
+            <!-- Optional filters -->
+            <includeScope>compile</includeScope>
+            <overWriteReleases>false</overWriteReleases>
+            <overWriteSnapshots>true</overWriteSnapshots>
+            <overWriteIfNewer>true</overWriteIfNewer>
+          </configuration>
+        </execution>
+      </executions>
+      <configuration>
+      </configuration>
+    </plugin>
     </plugins>
   </build>
 </project>

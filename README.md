@@ -60,7 +60,7 @@ This will make use of the tika-pipes modules to enable fetching files from
 local file shares, S3 and other resources and then emitting the parsed output
 to local file shares, S3, OpenSearch, Apache Solr, jdbc, etc.
 
-This requires Java 21 (with built-in java-fx) and will not run Tika "in process", but rather 
+This requires Java 25 (with built-in java-fx) and will not run Tika "in process", but rather 
 it will rely on forking Tika. 
 
 There's quite a bit of work to streamline the releases so that we don't have 16 copies of
@@ -70,6 +70,7 @@ Ideally, there will be some user interface to visualize information from
 a run of Tika via tika-eval.
 
 # Version Notes
+* 1.0.0-BETA8 -- updated dependencies. Refactored dependency management. Now requires Java 25.
 * 1.0.0-BETA7 -- updated dependencies. Now requires Java 21.
 * 1.0.0-BETA6 -- same warning as BETA5 -- only use this as a demo until commons-compress regressions have been fixed.
 * 1.0.0-BETA5 -- this has known regressions in commons-compress and should be used for demo purposes only.
