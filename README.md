@@ -78,18 +78,19 @@ a run of Tika via tika-eval.
 # Release Notes
 At some point, we should use jreleaser.  We aren't yet doing that.
 
-To generate the download sections of the pom, run DownloadPluginUpdater and PackageBinaries.
+To generate the download sections of the pom for the most recent jres, run DownloadPluginUpdater.
+Then copy+paste that into the tika-gui-app's pom.xml.
 
 The release is currently triggered by pushing a tag starting with 'v'.
 
 Before running this, change the version to the version you intend to release.
 
-```git tag -a "v1.0.0-BETA5" -m "v1.0.0-BETA5 release" && git push origin v1.0.0-BETA5```
+```git tag -a "v1.0.0-BETA8" -m "v1.0.0-BETA8 release" && git push origin v1.0.0-BETA8```
 
 Change the version back to the development/SNAPSHOT version.
 
 If you need to re-release, delete the tag:
-```git push --delete origin v1.0.0-BETA5 && git tag --delete v1.0.0-BETA5```
+```git push --delete origin v1.0.0-BETA8 && git tag --delete v1.0.0-BETA8```
 
 We should figure out how to sign artifacts and offer sha256s.  Again, see jreleaser above.
 
