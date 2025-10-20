@@ -14,11 +14,11 @@
 # limitations under the License.
 
 
-if [ ! -d "jre/zulu21.44.17-ca-fx-jre21.0.8-macosx_aarch64" ]
+if [ ! -d "jre/zulu25.28.85-ca-fx-jre25.0.0-macosx_aarch64" ]
 then
   echo "Unpacking zipped jre."
-  ditto -xk jre/zulu21.44.17-ca-fx-jre21.0.8-macosx_aarch64.zip jre
-  mv jre/zulu21.44.17-ca-fx-jre21.0.8-macosx_aarch64/* jre
+  ditto -xk jre/zulu25.28.85-ca-fx-jre25.0.0-macosx_aarch64.zip jre
+  mv jre/zulu25.28.85-ca-fx-jre25.0.0-macosx_aarch64/* jre
 fi
 
 #this is barely a start. Initially targeting linux
@@ -27,7 +27,7 @@ fi
 # is under the jdk name or the aarch Contents/Home/ stuff.
 # Can we do anything better than chmod?
 
-JAVA_HOME="jre/zulu-17.jre/Contents/Home"
+JAVA_HOME="jre/zulu-25.jre/Contents/Home"
 JAVA_BIN="$JAVA_HOME/bin"
 
 JAVA="$JAVA_BIN/java"

@@ -19,19 +19,8 @@
   under the License.
 -->
 
-<?import java.lang.String?>
-<?import javafx.collections.FXCollections?>
-<?import javafx.scene.control.Accordion?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
 
 <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" >
@@ -46,14 +35,14 @@
         <fx:include fx:id="csv_emitter" source="batch-emitter-csv-view.fxml"/>
       </content>
     </Tab>
-    <Tab text="OpenSearch" closable="false">
-      <content>
-        <fx:include fx:id="opensearch_emitter" source="batch-emitter-opensearch-view.fxml"/>
-      </content>
-    </Tab>
     <Tab text="JDBC" closable="false">
       <content>
         <fx:include fx:id="jdbc_emitter" source="batch-emitter-jdbc-view.fxml"/>
+      </content>
+    </Tab>
+    <Tab disable="true" text="OpenSearch" closable="false">
+      <content>
+        <fx:include fx:id="opensearch_emitter" source="batch-emitter-opensearch-view.fxml"/>
       </content>
     </Tab>
     <Tab disable="true" text="S3" closable="false">

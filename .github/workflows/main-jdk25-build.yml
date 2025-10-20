@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-name: main jdk21 build
+name: main jdk25 build
 
 on:
   push:
@@ -29,10 +29,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
-          java-version: 21
+          java-version: 25
           distribution: 'zulu'#may need to move to liberica
           java-package: jdk+fx
           cache: 'maven'

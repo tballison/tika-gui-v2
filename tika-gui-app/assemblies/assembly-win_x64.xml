@@ -24,25 +24,25 @@
   </formats>
   <fileSets>
     <fileSet>
-      <directory>${project.basedir}</directory>
-      <outputDirectory></outputDirectory>
-      <includes>
-        <include>README*</include>
-      </includes>
+      <directory>${project.parent.basedir}/tika-gui-plugins/tika-app-wrapper/target/tika-app</directory>
+      <outputDirectory>lib/tika-app</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>${project.basedir}/target/jres/win_x64/zulu21.44.17-ca-fx-jre21.0.8-win_x64</directory>
-      <outputDirectory>jre</outputDirectory>
+      <directory>${project.parent.basedir}/tika-gui-plugins/tika-core-wrapper/target/tika-core</directory>
+      <outputDirectory>lib/tika-core</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>${project.basedir}/config</directory>
-      <outputDirectory>config</outputDirectory>
+      <directory>${project.parent.basedir}/tika-gui-plugins/tika-extras-wrapper/target/tika-extras</directory>
+      <outputDirectory>lib/tika-extras</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>${project.basedir}/target/lib</directory>
-      <outputDirectory>lib</outputDirectory>
+      <directory>${project.parent.basedir}/tika-gui-plugins/tika-jdbc-wrapper/target/jdbc</directory>
+      <outputDirectory>lib/jdbc</outputDirectory>
     </fileSet>
-  </fileSets>
+    <fileSet>
+      <directory>${project.parent.basedir}/tika-gui-plugins/tika-emitter-jdbc-wrapper/target/tika-emitter-jdbc</directory>
+      <outputDirectory>lib/tika-emitter-jdbc</outputDirectory>
+    </fileSet>  </fileSets>
   <files>
     <file>
       <source>${project.basedir}/examples/example-digipres-metadata-mappings-jdbc.csv</source>

@@ -60,7 +60,7 @@ This will make use of the tika-pipes modules to enable fetching files from
 local file shares, S3 and other resources and then emitting the parsed output
 to local file shares, S3, OpenSearch, Apache Solr, jdbc, etc.
 
-This requires Java 21 (with built-in java-fx) and will not run Tika "in process", but rather 
+This requires Java 25 (with built-in java-fx) and will not run Tika "in process", but rather 
 it will rely on forking Tika. 
 
 There's quite a bit of work to streamline the releases so that we don't have 16 copies of
@@ -70,6 +70,7 @@ Ideally, there will be some user interface to visualize information from
 a run of Tika via tika-eval.
 
 # Version Notes
+* 1.0.0-BETA8 -- updated dependencies. Refactored dependency management. Now requires Java 25.
 * 1.0.0-BETA7 -- updated dependencies. Now requires Java 21.
 * 1.0.0-BETA6 -- same warning as BETA5 -- only use this as a demo until commons-compress regressions have been fixed.
 * 1.0.0-BETA5 -- this has known regressions in commons-compress and should be used for demo purposes only.
@@ -77,18 +78,19 @@ a run of Tika via tika-eval.
 # Release Notes
 At some point, we should use jreleaser.  We aren't yet doing that.
 
-To generate the download sections of the pom, run DownloadPluginUpdater and PackageBinaries.
+To generate the download sections of the pom for the most recent jres, run DownloadPluginUpdater.
+Then copy+paste that into the tika-gui-app's pom.xml.
 
 The release is currently triggered by pushing a tag starting with 'v'.
 
 Before running this, change the version to the version you intend to release.
 
-```git tag -a "v1.0.0-BETA5" -m "v1.0.0-BETA5 release" && git push origin v1.0.0-BETA5```
+```git tag -a "v1.0.0-BETA8" -m "v1.0.0-BETA8 release" && git push origin v1.0.0-BETA8```
 
 Change the version back to the development/SNAPSHOT version.
 
 If you need to re-release, delete the tag:
-```git push --delete origin v1.0.0-BETA5 && git tag --delete v1.0.0-BETA5```
+```git push --delete origin v1.0.0-BETA8 && git tag --delete v1.0.0-BETA8```
 
 We should figure out how to sign artifacts and offer sha256s.  Again, see jreleaser above.
 

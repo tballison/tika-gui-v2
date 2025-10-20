@@ -287,8 +287,10 @@ public class TikaConfigWriter {
                 AppContext.TIKA_APP_BIN_PATH.toAbsolutePath() + "/*"));
         sb.append(File.pathSeparator);
         sb.append(ProcessUtils.escapeCommandLine(
-                AppContext.TIKA_EXTRAS_BIN_PATH.toAbsolutePath() + "/*"));
+                AppContext.TIKA_LIB_PATH.toAbsolutePath() + "/jdbc/*"));
         sb.append(File.pathSeparator);
+        sb.append(ProcessUtils.escapeCommandLine(
+                AppContext.TIKA_EXTRAS_BIN_PATH.toAbsolutePath() + "/*"));
         batchProcessConfig.appendPipesClasspath(sb);
         return sb.toString();
     }

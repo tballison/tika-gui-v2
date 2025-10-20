@@ -18,12 +18,11 @@
 #TODO: update the script to find the executable, whether it
 # is under the jdk name or the aarch Contents/Home/ stuff.
 # Can we do anything better than chmod?
-if [ ! -d "jre/zulu21.44.17-ca-fx-jre21.0.8-linux_x64" ]
+if [ ! -d "jre/lib" ]
 then
   echo "Unpacking zipped jre."
   cd jre
-  tar -xzvf zulu21.44.17-ca-fx-jre21.0.8-linux_x64.tar.gz
-  cd .. && mv jre/zulu21.44.17-ca-fx-jre21.0.8-linux_x64/* jre
+  tar -xzvf zulu-jre.tar.gz && mv zulu25*/* ../jre && cd ..
 fi
 
 JAVA_HOME="jre"

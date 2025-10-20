@@ -22,17 +22,13 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.tallison.tika.gui.tools.deprecated.SnapshotParser;
-import org.tallison.tika.gui.tools.deprecated.SnapshotResult;
 
 /**
  * this should have been a batch script.
@@ -48,7 +44,7 @@ public class DownloadPluginUpdater {
 
     private static final String FOOJAY_ZULU_URL =
             "https://api.foojay.io/disco/v3.0/packages?package_type=jre&latest=available&version" +
-                    "=21&javafx_bundled=true&distro=zulu";
+                    "=25&javafx_bundled=true&distro=zulu";
 
     private static final Set<String> OS_ARCH_PKG_ZULU = Set.of(
             "macosx_aarch64.zip",
@@ -90,6 +86,7 @@ public class DownloadPluginUpdater {
                     "        <unpack>false</unpack>\n" +
                     "        <outputDirectory>${project.build.directory}/jres/{SUB_DIR}</outputDirectory>\n" +
                     "        <sha256>{SHA256}</sha256>\n" +
+                    "        <outputFileName>{JRE_PACKAGE}</outputFileName>\n" +
                     "      </configuration>\n" +
                     "    </execution>";
     private static final String DEPENDENCIES_END = "\n    </executions>\n  </plugin>";
@@ -98,38 +95,9 @@ public class DownloadPluginUpdater {
     public static void main(String[] args) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append(DEPENDENCIES_TEMPLATE_START);
-        getDependencies("/snapshot-dependencies.properties", sb);
         getZulu(sb);
         sb.append(DEPENDENCIES_END);
         System.out.println(sb);
-    }
-
-    private static void getDependencies(String dependenciesProps, StringBuilder sb) throws Exception {
-        Properties properties = new Properties();
-        properties.load(DownloadPluginUpdater.class.getResourceAsStream(
-                dependenciesProps));
-        for (Object path : properties.keySet()) {
-            Object subdir = properties.get(path);
-            String p = (String) path;
-            String url = M2_URL_BASE + path;
-            String md5 = "";
-            if (! p.endsWith(".jar")) {
-                SnapshotResult result = new SnapshotParser().parse(APACHE_SNAPSHOTS_BASE + path);
-                url = result.getUrl();
-                md5 = result.getDigests().get("md5");
-            } else {
-                md5 = getMD5(url);
-            }
-            String id = FilenameUtils.getName(url).replace(".jar", "");
-
-            String t = DEPENDENCIES_CONFIGURATION;
-            t = t.replace("{ID}", id);
-            t = t.replace("{MD5}", md5);
-            t = t.replace("{URL}", url);
-            t = t.replace("{SUB_DIR}", (String)subdir);
-            System.out.println(id + " " + md5 + " : " + url);
-            sb.append(t);
-        }
     }
 
     private static String getMD5(String url) throws URISyntaxException, IOException {
@@ -166,6 +134,8 @@ public class DownloadPluginUpdater {
                 if (osArch.equals("win_x64")) {
                     t = t.replace("<unpack>false</unpack>", "<unpack>true</unpack>");
                 }
+                t = t.replace("{JRE_PACKAGE}", "zulu-jre" + p.extension);
+
                 sb.append(t);
             }
         }
@@ -189,10 +159,19 @@ public class DownloadPluginUpdater {
     private static class UrlShaPair {
         private final String url;
         private final String sha256;
+        private final String extension;
 
         public UrlShaPair(String url, String sha256) {
             this.url = url;
             this.sha256 = sha256;
+            if (url.endsWith(".tar.gz")) {
+                extension = ".tar.gz";
+            } else if (url.endsWith(".zip")) {
+                extension = ".zip";
+            } else {
+                //throw new IllegalArgumentException("can't find extension for: " + url);
+                extension = "";
+            }
         }
 
         @Override
