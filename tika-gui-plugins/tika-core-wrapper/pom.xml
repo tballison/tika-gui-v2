@@ -45,11 +45,6 @@
       <artifactId>tika-pipes-reporter-jdbc</artifactId>
       <version>${tika.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.tika</groupId>
-      <artifactId>tika-pipes-reporter-fs-status</artifactId>
-      <version>${tika.version}</version>
-    </dependency>
   </dependencies>
   <build>
     <plugins>
