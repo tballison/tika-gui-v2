@@ -42,7 +42,12 @@
     <fileSet>
       <directory>${project.parent.basedir}/tika-gui-plugins/tika-emitter-jdbc-wrapper/target/tika-emitter-jdbc</directory>
       <outputDirectory>lib/tika-emitter-jdbc</outputDirectory>
-    </fileSet>  </fileSets>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/target/jres/win_x64/zulu25.28.85-ca-fx-jre25.0.0-win_x64</directory>
+      <outputDirectory>jre</outputDirectory>
+    </fileSet>
+  </fileSets>
   <files>
     <file>
       <source>${project.basedir}/examples/example-digipres-metadata-mappings-jdbc.csv</source>
